@@ -7,18 +7,20 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		CD3671B62C5C3AC1002DA9F2 /* TimeCapsuleAppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD3671B52C5C3AC1002DA9F2 /* TimeCapsuleAppApp.swift */; };
+		CD3671B62C5C3AC1002DA9F2 /* TimeCapsuleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD3671B52C5C3AC1002DA9F2 /* TimeCapsuleApp.swift */; };
 		CD3671B82C5C3AC1002DA9F2 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD3671B72C5C3AC1002DA9F2 /* ContentView.swift */; };
 		CD3671BA2C5C3AC7002DA9F2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CD3671B92C5C3AC7002DA9F2 /* Assets.xcassets */; };
 		CD3671BD2C5C3AC7002DA9F2 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CD3671BC2C5C3AC7002DA9F2 /* Preview Assets.xcassets */; };
+		CD4B48E72C5D2BBC008DC1D2 /* Timecap.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4B48E62C5D2BBC008DC1D2 /* Timecap.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		CD3671B22C5C3AC1002DA9F2 /* TimeCapsuleApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TimeCapsuleApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		CD3671B52C5C3AC1002DA9F2 /* TimeCapsuleAppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeCapsuleAppApp.swift; sourceTree = "<group>"; };
+		CD3671B52C5C3AC1002DA9F2 /* TimeCapsuleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeCapsuleApp.swift; sourceTree = "<group>"; };
 		CD3671B72C5C3AC1002DA9F2 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		CD3671B92C5C3AC7002DA9F2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CD3671BC2C5C3AC7002DA9F2 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		CD4B48E62C5D2BBC008DC1D2 /* Timecap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Timecap.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,7 +53,8 @@
 		CD3671B42C5C3AC1002DA9F2 /* TimeCapsuleApp */ = {
 			isa = PBXGroup;
 			children = (
-				CD3671B52C5C3AC1002DA9F2 /* TimeCapsuleAppApp.swift */,
+				CD4B48E62C5D2BBC008DC1D2 /* Timecap.swift */,
+				CD3671B52C5C3AC1002DA9F2 /* TimeCapsuleApp.swift */,
 				CD3671B72C5C3AC1002DA9F2 /* ContentView.swift */,
 				CD3671B92C5C3AC7002DA9F2 /* Assets.xcassets */,
 				CD3671BB2C5C3AC7002DA9F2 /* Preview Content */,
@@ -138,7 +141,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				CD3671B82C5C3AC1002DA9F2 /* ContentView.swift in Sources */,
-				CD3671B62C5C3AC1002DA9F2 /* TimeCapsuleAppApp.swift in Sources */,
+				CD4B48E72C5D2BBC008DC1D2 /* Timecap.swift in Sources */,
+				CD3671B62C5C3AC1002DA9F2 /* TimeCapsuleApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
