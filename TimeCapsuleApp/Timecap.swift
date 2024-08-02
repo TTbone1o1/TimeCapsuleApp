@@ -22,15 +22,18 @@ struct Timecap: View {
                 Spacer()
                 HStack(spacing: 10){
                     
-                    Rectangle()
+                    Image("1")
+                        .resizable()
                         .frame(width: 116, height: 169.35)
                         .cornerRadius(19)
                     
-                    Rectangle()
+                    Image("2")
+                        .resizable()
                         .frame(width: 116, height: 169.35)
                         .cornerRadius(19)
                     
-                    Rectangle()
+                    Image("3")
+                        .resizable()
                         .frame(width: 116, height: 169.35)
                         .cornerRadius(19)
                     
