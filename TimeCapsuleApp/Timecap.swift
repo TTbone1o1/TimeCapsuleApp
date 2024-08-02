@@ -72,6 +72,7 @@ struct Timecap: View {
                 .frame(width: 291, height: 62)
                 .cornerRadius(40)
                 .foregroundColor(.black)
+                .shadow(radius: 24, x: 0, y: 14)
             
             Text("Sign in with Apple")
                 .foregroundColor(.white)
