@@ -40,11 +40,10 @@ struct Create: View {
         .padding(.top, 311)
         .padding(.horizontal, 200)
         
-        Button(action: {
-            //action for button
-            print("hi")
-        }, label: {
-            ZStack{
+        
+        //NavigationLink links you to a different page
+        NavigationLink(destination: Camera()) {
+            ZStack {
                 Rectangle()
                     .frame(width: 291, height: 62)
                     .cornerRadius(40)
@@ -52,13 +51,12 @@ struct Create: View {
                     .shadow(radius: 24, x: 0, y: 14)
                 
                 HStack {
-                    
-                    Text("Continue")
+                    Text("Sign in with Apple")
                         .foregroundColor(.white)
-                    .font(.system(size: 16, weight: .semibold))
+                        .font(.system(size: 16, weight: .semibold))
                 }
             }
-        })
+        }
         .padding(.bottom, 20)
     }
 }
