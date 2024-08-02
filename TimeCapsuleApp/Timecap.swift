@@ -17,9 +17,33 @@ struct Timecap: View {
         Text("only one photo a day.")
             .font(.system(size: 22))
             .foregroundColor(.gray)
+            
+            HStack {
+                Spacer()
+                HStack(spacing: 10){
+                    
+                    Rectangle()
+                        .frame(width: 116, height: 169.35)
+                        .cornerRadius(19)
+                    
+                    Rectangle()
+                        .frame(width: 116, height: 169.35)
+                        .cornerRadius(19)
+                    
+                    Rectangle()
+                        .frame(width: 116, height: 169.35)
+                        .cornerRadius(19)
+                    
+                }
+                .frame(maxHeight: /*@START_MENU_TOKEN@*/.infinity/*@END_MENU_TOKEN@*/, alignment: .top)
+                .padding(.top, 118)
+                
+                Spacer()
+            }
         }
         .frame(maxHeight: /*@START_MENU_TOKEN@*/.infinity/*@END_MENU_TOKEN@*/, alignment: .top)
         .padding(.top, 134)
+        
     }
 }
 
