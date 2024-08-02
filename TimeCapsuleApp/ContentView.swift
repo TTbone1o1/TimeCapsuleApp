@@ -13,6 +13,21 @@ struct ContentView: View {
     let filterOptions: [String] = [
     "Journal Entries", "Capsule"
     ]
+        
+    
+    init() {
+        UISegmentedControl.appearance().selectedSegmentTintColor = UIColor.white
+        
+        let attributes: [NSAttributedString.Key:Any] = [
+            .foregroundColor: UIColor.black
+        ]
+        let normal : [NSAttributedString.Key:Any] = [
+            .foregroundColor: UIColor.white
+        ]
+        
+        UISegmentedControl.appearance().setTitleTextAttributes(attributes, for: .selected)
+        UISegmentedControl.appearance().setTitleTextAttributes(normal, for: .normal)
+    }
     
     var body: some View {
         VStack() {
