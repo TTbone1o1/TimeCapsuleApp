@@ -44,6 +44,17 @@ struct Timecap: View {
         .frame(maxHeight: /*@START_MENU_TOKEN@*/.infinity/*@END_MENU_TOKEN@*/, alignment: .top)
         .padding(.top, 134)
         
+        ZStack{
+            Rectangle()
+                .frame(width: 291, height: 62)
+                .cornerRadius(40)
+                .foregroundColor(.black)
+            
+            Text("Sign in with Apple")
+                .foregroundColor(.white)
+                .font(.system(size: 16, weight: .semibold))
+        }
+        .padding(.bottom, 20)
     }
 }
 
