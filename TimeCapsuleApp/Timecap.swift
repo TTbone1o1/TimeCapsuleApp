@@ -67,26 +67,31 @@ struct Timecap: View {
         .frame(maxHeight: /*@START_MENU_TOKEN@*/.infinity/*@END_MENU_TOKEN@*/, alignment: .top)
         .padding(.top, 134)
         
-        ZStack{
-            Rectangle()
-                .frame(width: 291, height: 62)
-                .cornerRadius(40)
-                .foregroundColor(.black)
-                .shadow(radius: 24, x: 0, y: 14)
-            
-            HStack {
+        Button(action: {
+            //action for button
+            print("hi")
+        }, label: {
+            ZStack{
+                Rectangle()
+                    .frame(width: 291, height: 62)
+                    .cornerRadius(40)
+                    .foregroundColor(.black)
+                    .shadow(radius: 24, x: 0, y: 14)
                 
-                Text("Sign in with Apple")
-                    .foregroundColor(.white)
-                .font(.system(size: 16, weight: .semibold))
-                
-                Image(systemName: "apple.logo")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 20, height: 20)
-                    .foregroundColor(.white)
+                HStack {
+                    
+                    Text("Sign in with Apple")
+                        .foregroundColor(.white)
+                    .font(.system(size: 16, weight: .semibold))
+                    
+                    Image(systemName: "apple.logo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 20, height: 20)
+                        .foregroundColor(.white)
+                }
             }
-        }
+        })
         .padding(.bottom, 20)
     }
 }
