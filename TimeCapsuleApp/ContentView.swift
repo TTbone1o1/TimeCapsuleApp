@@ -8,6 +8,12 @@
 import SwiftUI
 
 struct ContentView: View {
+    
+    @State var selection: String = "Most Recent"
+    let filterOptions: [String] = [
+    "Journal Entries", "Capsule"
+    ]
+    
     var body: some View {
         VStack() {
             Rectangle()
@@ -15,9 +21,19 @@ struct ContentView: View {
                 .foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
                 .cornerRadius(40)
             
-            Rectangle()
-                .frame(width: 325, height: 62)
-                .cornerRadius(50)
+            Picker(
+                selection: $selection,
+                label: Text("Picker"),
+                content: {
+                    ForEach(filterOptions.indices) { index in
+                        Text(filterOptions[index])
+                            .tag(filterOptions[index])
+                    }
+            })
+            .pickerStyle(SegmentedPickerStyle())
+            .frame(width: 325, height: 62)
+            .background(Color.black)
+            .cornerRadius(51)
             
             HStack{
                 Rectangle()
@@ -30,7 +46,7 @@ struct ContentView: View {
                     .frame(width: 140, height: 140)
                     .foregroundColor(.white)
                     .cornerRadius(6)
-                    .shadow(radius: 24, x: 0, y: 7)
+                    .shadow(radius: 24, x: 13, y: 7)
             }
             
             HStack{
@@ -38,13 +54,13 @@ struct ContentView: View {
                     .frame(width: 140, height: 140)
                     .foregroundColor(.white)
                     .cornerRadius(6)
-                    .shadow(radius: 24, x: 0, y: 7)
+                    .shadow(radius: 24, x: 0, y: 17)
                 
                 Rectangle()
                     .frame(width: 140, height: 140)
                     .foregroundColor(.white)
                     .cornerRadius(6)
-                    .shadow(radius: 24, x: 0, y: 7)
+                    .shadow(radius: 24, x: 13, y: 7)
             }
         }
         .padding()
