@@ -20,22 +20,30 @@ struct Timecap: View {
             
             HStack {
                 Spacer()
-                HStack(spacing: 10){
+                HStack(spacing: -50){
                     
                     Image("1")
                         .resizable()
                         .frame(width: 116, height: 169.35)
                         .cornerRadius(19)
+                        .zIndex(3)
+                        .rotationEffect(Angle(degrees: -16))
+                        .offset(y: 10)
                     
                     Image("2")
                         .resizable()
                         .frame(width: 116, height: 169.35)
                         .cornerRadius(19)
+                        .zIndex(2)
+                        .rotationEffect(Angle(degrees: -2))
                     
                     Image("3")
                         .resizable()
                         .frame(width: 116, height: 169.35)
                         .cornerRadius(19)
+                        .zIndex(1)
+                        .rotationEffect(Angle(degrees: 17))
+                        .offset(y: 10)
                     
                 }
                 .frame(maxHeight: /*@START_MENU_TOKEN@*/.infinity/*@END_MENU_TOKEN@*/, alignment: .top)
