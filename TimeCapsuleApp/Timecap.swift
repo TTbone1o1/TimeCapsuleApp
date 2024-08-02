@@ -32,13 +32,6 @@ struct Timecap: View {
                             .zIndex(3)
                             .scaleEffect(imagesAppeared ? 1 : 0)
                             .animation(.interpolatingSpring(stiffness: 60, damping: 6).delay(0.1), value: imagesAppeared)
-                            .onAppear {
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                                    if imagesAppeared {
-                                        triggerHaptic()
-                                    }
-                                }
-                            }
                         
                         Image("2")
                             .resizable()
@@ -53,13 +46,6 @@ struct Timecap: View {
                             .shadow(radius: 24, x: 0, y: 14)
                             .scaleEffect(imagesAppeared ? 1 : 0)
                             .animation(.interpolatingSpring(stiffness: 60, damping: 6).delay(0.2), value: imagesAppeared)
-                            .onAppear {
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                                    if imagesAppeared {
-                                        triggerHaptic()
-                                    }
-                                }
-                            }
                         
                         Image("3")
                             .resizable()
@@ -75,13 +61,6 @@ struct Timecap: View {
                             .offset(x: -33, y: 15)
                             .scaleEffect(imagesAppeared ? 1 : 0)
                             .animation(.interpolatingSpring(stiffness: 60, damping: 6).delay(0.3), value: imagesAppeared)
-                            .onAppear {
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                                    if imagesAppeared {
-                                        triggerHaptic()
-                                    }
-                                }
-                            }
                     }
                     .frame(maxHeight: .infinity, alignment: .top)
                     .padding(.top, 118)
@@ -89,7 +68,6 @@ struct Timecap: View {
                     Spacer()
                 }
                 
-                //NavigationLink links you to a different page
                 NavigationLink(destination: Create()) {
                     ZStack {
                         Rectangle()
@@ -116,7 +94,12 @@ struct Timecap: View {
             .frame(maxHeight: .infinity, alignment: .top)
             .padding(.top, 134)
             .onAppear {
+                // Start the animation when the view appears
                 imagesAppeared = true
+            }
+            .onDisappear {
+                // Reset the animation state if necessary
+                imagesAppeared = false
             }
         }
     }
@@ -124,6 +107,13 @@ struct Timecap: View {
     private func triggerHaptic() {
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred()
+    }
+}
+
+struct CreateView: View {
+    var body: some View {
+        Text("Create View")
+            .font(.largeTitle)
     }
 }
 
