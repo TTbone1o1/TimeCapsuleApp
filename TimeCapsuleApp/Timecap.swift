@@ -9,13 +9,17 @@ import SwiftUI
 
 struct Timecap: View {
     var body: some View {
-        Text("Timecap")
-            .font(.system(size: 39))
+        VStack {
+            Text("Timecap")
+                .font(.system(size: 39))
             .fontWeight(.semibold)
             
         Text("only one photo a day.")
             .font(.system(size: 22))
             .foregroundColor(.gray)
+        }
+        .frame(maxHeight: /*@START_MENU_TOKEN@*/.infinity/*@END_MENU_TOKEN@*/, alignment: .top)
+        .padding(.top, 134)
     }
 }
 
