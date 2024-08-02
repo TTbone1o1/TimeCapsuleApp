@@ -1,56 +1,23 @@
-//
-//  ContentView.swift
-//  TimeCapsuleApp
-//
-//  Created by Abraham May on 8/1/24.
-//
-
 import SwiftUI
 
 struct ContentView: View {
     
-    @State var selection: String = "Most Recent"
-    let filterOptions: [String] = [
-    "Journal Entries", "Capsule"
-    ]
-        
-    
-    init() {
-        UISegmentedControl.appearance().selectedSegmentTintColor = UIColor.white
-        
-        let attributes: [NSAttributedString.Key:Any] = [
-            .foregroundColor: UIColor.black
-        ]
-        let normal : [NSAttributedString.Key:Any] = [
-            .foregroundColor: UIColor.white
-        ]
-        
-        UISegmentedControl.appearance().setTitleTextAttributes(attributes, for: .selected)
-        UISegmentedControl.appearance().setTitleTextAttributes(normal, for: .normal)
-    }
+    @State var selection: String = "Journal Entries"
+    let filterOptions: [String] = ["Journal Entries", "Capsule"]
     
     var body: some View {
-        VStack() {
+        VStack {
             Rectangle()
                 .frame(width: 361, height: 410)
-                .foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
+                .foregroundColor(.blue)
                 .cornerRadius(40)
             
-            Picker(
-                selection: $selection,
-                label: Text("Picker"),
-                content: {
-                    ForEach(filterOptions.indices) { index in
-                        Text(filterOptions[index])
-                            .tag(filterOptions[index])
-                    }
-            })
-            .pickerStyle(SegmentedPickerStyle())
-            .frame(width: 325, height: 62)
-            .background(Color.black)
-            .cornerRadius(51)
+            CustomSegmentedControl(selection: $selection, options: filterOptions)
+                .frame(width: 325, height: 62)
+                .background(Color.black)
+                .cornerRadius(51)
             
-            HStack{
+            HStack {
                 Rectangle()
                     .frame(width: 140, height: 140)
                     .foregroundColor(.white)
@@ -64,7 +31,7 @@ struct ContentView: View {
                     .shadow(radius: 24, x: 13, y: 7)
             }
             
-            HStack{
+            HStack {
                 Rectangle()
                     .frame(width: 140, height: 140)
                     .foregroundColor(.white)
@@ -79,6 +46,30 @@ struct ContentView: View {
             }
         }
         .padding()
+    }
+}
+
+struct CustomSegmentedControl: View {
+    @Binding var selection: String
+    let options: [String]
+    
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(options, id: \.self) { option in
+                Button(action: {
+                    selection = option
+                }) {
+                    Text(option)
+                        .foregroundColor(selection == option ? .black : .white)
+                        .frame(width: selection == option ? 141 : 100, height: selection == option ? 38 : 30)
+                        .background(selection == option ? Color.white : Color.clear)
+                        .cornerRadius(15)
+                        .padding(4)
+                }
+            }
+        }
+        .background(Color.gray.opacity(0.3))
+        .cornerRadius(25)
     }
 }
 
