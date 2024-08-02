@@ -74,9 +74,18 @@ struct Timecap: View {
                 .foregroundColor(.black)
                 .shadow(radius: 24, x: 0, y: 14)
             
-            Text("Sign in with Apple")
-                .foregroundColor(.white)
+            HStack {
+                
+                Text("Sign in with Apple")
+                    .foregroundColor(.white)
                 .font(.system(size: 16, weight: .semibold))
+                
+                Image(systemName: "apple.logo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 24, height: 24)
+                    .foregroundColor(.white)
+            }
         }
         .padding(.bottom, 20)
     }
