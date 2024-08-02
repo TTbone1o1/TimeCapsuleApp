@@ -9,7 +9,13 @@ import SwiftUI
 
 struct Timecap: View {
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        Text("Timecap")
+            .font(.system(size: 39))
+            .fontWeight(.semibold)
+            
+        Text("only one photo a day.")
+            .font(.system(size: 22))
+            .foregroundColor(.gray)
     }
 }
 
