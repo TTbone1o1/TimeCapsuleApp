@@ -18,13 +18,14 @@ class KeyboardObserver: ObservableObject {
 }
 
 struct Create: View {
-    
     @State private var username: String = ""
     @ObservedObject private var keyboardObserver = KeyboardObserver()
-    
+    @State private var showModal: Bool = false
+    @State private var userInput: String = ""
+
     var body: some View {
         VStack {
-            ZStack{
+            ZStack {
                 Rectangle()
                     .frame(width: 250, height: 65)
                     .cornerRadius(11)
@@ -50,9 +51,10 @@ struct Create: View {
             .padding(.top, 311)
             .padding(.horizontal, 200)
             
-            // Show button when keyboard is not visible
             if !keyboardObserver.isKeyboardVisible {
-                NavigationLink(destination: CameraViewControllerRepresentable()) {
+                Button(action: {
+                    showModal = true
+                }) {
                     ZStack {
                         Rectangle()
                             .frame(width: 291, height: 62)
@@ -68,6 +70,23 @@ struct Create: View {
                     }
                 }
                 .padding(.bottom, 20)
+                .fullScreenCover(isPresented: $showModal) {
+                    ZStack {
+                        CameraViewControllerRepresentable()
+                            .edgesIgnoringSafeArea(.all)
+                        
+                        Modal(
+                            showModal: $showModal,
+                            username: username,
+                            userInput: $userInput,
+                            onSubmit: {
+                                showModal = false
+                                // Here you could also add logic to handle userInput before closing the modal
+                            }
+                        )
+                        .transition(.move(edge: .bottom))
+                    }
+                }
             }
         }
     }
