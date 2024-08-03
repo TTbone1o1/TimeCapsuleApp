@@ -52,7 +52,7 @@ struct Create: View {
             
             // Show button when keyboard is not visible
             if !keyboardObserver.isKeyboardVisible {
-                NavigationLink(destination: Camera()) {
+                NavigationLink(destination: CameraViewControllerRepresentable()) {
                     ZStack {
                         Rectangle()
                             .frame(width: 291, height: 62)
