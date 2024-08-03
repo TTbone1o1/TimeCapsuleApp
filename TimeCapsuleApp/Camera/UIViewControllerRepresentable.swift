@@ -9,3 +9,7 @@ struct CameraViewControllerRepresentable: UIViewControllerRepresentable {
         // Update the view controller if needed
     }
 }
+
+#Preview {
+    CameraViewControllerRepresentable()
+}
