@@ -37,7 +37,7 @@ class Camera: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-        view.backgroundColor = .black
+        view.backgroundColor = .red
         view.layer.addSublayer(previewLayer)
         view.addSubview(shutterButton)
         checkCameraPermissions()
@@ -48,15 +48,30 @@ class Camera: UIViewController {
         // Add tap gesture recognizer to imageView
         let imageTapGesture = UITapGestureRecognizer(target: self, action: #selector(didTapImageView))
         imageView.addGestureRecognizer(imageTapGesture)
+        
+        // Set edgesForExtendedLayout to none
+        edgesForExtendedLayout = []
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        // Hide the navigation bar
+        navigationController?.setNavigationBarHidden(true, animated: false)
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        // Show the navigation bar again when the view disappears
+        navigationController?.setNavigationBarHidden(false, animated: false)
     }
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         previewLayer.frame = view.bounds
+        previewLayer.videoGravity = .resizeAspectFill
 
-        shutterButton.center = CGPoint(x: view.frame.size.width / 2, y: view.frame.size.height - 100)
+        shutterButton.center = CGPoint(x: view.frame.size.width / 2, y: view.frame.size.height - 50)
 
-        // Bring shutter button to front
         view.bringSubviewToFront(shutterButton)
     }
 
@@ -95,6 +110,7 @@ class Camera: UIViewController {
 
                 previewLayer.videoGravity = .resizeAspectFill
                 previewLayer.session = session
+                view.layer.addSublayer(previewLayer) // Ensure the previewLayer is added to the view's layer
 
                 session.startRunning()
                 self.session = session
