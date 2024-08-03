@@ -10,8 +10,8 @@ class Camera: UIViewController {
     // Video Preview
     let previewLayer = AVCaptureVideoPreviewLayer()
     // Shutter button
-    private let shutterButton: UIView = {
-        let outerCircle = UIView(frame: CGRect(x: 0, y: 0, width: 75, height: 75))
+    private let shutterButton: UIButton = {
+        let outerCircle = UIButton(frame: CGRect(x: 0, y: 0, width: 75, height: 75))
         outerCircle.layer.cornerRadius = 37.5
         outerCircle.layer.borderWidth = 2
         outerCircle.layer.borderColor = UIColor.white.cgColor
@@ -36,9 +36,8 @@ class Camera: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
-        view.backgroundColor = .red
-        view.layer.addSublayer(previewLayer)
+        view.backgroundColor = .black // Set background color to black to better see the preview
+        view.layer.addSublayer(previewLayer) // Ensure the previewLayer is added to the view's layer
         view.addSubview(shutterButton)
         checkCameraPermissions()
 
@@ -67,10 +66,14 @@ class Camera: UIViewController {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+        // Adjust the previewLayer frame to fit the full screen
         previewLayer.frame = view.bounds
         previewLayer.videoGravity = .resizeAspectFill
 
-        shutterButton.center = CGPoint(x: view.frame.size.width / 2, y: view.frame.size.height - 50)
+        // Position the shutter button at the bottom center, respecting the safe area
+        let safeAreaInsets = view.safeAreaInsets
+        let shutterButtonY = view.frame.size.height - safeAreaInsets.bottom - 75 / 2
+        shutterButton.center = CGPoint(x: view.frame.size.width / 2, y: shutterButtonY)
 
         view.bringSubviewToFront(shutterButton)
     }
