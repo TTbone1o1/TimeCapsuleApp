@@ -90,6 +90,9 @@ struct Timecap: View {
                     }
                 }
                 .padding(.bottom, 20)
+                .onTapGesture {
+                    triggerHaptic() // Ensure this triggers haptic feedback
+                }
             }
             .frame(maxHeight: .infinity, alignment: .top)
             .padding(.top, 134)
@@ -105,9 +108,11 @@ struct Timecap: View {
     }
     
     private func triggerHaptic() {
-        let generator = UIImpactFeedbackGenerator(style: .medium)
-        generator.impactOccurred()
+        let generator = UINotificationFeedbackGenerator()
+        generator.prepare()
+        generator.notificationOccurred(.success)
     }
+
 }
 
 struct CreateView: View {
