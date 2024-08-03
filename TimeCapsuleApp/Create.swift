@@ -1,15 +1,26 @@
-//
-//  Create.swift
-//  TimeCapsuleApp
-//
-//  Created by Abraham May on 8/2/24.
-//
-
 import SwiftUI
+import Combine
+
+// KeyboardObserver class to handle keyboard events
+class KeyboardObserver: ObservableObject {
+    @Published var isKeyboardVisible: Bool = false
+    
+    private var cancellables = Set<AnyCancellable>()
+    
+    init() {
+        NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)
+            .map { _ in true }
+            .merge(with: NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)
+                .map { _ in false })
+            .assign(to: \.isKeyboardVisible, on: self)
+            .store(in: &cancellables)
+    }
+}
 
 struct Create: View {
     
     @State private var username: String = ""
+    @ObservedObject private var keyboardObserver = KeyboardObserver()
     
     var body: some View {
         VStack {
@@ -35,29 +46,30 @@ struct Create: View {
                     }
                 }
             }
-        }
-        .frame(maxHeight: /*@START_MENU_TOKEN@*/.infinity/*@END_MENU_TOKEN@*/, alignment: .top)
-        .padding(.top, 311)
-        .padding(.horizontal, 200)
-        
-        
-        //NavigationLink links you to a different page
-        NavigationLink(destination: Camera()) {
-            ZStack {
-                Rectangle()
-                    .frame(width: 291, height: 62)
-                    .cornerRadius(40)
-                    .foregroundColor(.black)
-                    .shadow(radius: 24, x: 0, y: 14)
-                
-                HStack {
-                    Text("Continue")
-                        .foregroundColor(.white)
-                        .font(.system(size: 16, weight: .semibold))
+            .frame(maxHeight: .infinity, alignment: .top)
+            .padding(.top, 311)
+            .padding(.horizontal, 200)
+            
+            // Show button when keyboard is not visible
+            if !keyboardObserver.isKeyboardVisible {
+                NavigationLink(destination: Camera()) {
+                    ZStack {
+                        Rectangle()
+                            .frame(width: 291, height: 62)
+                            .cornerRadius(40)
+                            .foregroundColor(.black)
+                            .shadow(radius: 24, x: 0, y: 14)
+                        
+                        HStack {
+                            Text("Continue")
+                                .foregroundColor(.white)
+                                .font(.system(size: 16, weight: .semibold))
+                        }
+                    }
                 }
+                .padding(.bottom, 20)
             }
         }
-        .padding(.bottom, 20)
     }
 }
 
