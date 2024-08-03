@@ -29,7 +29,6 @@ struct Camera: View {
                 }
             }
             .sheet(isPresented: $showCamera) {
-                CameraViewController(isShown: self.$showCamera, image: self.$capturedImage)
             }
         }
     }
