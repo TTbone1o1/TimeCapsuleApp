@@ -1,39 +1,158 @@
-import SwiftUI
+import AVFoundation
+import UIKit
 
-struct Camera: View {
-    @State private var showCamera = false
-    @State private var capturedImage: Image? = nil
+class Camera: UIViewController {
 
-    var body: some View {
-        VStack {
-            capturedImage?
-                .resizable()
-                .scaledToFit()
-                .frame(width: 300, height: 300)
+    // Capture Session
+    var session: AVCaptureSession?
+    // Photo Output
+    let output = AVCapturePhotoOutput()
+    // Video Preview
+    let previewLayer = AVCaptureVideoPreviewLayer()
+    // Shutter button
+    private let shutterButton: UIView = {
+        let outerCircle = UIView(frame: CGRect(x: 0, y: 0, width: 75, height: 75))
+        outerCircle.layer.cornerRadius = 37.5
+        outerCircle.layer.borderWidth = 2
+        outerCircle.layer.borderColor = UIColor.white.cgColor
+        outerCircle.backgroundColor = .clear
 
-            Button(action: {
-                self.showCamera = true
-            }) {
-                ZStack {
-                    Rectangle()
-                        .frame(width: 291, height: 62)
-                        .cornerRadius(40)
-                        .foregroundColor(.black)
-                        .shadow(radius: 24, x: 0, y: 14)
-                    
-                    HStack {
-                        Text("Take a photo")
-                            .foregroundColor(.white)
-                            .font(.system(size: 16, weight: .semibold))
-                    }
+        let innerCircle = UIView(frame: CGRect(x: 5, y: 5, width: 65, height: 65))
+        innerCircle.layer.cornerRadius = 32.5
+        innerCircle.backgroundColor = .white
+
+        outerCircle.addSubview(innerCircle)
+        return outerCircle
+    }()
+
+    // Image view to display captured photo
+    private let imageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFill
+        imageView.backgroundColor = .black // Optional: Set background color for visibility
+        imageView.isUserInteractionEnabled = true // Enable user interaction
+        return imageView
+    }()
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        // Do any additional setup after loading the view.
+        view.backgroundColor = .black
+        view.layer.addSublayer(previewLayer)
+        view.addSubview(shutterButton)
+        checkCameraPermissions()
+
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(didTapTakePhoto))
+        shutterButton.addGestureRecognizer(tapGesture)
+
+        // Add tap gesture recognizer to imageView
+        let imageTapGesture = UITapGestureRecognizer(target: self, action: #selector(didTapImageView))
+        imageView.addGestureRecognizer(imageTapGesture)
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        previewLayer.frame = view.bounds
+
+        shutterButton.center = CGPoint(x: view.frame.size.width / 2, y: view.frame.size.height - 100)
+
+        // Bring shutter button to front
+        view.bringSubviewToFront(shutterButton)
+    }
+
+    private func checkCameraPermissions() {
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .notDetermined:
+            // Request
+            AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
+                guard granted else { return }
+                DispatchQueue.main.async {
+                    self?.setupCamera()
                 }
             }
-            .sheet(isPresented: $showCamera) {
+        case .restricted, .denied:
+            // Handle restricted/denied case
+            break
+        case .authorized:
+            setupCamera()
+        @unknown default:
+            break
+        }
+    }
+
+    private func setupCamera() {
+        let session = AVCaptureSession()
+        if let device = AVCaptureDevice.default(for: .video) {
+            do {
+                let input = try AVCaptureDeviceInput(device: device)
+                if session.canAddInput(input) {
+                    session.addInput(input)
+                }
+
+                if session.canAddOutput(output) {
+                    session.addOutput(output)
+                }
+
+                previewLayer.videoGravity = .resizeAspectFill
+                previewLayer.session = session
+
+                session.startRunning()
+                self.session = session
+            } catch {
+                print(error)
             }
+        }
+    }
+
+    @objc private func didTapTakePhoto() {
+        // Add enhanced bouncing animation
+        UIView.animate(withDuration: 0.1, // Initial scale down duration
+                       animations: {
+                           self.shutterButton.transform = CGAffineTransform(scaleX: 0.6, y: 0.6)
+                       },
+                       completion: { _ in
+                           UIView.animate(withDuration: 0.2, // Bounce up duration
+                                          delay: 0,
+                                          usingSpringWithDamping: 0.5,
+                                          initialSpringVelocity: 1.5,
+                                          options: .allowUserInteraction,
+                                          animations: {
+                                              self.shutterButton.transform = CGAffineTransform(scaleX: 1.1, y: 1.1)
+                                          },
+                                          completion: { _ in
+                                              UIView.animate(withDuration: 0.1, // Return to normal size duration
+                                                             animations: {
+                                                                 self.shutterButton.transform = CGAffineTransform.identity
+                                                                 self.shutterButton.alpha = 0
+                                                             },
+                                                             completion: { _ in
+                                                                 self.shutterButton.isHidden = true // Hide the shutter button after animation
+                                                             })
+                                          })
+                       })
+
+        output.capturePhoto(with: AVCapturePhotoSettings(), delegate: self)
+    }
+
+    @objc private func didTapImageView() {
+        imageView.removeFromSuperview() // Remove the image view
+        session?.startRunning() // Restart the camera session
+        shutterButton.isHidden = false // Show the shutter button again
+        UIView.animate(withDuration: 0.3) {
+            self.shutterButton.alpha = 1
         }
     }
 }
 
-#Preview {
-    Camera()
+extension Camera: AVCapturePhotoCaptureDelegate {
+    func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
+        guard let data = photo.fileDataRepresentation(), let image = UIImage(data: data) else {
+            return
+        }
+        session?.stopRunning() // Stop the camera session
+
+        imageView.image = image // Display captured image in imageView
+        imageView.frame = view.bounds
+        view.addSubview(imageView)
+    }
 }
