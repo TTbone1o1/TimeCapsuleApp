@@ -51,7 +51,7 @@ struct Create: View {
                     .shadow(radius: 24, x: 0, y: 14)
                 
                 HStack {
-                    Text("Sign in with Apple")
+                    Text("Continue")
                         .foregroundColor(.white)
                         .font(.system(size: 16, weight: .semibold))
                 }
