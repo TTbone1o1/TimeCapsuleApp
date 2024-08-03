@@ -32,6 +32,11 @@ struct Timecap: View {
                             .zIndex(3)
                             .scaleEffect(imagesAppeared ? 1 : 0)
                             .animation(.interpolatingSpring(stiffness: 60, damping: 6).delay(0.1), value: imagesAppeared)
+                            .onAppear {
+                                if imagesAppeared {
+                                    triggerHaptic()
+                                }
+                            }
                         
                         Image("2")
                             .resizable()
@@ -46,6 +51,11 @@ struct Timecap: View {
                             .shadow(radius: 24, x: 0, y: 14)
                             .scaleEffect(imagesAppeared ? 1 : 0)
                             .animation(.interpolatingSpring(stiffness: 60, damping: 6).delay(0.2), value: imagesAppeared)
+                            .onAppear {
+                                if imagesAppeared {
+                                    triggerHaptic()
+                                }
+                            }
                         
                         Image("3")
                             .resizable()
@@ -61,6 +71,11 @@ struct Timecap: View {
                             .offset(x: -33, y: 15)
                             .scaleEffect(imagesAppeared ? 1 : 0)
                             .animation(.interpolatingSpring(stiffness: 60, damping: 6).delay(0.3), value: imagesAppeared)
+                            .onAppear {
+                                if imagesAppeared {
+                                    triggerHaptic()
+                                }
+                            }
                     }
                     .frame(maxHeight: .infinity, alignment: .top)
                     .padding(.top, 118)
@@ -90,15 +105,14 @@ struct Timecap: View {
                     }
                 }
                 .padding(.bottom, 20)
-                .onTapGesture {
-                    triggerHaptic() // Ensure this triggers haptic feedback
-                }
             }
             .frame(maxHeight: .infinity, alignment: .top)
             .padding(.top, 134)
             .onAppear {
                 // Start the animation when the view appears
                 imagesAppeared = true
+                // Trigger haptic feedback when the view first appears
+                triggerHaptic()
             }
             .onDisappear {
                 // Reset the animation state if necessary
@@ -112,7 +126,6 @@ struct Timecap: View {
         generator.prepare()
         generator.notificationOccurred(.success)
     }
-
 }
 
 struct CreateView: View {
