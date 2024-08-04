@@ -3,12 +3,14 @@ import UIKit
 import Firebase
 import FirebaseAuth
 import FirebaseCore
+import FirebaseFirestore
 import AuthenticationServices
 
 struct Timecap: View {
     @State private var imagesAppeared = false
     @State private var isSignedIn = false
     @State private var authError: String?
+    let db = Firestore.firestore() // Firestore reference
 
     var body: some View {
         NavigationView {
@@ -113,6 +115,11 @@ struct Timecap: View {
                                 }
                                 // User is signed in
                                 self.isSignedIn = true
+
+                                if let user = authResult?.user {
+                                    // Save the user to Firestore
+                                    saveUserToFirestore(user: user)
+                                }
                             }
 
                         default:
@@ -159,6 +166,25 @@ struct Timecap: View {
         let generator = UINotificationFeedbackGenerator()
         generator.prepare()
         generator.notificationOccurred(.success)
+    }
+
+    private func saveUserToFirestore(user: User) {
+        let db = Firestore.firestore()
+        let usersRef = db.collection("users")
+
+        let userData: [String: Any] = [
+            "uid": user.uid,
+            "email": user.email ?? "",
+            "fullName": user.displayName ?? ""
+        ]
+
+        usersRef.document(user.uid).setData(userData) { error in
+            if let error = error {
+                print("Error saving user to Firestore: \(error.localizedDescription)")
+            } else {
+                print("User successfully saved to Firestore")
+            }
+        }
     }
 }
 
