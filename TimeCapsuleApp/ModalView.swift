@@ -19,6 +19,8 @@ struct Modal: View {
                     .padding(.horizontal, 20)
                     .padding(.vertical, 20)
                     .background(Color.white) // Ensure background color for clarity
+                    .autocapitalization(.none) // Prevent automatic capitalization if not needed
+                    .disableAutocorrection(true) // Disable autocorrection if not needed
 
                 Button(action: {
                     onSubmit()
@@ -47,7 +49,7 @@ struct Modal: View {
             .padding(.horizontal, 20)
             .padding(.bottom, 20)
         }
-        .edgesIgnoringSafeArea(.all)
+        .edgesIgnoringSafeArea(.bottom) // Adjust to ensure keyboard visibility
         .background(Color.black.opacity(0.5)) // Dim background for focus on modal
     }
 }
