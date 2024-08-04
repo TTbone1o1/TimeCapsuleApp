@@ -38,3 +38,9 @@ struct Modal: View {
         .edgesIgnoringSafeArea(.all)
     }
 }
+
+#Preview {
+    Modal(showModal: .constant(true), username: "User", userInput: .constant("")) {
+        // Handle submit action here
+    }
+}
