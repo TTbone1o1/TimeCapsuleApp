@@ -175,3 +175,7 @@ extension Camera: AVCapturePhotoCaptureDelegate {
         view.addSubview(imageView)
     }
 }
+
+#Preview {
+    Camera()
+}
