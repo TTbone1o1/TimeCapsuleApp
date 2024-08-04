@@ -16,6 +16,8 @@ struct Modal: View {
                 TextField("Enter your activity", text: $userInput)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .padding(.horizontal, 20)
+                    .padding(.vertical, 20)
+                
                 ZStack {
                     Rectangle()
                         .frame(width: 291, height: 62)
@@ -29,12 +31,13 @@ struct Modal: View {
                             .font(.system(size: 16, weight: .semibold))
                     }
                 }
+                .padding(.bottom, 60) // Adjust as needed
             }
             .background(Color.white)
             .cornerRadius(20)
             .shadow(radius: 10)
-            .frame(height: 315)
-            .padding(.bottom, -60)
+            .frame(height: 100) // Increased height for the white box
+            .padding(.bottom, 60) // Adjust if necessary
         }
         .edgesIgnoringSafeArea(.all)
     }
