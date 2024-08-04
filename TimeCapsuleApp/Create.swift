@@ -84,7 +84,7 @@ struct Create: View {
                                 // Here you could also add logic to handle userInput before closing the modal
                             }
                         )
-                        .transition(.move(edge: .bottom))
+                        
                     }
                 }
             }
