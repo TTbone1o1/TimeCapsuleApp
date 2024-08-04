@@ -13,16 +13,16 @@ struct Modal: View {
                 Text("Hello \(username), what did you do today?")
                     .font(.headline)
                     .padding(.top, 20)
+
                 TextField("Enter your activity", text: $userInput)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .padding(.horizontal, 20)
                     .padding(.vertical, 20)
-                
+                    .background(Color.white) // Ensure background color for clarity
+
                 Button(action: {
-                    // Call onSubmit to handle submission
                     onSubmit()
-                    // Dismiss the modal
-                    showModal = false
+                    showModal = false // Dismiss the modal
                 }) {
                     ZStack {
                         Rectangle()
@@ -38,15 +38,17 @@ struct Modal: View {
                         }
                     }
                 }
-                .padding(.bottom, 60) // Adjust as needed
+                .padding(.bottom, 20)
             }
             .background(Color.white)
             .cornerRadius(20)
             .shadow(radius: 10)
-            .frame(height: 300) // Adjust height as needed
-            .padding(.bottom, 60) // Adjust if necessary
+            .frame(height: 300)
+            .padding(.horizontal, 20)
+            .padding(.bottom, 20)
         }
         .edgesIgnoringSafeArea(.all)
+        .background(Color.black.opacity(0.5)) // Dim background for focus on modal
     }
 }
 
