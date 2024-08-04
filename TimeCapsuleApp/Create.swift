@@ -21,6 +21,7 @@ struct Create: View {
     @State private var username: String = ""
     @ObservedObject private var keyboardObserver = KeyboardObserver()
     @State private var showModal: Bool = false
+    @State private var showCamera: Bool = false
     @State private var userInput: String = ""
 
     var body: some View {
@@ -53,7 +54,7 @@ struct Create: View {
             
             if !keyboardObserver.isKeyboardVisible {
                 Button(action: {
-                    showModal = true
+                    presentCamera()
                 }) {
                     ZStack {
                         Rectangle()
@@ -70,10 +71,10 @@ struct Create: View {
                     }
                 }
                 .padding(.bottom, 20)
+                
                 .fullScreenCover(isPresented: $showModal) {
                     ZStack {
-                        CameraViewControllerRepresentable()
-                            .edgesIgnoringSafeArea(.all)
+                        
                         
                         Modal(
                             showModal: $showModal,
@@ -88,6 +89,14 @@ struct Create: View {
                     }
                 }
             }
+        }
+    }
+
+    private func presentCamera() {
+        if let window = UIApplication.shared.windows.first {
+            let cameraViewController = Camera()
+            cameraViewController.modalPresentationStyle = .fullScreen
+            window.rootViewController?.present(cameraViewController, animated: true, completion: nil)
         }
     }
 }
