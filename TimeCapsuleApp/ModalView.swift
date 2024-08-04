@@ -18,17 +18,24 @@ struct Modal: View {
                     .padding(.horizontal, 20)
                     .padding(.vertical, 20)
                 
-                ZStack {
-                    Rectangle()
-                        .frame(width: 291, height: 62)
-                        .cornerRadius(40)
-                        .foregroundColor(.black)
-                        .shadow(radius: 24, x: 0, y: 14)
-                    
-                    HStack {
-                        Text("Continue")
-                            .foregroundColor(.white)
-                            .font(.system(size: 16, weight: .semibold))
+                Button(action: {
+                    // Call onSubmit to handle submission
+                    onSubmit()
+                    // Dismiss the modal
+                    showModal = false
+                }) {
+                    ZStack {
+                        Rectangle()
+                            .frame(width: 291, height: 62)
+                            .cornerRadius(40)
+                            .foregroundColor(.black)
+                            .shadow(radius: 24, x: 0, y: 14)
+                        
+                        HStack {
+                            Text("Submit")
+                                .foregroundColor(.white)
+                                .font(.system(size: 16, weight: .semibold))
+                        }
                     }
                 }
                 .padding(.bottom, 60) // Adjust as needed
@@ -36,7 +43,7 @@ struct Modal: View {
             .background(Color.white)
             .cornerRadius(20)
             .shadow(radius: 10)
-            .frame(height: 100) // Increased height for the white box
+            .frame(height: 300) // Adjust height as needed
             .padding(.bottom, 60) // Adjust if necessary
         }
         .edgesIgnoringSafeArea(.all)
