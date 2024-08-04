@@ -128,13 +128,6 @@ struct Timecap: View {
     }
 }
 
-struct CreateView: View {
-    var body: some View {
-        Text("Create View")
-            .font(.largeTitle)
-    }
-}
-
 #Preview {
     Timecap()
 }
