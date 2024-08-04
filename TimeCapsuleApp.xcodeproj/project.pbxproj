@@ -9,6 +9,10 @@
 /* Begin PBXBuildFile section */
 		CD1E8CAC2C5EB66700C01341 /* UIViewControllerRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1E8CAB2C5EB66700C01341 /* UIViewControllerRepresentable.swift */; };
 		CD1E8CB02C5EE1CE00C01341 /* ModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1E8CAF2C5EE1CE00C01341 /* ModalView.swift */; };
+		CD1E8CB62C5FD3E300C01341 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1E8CB52C5FD3E300C01341 /* MainView.swift */; };
+		CD1E8CBE2C6000F200C01341 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = CD1E8CBD2C6000F200C01341 /* GoogleService-Info.plist */; };
+		CD1E8CC12C6001E800C01341 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = CD1E8CC02C6001E800C01341 /* FirebaseAnalytics */; };
+		CD1E8CC42C60090900C01341 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = CD1E8CC32C60090900C01341 /* FirebaseAuth */; };
 		CD3671B62C5C3AC1002DA9F2 /* TimeCapsuleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD3671B52C5C3AC1002DA9F2 /* TimeCapsuleApp.swift */; };
 		CD3671B82C5C3AC1002DA9F2 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD3671B72C5C3AC1002DA9F2 /* ContentView.swift */; };
 		CD3671BA2C5C3AC7002DA9F2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CD3671B92C5C3AC7002DA9F2 /* Assets.xcassets */; };
@@ -21,6 +25,9 @@
 /* Begin PBXFileReference section */
 		CD1E8CAB2C5EB66700C01341 /* UIViewControllerRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIViewControllerRepresentable.swift; sourceTree = "<group>"; };
 		CD1E8CAF2C5EE1CE00C01341 /* ModalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModalView.swift; sourceTree = "<group>"; };
+		CD1E8CB52C5FD3E300C01341 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
+		CD1E8CBD2C6000F200C01341 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../../../Downloads/GoogleService-Info.plist"; sourceTree = "<group>"; };
+		CD1E8CC52C600A9500C01341 /* TimeCapsuleApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TimeCapsuleApp.entitlements; sourceTree = "<group>"; };
 		CD3671B22C5C3AC1002DA9F2 /* TimeCapsuleApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TimeCapsuleApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CD3671B52C5C3AC1002DA9F2 /* TimeCapsuleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeCapsuleApp.swift; sourceTree = "<group>"; };
 		CD3671B72C5C3AC1002DA9F2 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -36,6 +43,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CD1E8CC12C6001E800C01341 /* FirebaseAnalytics in Frameworks */,
+				CD1E8CC42C60090900C01341 /* FirebaseAuth in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -51,11 +60,19 @@
 			path = Camera;
 			sourceTree = "<group>";
 		};
+		CD1E8CC22C60090900C01341 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		CD3671A92C5C3AC1002DA9F2 = {
 			isa = PBXGroup;
 			children = (
 				CD3671B42C5C3AC1002DA9F2 /* TimeCapsuleApp */,
 				CD3671B32C5C3AC1002DA9F2 /* Products */,
+				CD1E8CC22C60090900C01341 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -70,13 +87,16 @@
 		CD3671B42C5C3AC1002DA9F2 /* TimeCapsuleApp */ = {
 			isa = PBXGroup;
 			children = (
+				CD1E8CC52C600A9500C01341 /* TimeCapsuleApp.entitlements */,
 				CD4B48E62C5D2BBC008DC1D2 /* Timecap.swift */,
 				CD3671B52C5C3AC1002DA9F2 /* TimeCapsuleApp.swift */,
 				CD1E8CAF2C5EE1CE00C01341 /* ModalView.swift */,
 				CD3671B72C5C3AC1002DA9F2 /* ContentView.swift */,
 				CD4B48E82C5D6B19008DC1D2 /* Create.swift */,
+				CD1E8CB52C5FD3E300C01341 /* MainView.swift */,
 				CD1E8CAE2C5EB7C400C01341 /* Camera */,
 				CD3671B92C5C3AC7002DA9F2 /* Assets.xcassets */,
+				CD1E8CBD2C6000F200C01341 /* GoogleService-Info.plist */,
 				CD3671BB2C5C3AC7002DA9F2 /* Preview Content */,
 			);
 			path = TimeCapsuleApp;
@@ -106,6 +126,10 @@
 			dependencies = (
 			);
 			name = TimeCapsuleApp;
+			packageProductDependencies = (
+				CD1E8CC02C6001E800C01341 /* FirebaseAnalytics */,
+				CD1E8CC32C60090900C01341 /* FirebaseAuth */,
+			);
 			productName = TimeCapsuleApp;
 			productReference = CD3671B22C5C3AC1002DA9F2 /* TimeCapsuleApp.app */;
 			productType = "com.apple.product-type.application";
@@ -134,6 +158,9 @@
 				Base,
 			);
 			mainGroup = CD3671A92C5C3AC1002DA9F2;
+			packageReferences = (
+				CD1E8CBF2C6001E800C01341 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			productRefGroup = CD3671B32C5C3AC1002DA9F2 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -149,6 +176,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CD3671BD2C5C3AC7002DA9F2 /* Preview Assets.xcassets in Resources */,
+				CD1E8CBE2C6000F200C01341 /* GoogleService-Info.plist in Resources */,
 				CD3671BA2C5C3AC7002DA9F2 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -161,6 +189,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CD3671B82C5C3AC1002DA9F2 /* ContentView.swift in Sources */,
+				CD1E8CB62C5FD3E300C01341 /* MainView.swift in Sources */,
 				CD4B48ED2C5D9EF5008DC1D2 /* Camera.swift in Sources */,
 				CD4B48E72C5D2BBC008DC1D2 /* Timecap.swift in Sources */,
 				CD3671B62C5C3AC1002DA9F2 /* TimeCapsuleApp.swift in Sources */,
@@ -297,6 +326,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = TimeCapsuleApp/TimeCapsuleApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"TimeCapsuleApp/Preview Content\"";
@@ -327,6 +357,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = TimeCapsuleApp/TimeCapsuleApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"TimeCapsuleApp/Preview Content\"";
@@ -374,6 +405,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		CD1E8CBF2C6001E800C01341 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		CD1E8CC02C6001E800C01341 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CD1E8CBF2C6001E800C01341 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		CD1E8CC32C60090900C01341 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CD1E8CBF2C6001E800C01341 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = CD3671AA2C5C3AC1002DA9F2 /* Project object */;
 }
