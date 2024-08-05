@@ -33,11 +33,29 @@ struct Writeinfo: View {
                         .shadow(radius: 24, x: 0, y: 14)
                     
                         .overlay(
-                            Circle()
-                                .foregroundColor(.white)
-                                .frame(width: 38, height: 38)
-                                .offset(y: 130)
+                            RoundedRectangle(cornerRadius: 19)
+                                .fill(Color.white.opacity(0.35))
+                                .frame(width: 152, height: 17)
+                                .shadow(color: Color.black.opacity(0.1), radius: 10)
+                                .offset(x: -13, y: 70)
                         )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 19)
+                                .fill(Color.white.opacity(0.35))
+                                .frame(width: 105, height: 17)
+                                .shadow(color: Color.black.opacity(0.1), radius: 10)
+                                .offset(x: -37, y: 100)
+
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 19)
+                                .fill(Color.white.opacity(0.35))
+                                .frame(width: 58, height: 17)
+                                .shadow(color: Color.black.opacity(0.1), radius: 10)
+                                .offset(x: -60, y: 130)
+                                 
+                        )
+
                 }
             }
             
