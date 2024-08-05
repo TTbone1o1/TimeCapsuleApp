@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct Home: View {
+    @State private var imagesAppeared = false
+    
     var body: some View {
         VStack {
                 
@@ -27,6 +29,13 @@ struct Home: View {
                         .offset(x: 25, y: 15)
                         .shadow(radius: 24, x: 0, y: 14)
                         .zIndex(3)
+                        .scaleEffect(imagesAppeared ? 1 : 0)
+                        .animation(.interpolatingSpring(stiffness: 60, damping: 7).delay(0.1), value: imagesAppeared)
+                        .onAppear {
+                            if imagesAppeared {
+                                triggerHaptic()
+                            }
+                        }
                     
                     Image("2")
                         .resizable()
@@ -39,6 +48,13 @@ struct Home: View {
                         .zIndex(2)
                         .rotationEffect(Angle(degrees: -2))
                         .shadow(radius: 24, x: 0, y: 14)
+                        .scaleEffect(imagesAppeared ? 1 : 0)
+                        .animation(.interpolatingSpring(stiffness: 60, damping: 7).delay(0.2), value: imagesAppeared)
+                        .onAppear {
+                            if imagesAppeared {
+                                triggerHaptic()
+                            }
+                        }
                     
                     Image("3")
                         .resizable()
@@ -52,6 +68,13 @@ struct Home: View {
                         .rotationEffect(Angle(degrees: 17))
                         .shadow(radius: 24, x: 0, y: 14)
                         .offset(x: -33, y: 15)
+                        .scaleEffect(imagesAppeared ? 1 : 0)
+                        .animation(.interpolatingSpring(stiffness: 60, damping: 7).delay(0.3), value: imagesAppeared)
+                        .onAppear {
+                            if imagesAppeared {
+                                triggerHaptic()
+                            }
+                        }
                 }
                 Spacer()
             }
@@ -60,9 +83,24 @@ struct Home: View {
         }
         .padding() // Optional: Adds padding around the VStack
         .frame(maxHeight: .infinity) // Ensure VStack takes full height of the screen
+        .onAppear {
+            // Start the animation when the view appears
+            imagesAppeared = true
+            // Trigger haptic feedback when the view first appears
+            triggerHaptic()
+        }
+        .onDisappear {
+            // Reset the animation state if necessary
+            imagesAppeared = false
+        }
     }
 }
 
+private func triggerHaptic() {
+    let generator = UINotificationFeedbackGenerator()
+    generator.prepare()
+    generator.notificationOccurred(.success)
+}
 
 #Preview(){
     Home()
