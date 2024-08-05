@@ -43,14 +43,22 @@ struct Create: View {
                     .shadow(radius: 24, x: 0, y: 14)
                 
                 HStack {
-                    TextField("@username", text: $username)
-                        .foregroundColor(.white)
-                        .font(.system(size: 16, weight: .semibold))
-                        .padding(.horizontal, 10)
-                        .frame(maxWidth: .infinity) // Expands to fill available width
-                        .textFieldStyle(PlainTextFieldStyle())
+                    ZStack(alignment: .leading) {
+                        if username.isEmpty {
+                            Text("@username")
+                                .foregroundColor(.white) // Set the placeholder color here
+                                .font(.system(size: 16, weight: .semibold))
+                                .padding(.leading, 10)
+                        }
+                        TextField("", text: $username)
+                            .foregroundColor(.white) // Set the text color here
+                            .font(.system(size: 16, weight: .semibold))
+                            .padding(.horizontal, 10)
+                            .frame(maxWidth: .infinity) // Expands to fill available width
+                            .textFieldStyle(PlainTextFieldStyle())
+                    }
+                    .padding(.horizontal, 140) // Adjust padding to center the text field
                 }
-                .padding(.horizontal, 140) // Adjust padding to center the text field
             }
             .frame(maxHeight: .infinity, alignment: .top)
             .padding(.top, 200) // Adjust the top padding if needed
