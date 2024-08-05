@@ -6,7 +6,7 @@ struct Writeinfo: View {
     var body: some View {
         VStack {
             Spacer()
-                .frame(height: 100) // Pushes the content down by 130 points from the top
+                .frame(height: 100) // Pushes the content down by 100 points from the top
 
             Text("Write about that day")
                 .font(.system(size: 24))
@@ -36,29 +36,29 @@ struct Writeinfo: View {
                         RoundedRectangle(cornerRadius: 19)
                             .fill(Color.white.opacity(0.35))
                             .blur(radius: 0.9)
-                            .frame(width: 152, height: 17)
+                            .frame(width: animateBars ? 152 : 30, height: animateBars ? 17 : 5)
                             .shadow(color: Color.black, radius: 2, x: 4, y: 4)
                             .offset(x: animateBars ? -10 : -300, y: 70)
-                            .animation(Animation.linear(duration: 1).delay(0.2), value: animateBars)
+                            .animation(.easeInOut(duration: 1).delay(0.2), value: animateBars)
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 19)
                             .fill(Color.white.opacity(0.35))
-                            .frame(width: 105, height: 17)
+                            .frame(width: animateBars ? 105 : 20, height: animateBars ? 17 : 5)
                             .shadow(color: Color.black, radius: 2, x: 4, y: 4)
                             .offset(x: animateBars ? -30 : -300, y: 100)
-                            .animation(Animation.linear(duration: 1).delay(0.4), value: animateBars)
+                            .animation(.easeInOut(duration: 1).delay(0.4), value: animateBars)
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 19)
                             .fill(Color.white.opacity(0.35))
-                            .frame(width: 58, height: 17)
+                            .frame(width: animateBars ? 58 : 10, height: animateBars ? 17 : 5)
                             .shadow(color: Color.black, radius: 2, x: 4, y: 4)
                             .offset(x: animateBars ? -50 : -300, y: 130)
-                            .animation(Animation.linear(duration: 1).delay(0.6), value: animateBars)
+                            .animation(.easeInOut(duration: 1).delay(0.6), value: animateBars)
                     )
             }
-            .offset(y: -22)
+            .offset(y: -17)
             
             Spacer() // Pushes the button towards the bottom
 
