@@ -1,23 +1,16 @@
 import SwiftUI
 
 struct Writeinfo: View {
-    @State private var animateBars: Bool = false
+    @State private var isAnimating: Bool = false
 
     var body: some View {
         VStack {
             Spacer()
                 .frame(height: 100) // Pushes the content down by 100 points from the top
 
-            Text("Write about that day")
+            Text("Take one photo daily")
                 .font(.system(size: 24))
                 .fontWeight(.bold)
-            
-            Spacer()
-                .frame(height: 10)
-            Text("40 words only!")
-                .foregroundColor(.gray)
-                .font(.system(size: 18))
-                .fontWeight(.medium)
 
             Spacer()
             
@@ -31,34 +24,35 @@ struct Writeinfo: View {
                             .stroke(Color.white, lineWidth: 4)
                     )
                     .shadow(radius: 24, x: 0, y: 14)
-                    
+                
                     .overlay(
                         RoundedRectangle(cornerRadius: 19)
                             .fill(Color.white.opacity(0.35))
-                            .blur(radius: 0.9)
-                            .frame(width: animateBars ? 152 : 30, height: animateBars ? 17 : 5)
+                            .frame(width: 152, height: 17, alignment: .leading)
+                            .scaleEffect(x: isAnimating ? 1 : 0, anchor: .leading)
                             .shadow(color: Color.black, radius: 2, x: 4, y: 4)
-                            .offset(x: animateBars ? -10 : -300, y: 70)
-                            .animation(.easeInOut(duration: 1).delay(0.2), value: animateBars)
+                            .offset(x: -13, y: 70)
+                            .animation(.easeIn(duration: 0.5).delay(0.0), value: isAnimating)
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 19)
                             .fill(Color.white.opacity(0.35))
-                            .frame(width: animateBars ? 105 : 20, height: animateBars ? 17 : 5)
+                            .frame(width: 105, height: 17, alignment: .leading)
+                            .scaleEffect(x: isAnimating ? 1 : 0, anchor: .leading)
                             .shadow(color: Color.black, radius: 2, x: 4, y: 4)
-                            .offset(x: animateBars ? -30 : -300, y: 100)
-                            .animation(.easeInOut(duration: 1).delay(0.4), value: animateBars)
+                            .offset(x: -37, y: 100)
+                            .animation(.easeIn(duration: 0.5).delay(0.5), value: isAnimating)
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 19)
                             .fill(Color.white.opacity(0.35))
-                            .frame(width: animateBars ? 58 : 10, height: animateBars ? 17 : 5)
+                            .frame(width: 58, height: 17, alignment: .leading)
+                            .scaleEffect(x: isAnimating ? 1 : 0, anchor: .leading)
                             .shadow(color: Color.black, radius: 2, x: 4, y: 4)
-                            .offset(x: animateBars ? -50 : -300, y: 130)
-                            .animation(.easeInOut(duration: 1).delay(0.6), value: animateBars)
+                            .offset(x: -60, y: 130)
+                            .animation(.easeIn(duration: 0.5).delay(1.0), value: isAnimating)
                     )
             }
-            .offset(y: -17)
             
             Spacer() // Pushes the button towards the bottom
 
@@ -83,10 +77,8 @@ struct Writeinfo: View {
         }
         .frame(maxHeight: .infinity)
         .onAppear {
-            // Start the animation when the view appears
-            withAnimation {
-                animateBars.toggle()
-            }
+            // Trigger the animation when the view appears
+            isAnimating = true
         }
     }
 }
