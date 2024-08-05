@@ -137,13 +137,14 @@ struct Timecap: View {
                 .padding(.bottom, 20)
                 // End sign in button
 
-                .navigationDestination(isPresented: $isSignedIn) {
-                                Create()
-                }
-
                 if let authError = authError {
                     Text("Authorization failed: \(authError)")
                         .foregroundColor(.red)
+                }
+                
+                // Hidden NavigationLink to handle navigation
+                NavigationLink(destination: Create(), isActive: $isSignedIn) {
+                    EmptyView()
                 }
 
             }
@@ -160,6 +161,7 @@ struct Timecap: View {
                 imagesAppeared = false
             }
         }
+        .navigationViewStyle(StackNavigationViewStyle())
     }
 
     private func triggerHaptic() {
