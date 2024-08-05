@@ -15,7 +15,7 @@ struct Timecap: View {
     var body: some View {
         NavigationView {
             VStack {
-                Text("Timecap")
+                Text("TimeCap")
                     .font(.system(size: 39))
                     .fontWeight(.semibold)
 
@@ -143,7 +143,7 @@ struct Timecap: View {
                 }
                 
                 // Hidden NavigationLink to handle navigation
-                NavigationLink(destination: Create(), isActive: $isSignedIn) {
+                NavigationLink(destination: Photoinfo(), isActive: $isSignedIn) {
                     EmptyView()
                 }
 
