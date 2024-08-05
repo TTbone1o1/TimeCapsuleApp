@@ -48,12 +48,11 @@ struct Create: View {
                                 .foregroundColor(.gray) // Set the placeholder color here
                                 .frame(width: 270, height: 60) // Same width and height as the box
                                 .cornerRadius(20) // Rounded corners for the text field
-                                .fontWeight(.bold)
+                                .font(.system(size: 24, weight: .bold))
                         }
                         TextField("", text: $username)
                             .foregroundColor(.gray) // Set the text color here
-                            .font(.system(size: 28, weight: .bold))
-                            
+                            .font(.system(size: 24, weight: .bold))
                             .frame(maxWidth: .infinity) // Expands to fill available width
                             .textFieldStyle(PlainTextFieldStyle())
                             .multilineTextAlignment(.center)
