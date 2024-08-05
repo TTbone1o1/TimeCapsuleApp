@@ -6,16 +6,18 @@ struct Home: View {
                 
             Spacer()
             
-            Text("TimeCap")
-                .font(.system(size: 39))
-                .fontWeight(.semibold) // Adjust this padding to position the text as needed
+            Text("Take a photo to start")
+                .font(.system(size: 18))
+                .padding(.bottom, 30)
+                .fontWeight(.bold)
+            
             HStack {
                 Spacer()
                 
                 HStack {
                     Image("1")
                         .resizable()
-                        .frame(width: 116, height: 169.35)
+                        .frame(width: 82.37, height: 120.26)
                         .cornerRadius(19)
                         .overlay(
                             RoundedRectangle(cornerRadius: 19)
@@ -28,7 +30,7 @@ struct Home: View {
                     
                     Image("2")
                         .resizable()
-                        .frame(width: 116, height: 169.35)
+                        .frame(width: 82.37, height: 120.26)
                         .cornerRadius(19)
                         .overlay(
                             RoundedRectangle(cornerRadius: 19)
@@ -40,7 +42,7 @@ struct Home: View {
                     
                     Image("3")
                         .resizable()
-                        .frame(width: 116, height: 169.35)
+                        .frame(width: 82.37, height: 120.26)
                         .cornerRadius(19)
                         .overlay(
                             RoundedRectangle(cornerRadius: 19)
