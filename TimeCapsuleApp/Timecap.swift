@@ -137,8 +137,8 @@ struct Timecap: View {
                 .padding(.bottom, 20)
                 // End sign in button
 
-                NavigationLink(destination: Create(), isActive: $isSignedIn) {
-                    EmptyView()
+                .navigationDestination(isPresented: $isSignedIn) {
+                                Create()
                 }
 
                 if let authError = authError {
