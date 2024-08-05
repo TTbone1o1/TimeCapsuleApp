@@ -35,15 +35,17 @@ struct Writeinfo: View {
                         .overlay(
                             RoundedRectangle(cornerRadius: 19)
                                 .fill(Color.white.opacity(0.35))
+                                .blur(radius: 0.9)
                                 .frame(width: 152, height: 17)
-                                .shadow(color: Color.black.opacity(0.1), radius: 10)
+                                .shadow(color: Color.black, radius: 2, x: 4, y: 4)
                                 .offset(x: -13, y: 70)
+                                
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 19)
                                 .fill(Color.white.opacity(0.35))
                                 .frame(width: 105, height: 17)
-                                .shadow(color: Color.black.opacity(0.1), radius: 10)
+                                .shadow(color: Color.black, radius: 2, x: 4, y: 4)
                                 .offset(x: -37, y: 100)
 
                         )
@@ -51,7 +53,7 @@ struct Writeinfo: View {
                             RoundedRectangle(cornerRadius: 19)
                                 .fill(Color.white.opacity(0.35))
                                 .frame(width: 58, height: 17)
-                                .shadow(color: Color.black.opacity(0.1), radius: 10)
+                                .shadow(color: Color.black, radius: 2, x: 4, y: 4)
                                 .offset(x: -60, y: 130)
                                  
                         )
