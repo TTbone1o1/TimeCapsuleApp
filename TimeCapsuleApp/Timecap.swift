@@ -143,7 +143,7 @@ struct Timecap: View {
                 }
                 
                 // Hidden NavigationLink to handle navigation
-                NavigationLink(destination: Photoinfo(), isActive: $isSignedIn) {
+                NavigationLink(destination: Photoinfo().navigationBarBackButtonHidden(true), isActive: $isSignedIn) {
                     EmptyView()
                 }
 
