@@ -3,6 +3,8 @@ import Combine
 
 // KeyboardObserver class to handle keyboard events
 class KeyboardObserver: ObservableObject {
+    
+    @Environment(\.presentationMode) private var presentationMode: Binding<PresentationMode>
     @Published var isKeyboardVisible: Bool = false
     
     private var cancellables = Set<AnyCancellable>()
@@ -27,6 +29,7 @@ struct Create: View {
     var body: some View {
         VStack {
             Spacer()
+                .navigationBarBackButtonHidden(true)
                 .frame(height: 100) // Pushes the content down by 100 points from the top
 
             Text("Create your username")
