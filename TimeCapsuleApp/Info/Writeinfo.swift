@@ -1,17 +1,25 @@
 import SwiftUI
 
 struct Writeinfo: View {
+    
+    @Environment(\.presentationMode) private var presentationMode: Binding<PresentationMode>
+    
     @State private var isAnimating: Bool = false
 
     var body: some View {
         VStack {
             Spacer()
+                .navigationBarBackButtonHidden(true)
                 .frame(height: 100) // Pushes the content down by 100 points from the top
 
-            Text("Take one photo daily")
+            Text("Write about that day")
                 .font(.system(size: 24))
                 .fontWeight(.bold)
-
+            
+            Text("40 words only!")
+                .font(.system(size: 18))
+                .fontWeight(.medium)
+                .foregroundColor(.gray)
             Spacer()
             
             HStack {
@@ -57,7 +65,7 @@ struct Writeinfo: View {
             Spacer() // Pushes the button towards the bottom
 
             Button(action: {
-                // for now it's just a button
+                // Add navigation action here if needed
             }) {
                 ZStack {
                     Rectangle()
@@ -77,8 +85,9 @@ struct Writeinfo: View {
         }
         .frame(maxHeight: .infinity)
         .onAppear {
-            // Trigger the animation when the view appears
-            isAnimating = true
+            withAnimation {
+                isAnimating = true
+            }
         }
     }
 }
