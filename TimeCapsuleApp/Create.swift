@@ -27,7 +27,7 @@ struct Create: View {
     var body: some View {
         VStack {
             Spacer()
-                .frame(height: 100) // Pushes the content down by 130 points from the top
+                .frame(height: 100) // Pushes the content down by 100 points from the top
 
             Text("Create your username")
                 .font(.system(size: 24))
@@ -43,23 +43,17 @@ struct Create: View {
                     .shadow(radius: 24, x: 0, y: 14)
                 
                 HStack {
-                    ZStack(alignment: .leading) {
-                        if username.isEmpty {
-                            Text("@username")
-                                .foregroundColor(.white)
-                                .font(.system(size: 16, weight: .semibold))
-                                .padding(.leading, 80)
-                        }
-                        TextField("", text: $username)
-                            .foregroundColor(.white)
-                            .font(.system(size: 16, weight: .semibold))
-                            .padding(.leading, 10)
-                    }
+                    TextField("@username", text: $username)
+                        .foregroundColor(.white)
+                        .font(.system(size: 16, weight: .semibold))
+                        .padding(.horizontal, 10)
+                        .frame(maxWidth: .infinity) // Expands to fill available width
+                        .textFieldStyle(PlainTextFieldStyle())
                 }
+                .padding(.horizontal, 140) // Adjust padding to center the text field
             }
             .frame(maxHeight: .infinity, alignment: .top)
-            .padding(.top, 200)
-            .padding(.horizontal, 200)
+            .padding(.top, 200) // Adjust the top padding if needed
             
             if !keyboardObserver.isKeyboardVisible {
                 Button(action: {
@@ -83,6 +77,8 @@ struct Create: View {
             }
         }
     }
+}
+
 
 //    private func presentCamera() {
 //        if let window = UIApplication.shared.windows.first {
@@ -91,7 +87,7 @@ struct Create: View {
 //            window.rootViewController?.present(cameraViewController, animated: true, completion: nil)
 //        }
 //    }
-}
+
 
 #Preview {
     Create()
