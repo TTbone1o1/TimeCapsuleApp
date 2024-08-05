@@ -56,6 +56,7 @@ struct Create: View {
                             .padding(.horizontal, 10)
                             .frame(maxWidth: .infinity) // Expands to fill available width
                             .textFieldStyle(PlainTextFieldStyle())
+                            .multilineTextAlignment(.center)
                     }
                     .padding(.horizontal, 140) // Adjust padding to center the text field
                 }
