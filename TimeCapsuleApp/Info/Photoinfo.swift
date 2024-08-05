@@ -4,12 +4,36 @@ struct Photoinfo: View {
     var body: some View {
         VStack {
             Spacer()
-                .frame(height: 130) // Pushes the content down by 130 points from the top
+                .frame(height: 100) // Pushes the content down by 130 points from the top
 
             Text("Take one photo daily")
                 .font(.system(size: 24))
-                .fontWeight(.semibold)
+                .fontWeight(.bold)
 
+            Spacer()
+            
+            HStack {
+                
+                HStack {
+                    Image("2")
+                        .resizable()
+                        .frame(width: 217, height: 328)
+                        .cornerRadius(19)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 19)
+                                .stroke(Color.white, lineWidth: 4)
+                        )
+                        .shadow(radius: 24, x: 0, y: 14)
+                    
+                        .overlay(
+                            Circle()
+                                .foregroundColor(.white)
+                                .frame(width: 38, height: 38)
+                                .offset(y: 130)
+                        )
+                }
+            }
+            
             Spacer() // Pushes the button towards the bottom
 
             Button(action: {
