@@ -26,6 +26,15 @@ struct Create: View {
 
     var body: some View {
         VStack {
+            Spacer()
+                .frame(height: 100) // Pushes the content down by 130 points from the top
+
+            Text("Create your username")
+                .font(.system(size: 24))
+                .fontWeight(.bold)
+
+            Spacer()
+            
             ZStack {
                 Rectangle()
                     .frame(width: 250, height: 65)
@@ -36,10 +45,10 @@ struct Create: View {
                 HStack {
                     ZStack(alignment: .leading) {
                         if username.isEmpty {
-                            Text("Create a username")
+                            Text("@username")
                                 .foregroundColor(.white)
                                 .font(.system(size: 16, weight: .semibold))
-                                .padding(.leading, 50)
+                                .padding(.leading, 80)
                         }
                         TextField("", text: $username)
                             .foregroundColor(.white)
@@ -49,12 +58,12 @@ struct Create: View {
                 }
             }
             .frame(maxHeight: .infinity, alignment: .top)
-            .padding(.top, 311)
+            .padding(.top, 200)
             .padding(.horizontal, 200)
             
             if !keyboardObserver.isKeyboardVisible {
                 Button(action: {
-                    presentCamera()
+//                    presentCamera()
                 }) {
                     ZStack {
                         Rectangle()
@@ -71,34 +80,17 @@ struct Create: View {
                     }
                 }
                 .padding(.bottom, 20)
-                
-                .fullScreenCover(isPresented: $showModal) {
-                    ZStack {
-                        
-                        
-                        Modal(
-                            showModal: $showModal,
-                            username: username,
-                            userInput: $userInput,
-                            onSubmit: {
-                                showModal = false
-                                // Here you could also add logic to handle userInput before closing the modal
-                            }
-                        )
-                        
-                    }
-                }
             }
         }
     }
 
-    private func presentCamera() {
-        if let window = UIApplication.shared.windows.first {
-            let cameraViewController = Camera()
-            cameraViewController.modalPresentationStyle = .fullScreen
-            window.rootViewController?.present(cameraViewController, animated: true, completion: nil)
-        }
-    }
+//    private func presentCamera() {
+//        if let window = UIApplication.shared.windows.first {
+//            let cameraViewController = Camera()
+//            cameraViewController.modalPresentationStyle = .fullScreen
+//            window.rootViewController?.present(cameraViewController, animated: true, completion: nil)
+//        }
+//    }
 }
 
 #Preview {
