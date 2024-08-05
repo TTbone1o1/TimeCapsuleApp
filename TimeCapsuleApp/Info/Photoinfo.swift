@@ -5,6 +5,7 @@ struct Photoinfo: View {
         NavigationView {
             VStack {
                 Spacer()
+                    .navigationBarBackButtonHidden(true)
                     .frame(height: 100) // Pushes the content down by 100 points from the top
                 
                 Text("Take one photo daily")
