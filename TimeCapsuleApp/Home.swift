@@ -12,6 +12,8 @@ struct Home: View {
                     .fontWeight(.bold)
                     .padding()
                 
+                Spacer() // Pushes the VStack to the right
+                
                 VStack(spacing: 2) {
                     ForEach(0..<3) { _ in
                         Rectangle()
@@ -20,9 +22,7 @@ struct Home: View {
                             .foregroundColor(.black) // Change color as needed
                     }
                 }
-                .padding(.leading, 130)
-                
-                Spacer()
+                .padding(.trailing)
             }
 
             Spacer()
@@ -100,24 +100,31 @@ struct Home: View {
             
             Spacer()
             
-            HStack{
-                ZStack {
-                Circle()
-                    .stroke(Color.gray, lineWidth: 3) // Added white stroke
-                    .frame(width: 24, height: 24)
-                
-                Circle()
-                    .frame(width: 13, height: 13)
-                    .foregroundColor(.gray) // Change color as needed
+            HStack {
+                Button(action: {
                     
-                }
+                }, label: {
+                    ZStack {
+                        Circle()
+                            .stroke(Color.gray, lineWidth: 3) // Added white stroke
+                            .frame(width: 24, height: 24)
+                        
+                        Circle()
+                            .frame(width: 13, height: 13)
+                            .foregroundColor(.gray) // Change color as needed
+                    }
+                })
                 
                 Spacer()
                     .frame(width: 72)
-                Image("Notebook")
+                
+                Button(action: {
+                    
+                }, label: {
+                    Image("Notebook")
+                })
+            }
         }
-    }
-        
         .padding() // Optional: Adds padding around the VStack
         .frame(maxHeight: .infinity) // Ensure VStack takes full height of the screen
         .onAppear {
@@ -140,5 +147,5 @@ private func triggerHaptic() {
 }
 
 #Preview {
-    Home(username: "Sample Username") // Provide a sample username for preview
+    Home(username: "Sample") // Provide a sample username for preview
 }
