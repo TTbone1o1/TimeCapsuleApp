@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		CD1E8CAC2C5EB66700C01341 /* UIViewControllerRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1E8CAB2C5EB66700C01341 /* UIViewControllerRepresentable.swift */; };
-		CD1E8CB02C5EE1CE00C01341 /* ModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1E8CAF2C5EE1CE00C01341 /* ModalView.swift */; };
+		CD1E8CB02C5EE1CE00C01341 /* Home.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1E8CAF2C5EE1CE00C01341 /* Home.swift */; };
 		CD1E8CB62C5FD3E300C01341 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1E8CB52C5FD3E300C01341 /* MainView.swift */; };
 		CD1E8CBE2C6000F200C01341 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = CD1E8CBD2C6000F200C01341 /* GoogleService-Info.plist */; };
 		CD1E8CC12C6001E800C01341 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = CD1E8CC02C6001E800C01341 /* FirebaseAnalytics */; };
@@ -29,7 +29,7 @@
 
 /* Begin PBXFileReference section */
 		CD1E8CAB2C5EB66700C01341 /* UIViewControllerRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIViewControllerRepresentable.swift; sourceTree = "<group>"; };
-		CD1E8CAF2C5EE1CE00C01341 /* ModalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModalView.swift; sourceTree = "<group>"; };
+		CD1E8CAF2C5EE1CE00C01341 /* Home.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Home.swift; sourceTree = "<group>"; };
 		CD1E8CB52C5FD3E300C01341 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
 		CD1E8CBD2C6000F200C01341 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../../../Downloads/GoogleService-Info.plist"; sourceTree = "<group>"; };
 		CD1E8CC52C600A9500C01341 /* TimeCapsuleApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TimeCapsuleApp.entitlements; sourceTree = "<group>"; };
@@ -102,7 +102,7 @@
 				CD1E8CC52C600A9500C01341 /* TimeCapsuleApp.entitlements */,
 				CD4B48E62C5D2BBC008DC1D2 /* Timecap.swift */,
 				CD3671B52C5C3AC1002DA9F2 /* TimeCapsuleApp.swift */,
-				CD1E8CAF2C5EE1CE00C01341 /* ModalView.swift */,
+				CD1E8CAF2C5EE1CE00C01341 /* Home.swift */,
 				CDA2DF7D2C611DEF0005FB4E /* Info */,
 				CD3671B72C5C3AC1002DA9F2 /* ContentView.swift */,
 				CD4B48E82C5D6B19008DC1D2 /* Create.swift */,
@@ -219,7 +219,7 @@
 				CD4B48E72C5D2BBC008DC1D2 /* Timecap.swift in Sources */,
 				CDA2DF7C2C611DCF0005FB4E /* Writeinfo.swift in Sources */,
 				CD3671B62C5C3AC1002DA9F2 /* TimeCapsuleApp.swift in Sources */,
-				CD1E8CB02C5EE1CE00C01341 /* ModalView.swift in Sources */,
+				CD1E8CB02C5EE1CE00C01341 /* Home.swift in Sources */,
 				CD4B48E92C5D6B19008DC1D2 /* Create.swift in Sources */,
 				CD1E8CAC2C5EB66700C01341 /* UIViewControllerRepresentable.swift in Sources */,
 			);
