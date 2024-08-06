@@ -124,12 +124,10 @@ struct Home: View {
                     
                     Spacer()
                         .frame(width: 72)
-                    
-                    
+                    Button(action: {
+                    }, label: {
                         Image("Notebook")
-                        
-                    
-                    
+                    })
                 }
             }
             .padding() // Optional: Adds padding around the VStack
