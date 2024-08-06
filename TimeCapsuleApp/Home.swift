@@ -14,15 +14,20 @@ struct Home: View {
                 
                 Spacer() // Pushes the VStack to the right
                 
-                VStack(spacing: 2) {
-                    ForEach(0..<3) { _ in
-                        Rectangle()
-                            .frame(width: 16, height: 3)
-                            .cornerRadius(20)
-                            .foregroundColor(.black) // Change color as needed
+                Button(action: {
+                    
+                }, label: {
+                    
+                    VStack(spacing: 2) {
+                        ForEach(0..<3) { _ in
+                            Rectangle()
+                                .frame(width: 16, height: 3)
+                                .cornerRadius(20)
+                                .foregroundColor(.black) // Change color as needed
+                        }
                     }
-                }
-                .padding(.trailing)
+                    .padding(.trailing)
+                })
             }
 
             Spacer()
