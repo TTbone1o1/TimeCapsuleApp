@@ -9,6 +9,7 @@ class Camera: UIViewController {
     let output = AVCapturePhotoOutput()
     // Video Preview
     let previewLayer = AVCaptureVideoPreviewLayer()
+
     // Shutter button
     private let shutterButton: UIButton = {
         let outerCircle = UIButton(frame: CGRect(x: 0, y: 0, width: 75, height: 75))
@@ -25,6 +26,14 @@ class Camera: UIViewController {
         return outerCircle
     }()
 
+    // Added white circle button
+    private let whiteCircleButton: UIButton = {
+        let button = UIButton(frame: CGRect(x: 0, y: 0, width: 75, height: 75))
+        button.layer.cornerRadius = 37.5
+        button.backgroundColor = .white
+        return button
+    }()
+
     // Image view to display captured photo
     private let imageView: UIImageView = {
         let imageView = UIImageView()
@@ -39,6 +48,7 @@ class Camera: UIViewController {
         view.backgroundColor = .black // Set background color to black to better see the preview
         view.layer.addSublayer(previewLayer) // Ensure the previewLayer is added to the view's layer
         view.addSubview(shutterButton)
+        view.addSubview(whiteCircleButton)
         checkCameraPermissions()
 
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(didTapTakePhoto))
@@ -75,7 +85,11 @@ class Camera: UIViewController {
         let shutterButtonY = view.frame.size.height - safeAreaInsets.bottom - 75 / 2
         shutterButton.center = CGPoint(x: view.frame.size.width / 2, y: shutterButtonY)
 
+        // Position the white circle button to the left of the shutter button
+        whiteCircleButton.center = CGPoint(x: shutterButton.frame.origin.x - 50, y: shutterButtonY)
+
         view.bringSubviewToFront(shutterButton)
+        view.bringSubviewToFront(whiteCircleButton)
     }
 
     private func checkCameraPermissions() {
