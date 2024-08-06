@@ -25,6 +25,7 @@ struct Create: View {
     @State private var showModal: Bool = false
     @State private var showCamera: Bool = false
     @State private var userInput: String = ""
+    @State private var navigateToHome = false
 
     var body: some View {
         VStack {
@@ -67,37 +68,32 @@ struct Create: View {
             .padding(.top, 200) // Adjust the top padding if needed
             
             if !keyboardObserver.isKeyboardVisible {
-                Button(action: {
-//                    presentCamera()
-                }) {
-                    ZStack {
-                        Rectangle()
-                            .frame(width: 291, height: 62)
-                            .cornerRadius(40)
-                            .foregroundColor(.black)
-                            .shadow(radius: 24, x: 0, y: 14)
-                        
-                        HStack {
-                            Text("Continue")
-                                .foregroundColor(.white)
-                                .font(.system(size: 16, weight: .semibold))
+                NavigationLink(destination: Home(username: username).navigationBarBackButtonHidden(true),
+                    isActive: $navigateToHome,
+                    label: {
+                        ZStack {
+                            Rectangle()
+                                .frame(width: 291, height: 62)
+                                .cornerRadius(40)
+                                .foregroundColor(.black)
+                                .shadow(radius: 24, x: 0, y: 14)
+                            
+                            HStack {
+                                Text("Continue")
+                                    .foregroundColor(.white)
+                                    .font(.system(size: 16, weight: .semibold))
+                            }
                         }
                     }
-                }
+                )
                 .padding(.bottom, 20)
+                .simultaneousGesture(TapGesture().onEnded {
+                    navigateToHome = true
+                })
             }
         }
     }
 }
-
-
-//    private func presentCamera() {
-//        if let window = UIApplication.shared.windows.first {
-//            let cameraViewController = Camera()
-//            cameraViewController.modalPresentationStyle = .fullScreen
-//            window.rootViewController?.present(cameraViewController, animated: true, completion: nil)
-//        }
-//    }
 
 extension Color {
     init(hex: String) {
