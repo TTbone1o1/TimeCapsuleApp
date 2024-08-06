@@ -1,11 +1,19 @@
 import SwiftUI
 
 struct Home: View {
+    var username: String // Added username property
     @State private var imagesAppeared = false
     
     var body: some View {
         VStack {
-                
+            HStack {
+                Text(username.isEmpty ? "No Username" : username) // Display the username
+                    .font(.system(size: 24))
+                    .fontWeight(.bold)
+                    .padding()
+                Spacer()
+            }
+
             Spacer()
             
             Text("Take a photo to start")
@@ -102,6 +110,6 @@ private func triggerHaptic() {
     generator.notificationOccurred(.success)
 }
 
-#Preview(){
-    Home()
+#Preview {
+    Home(username: "Empty Username") // Provide a sample username for preview
 }
