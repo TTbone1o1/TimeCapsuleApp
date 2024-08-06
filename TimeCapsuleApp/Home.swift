@@ -99,7 +99,25 @@ struct Home: View {
             }
             
             Spacer()
+            
+            HStack{
+                ZStack {
+                Circle()
+                    .stroke(Color.gray, lineWidth: 3) // Added white stroke
+                    .frame(width: 24, height: 24)
+                
+                Circle()
+                    .frame(width: 13, height: 13)
+                    .foregroundColor(.gray) // Change color as needed
+                    
+                }
+                
+                Spacer()
+                    .frame(width: 72)
+                Image("Notebook")
         }
+    }
+        
         .padding() // Optional: Adds padding around the VStack
         .frame(maxHeight: .infinity) // Ensure VStack takes full height of the screen
         .onAppear {
