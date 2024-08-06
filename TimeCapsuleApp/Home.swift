@@ -8,9 +8,20 @@ struct Home: View {
         VStack {
             HStack {
                 Text(username.isEmpty ? "No Username" : username) // Display the username
-                    .font(.system(size: 24))
+                    .font(.system(size: 18))
                     .fontWeight(.bold)
                     .padding()
+                
+                VStack(spacing: 2) {
+                    ForEach(0..<3) { _ in
+                        Rectangle()
+                            .frame(width: 16, height: 3)
+                            .cornerRadius(20)
+                            .foregroundColor(.black) // Change color as needed
+                    }
+                }
+                .padding(.leading, 130)
+                
                 Spacer()
             }
 
@@ -111,5 +122,5 @@ private func triggerHaptic() {
 }
 
 #Preview {
-    Home(username: "Empty Username") // Provide a sample username for preview
+    Home(username: "Sample Username") // Provide a sample username for preview
 }
