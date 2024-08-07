@@ -1,7 +1,8 @@
 import SwiftUI
-import UIKit
 
 struct CameraView: UIViewControllerRepresentable {
+    @Binding var navigateToHome: Bool
+
     func makeUIViewController(context: Context) -> Camera {
         let camera = Camera()
         return camera
@@ -25,9 +26,23 @@ struct CameraView: UIViewControllerRepresentable {
 }
 
 struct CameraController: View {
+    @State private var navigateToHome = false
+
     var body: some View {
-        CameraView()
-            .edgesIgnoringSafeArea(.all)
+        NavigationView {
+            ZStack {
+                CameraView(navigateToHome: $navigateToHome)
+                    .edgesIgnoringSafeArea(.all)
+                
+                VStack {
+                    Spacer()
+                    HomeButton()
+                }
+            }
+            // Clear any title
+            .navigationBarHidden(true) // Hide the entire navigation bar
+        }
+        .navigationViewStyle(StackNavigationViewStyle()) // Ensures proper behavior on all devices
     }
 }
 
