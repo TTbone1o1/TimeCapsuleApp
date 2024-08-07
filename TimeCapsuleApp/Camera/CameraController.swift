@@ -29,20 +29,16 @@ struct CameraController: View {
     @State private var navigateToHome = false
 
     var body: some View {
-        NavigationView {
-            ZStack {
-                CameraView(navigateToHome: $navigateToHome)
-                    .edgesIgnoringSafeArea(.all)
-                
-                VStack {
-                    Spacer()
-                    HomeButton()
-                }
+        ZStack {
+            CameraView(navigateToHome: $navigateToHome)
+                .edgesIgnoringSafeArea(.all)
+            
+            VStack {
+                Spacer()
+                HomeButton()
             }
-            // Clear any title
-            .navigationBarHidden(true) // Hide the entire navigation bar
         }
-        .navigationViewStyle(StackNavigationViewStyle()) // Ensures proper behavior on all devices
+        .navigationBarHidden(true) // Hide the navigation bar if somehow it's still shown
     }
 }
 
