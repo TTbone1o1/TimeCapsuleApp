@@ -9,7 +9,7 @@ class Camera: UIViewController {
     let output = AVCapturePhotoOutput()
     // Video Preview
     let previewLayer = AVCaptureVideoPreviewLayer()
-    
+
     // Shutter button
     private let shutterButton: UIButton = {
         let outerCircle = UIButton(frame: CGRect(x: 0, y: 0, width: 75, height: 75))
@@ -37,30 +37,30 @@ class Camera: UIViewController {
         shutterButton.addGestureRecognizer(tapGesture)
 
         // Add the SwiftUI buttons
-        addSwiftUIButtons()
+        //addSwiftUIButtons()
         
         // Set edgesForExtendedLayout to none
         edgesForExtendedLayout = []
     }
 
-    private func addSwiftUIButtons() {
-        let buttonsVC = UIHostingController(rootView: HomeButton())
-
-        addChild(buttonsVC)
-        view.addSubview(buttonsVC.view)
-        buttonsVC.didMove(toParent: self)
-
-        // Position the buttons
-        buttonsVC.view.translatesAutoresizingMaskIntoConstraints = false
-        buttonsVC.view.backgroundColor = .clear // Ensure background is clear
-
-        NSLayoutConstraint.activate([
-            buttonsVC.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            buttonsVC.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            buttonsVC.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            buttonsVC.view.topAnchor.constraint(equalTo: view.topAnchor) // Ensure full screen
-        ])
-    }
+//    private func addSwiftUIButtons() {
+//        let buttonsVC = UIHostingController(rootView: HomeButton())
+//
+//        addChild(buttonsVC)
+//        view.addSubview(buttonsVC.view)
+//        buttonsVC.didMove(toParent: self)
+//
+//        // Position the buttons
+//        buttonsVC.view.translatesAutoresizingMaskIntoConstraints = false
+//        buttonsVC.view.backgroundColor = .clear // Ensure background is clear
+//
+//        NSLayoutConstraint.activate([
+//            buttonsVC.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+//            buttonsVC.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+//            buttonsVC.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+//            buttonsVC.view.topAnchor.constraint(equalTo: view.topAnchor) // Ensure full screen
+//        ])
+//    }
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
