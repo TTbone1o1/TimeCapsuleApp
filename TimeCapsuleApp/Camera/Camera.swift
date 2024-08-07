@@ -54,7 +54,6 @@ class Camera: UIViewController {
         button.imageView?.contentMode = .scaleAspectFit
 
         button.tintColor = .white // Change this to your desired color
-        button.backgroundColor = .blue
         return button
     }()
 
