@@ -26,6 +26,7 @@ struct PostView: View {
                                    .padding(.leading, 8)
                            }
                            TextField("", text: $caption)
+                                .font(.system(size: 24, weight: .bold))
                                .foregroundColor(.black)
                                .padding(8)
                        }
