@@ -19,16 +19,21 @@ struct PostView: View {
             Spacer()
             
             ZStack(alignment: .leading) {
-                           if caption.isEmpty {
-                               Text("Say something about this day...")
-                                   .font(.system(size: 24, weight: .bold))
-                                   .foregroundColor(.black)
-                                   .padding(.leading, 8)
-                           }
-                           TextField("", text: $caption)
-                                .font(.system(size: 24, weight: .bold))
-                               .foregroundColor(.black)
-                               .padding(8)
+                if caption.isEmpty {
+                                    Text("Say something about this day...")
+                                        .font(.system(size: 24, weight: .bold))
+                                        .foregroundColor(.black)
+                                        .frame(width: 300)
+                                        .multilineTextAlignment(.center)
+                                        .padding(.horizontal, 24)
+                                }
+                                TextField("", text: $caption)
+                                    .font(.system(size: 24, weight: .bold))
+                                    .foregroundColor(.black)
+                                    .frame(width: 300) // Minimum height to allow vertical expansion
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal, 24)
+                                    .fixedSize(horizontal: false, vertical: true)
                        }
                        .padding()
             
