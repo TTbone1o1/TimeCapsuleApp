@@ -10,6 +10,7 @@ struct Timecap: View {
     @State private var imagesAppeared = false
     @State private var isSignedIn = false
     @State private var authError: String?
+    @State private var navigateToHome = false
     let db = Firestore.firestore() // Firestore reference
 
     var body: some View {
@@ -114,11 +115,16 @@ struct Timecap: View {
                                     return
                                 }
                                 // User is signed in
-                                self.isSignedIn = true
-
                                 if let user = authResult?.user {
-                                    // Save the user to Firestore
-                                    saveUserToFirestore(user: user)
+                                    checkUserInFirestore(uid: user.uid) { exists in
+                                        if exists {
+                                            self.navigateToHome = true
+                                        } else {
+                                            saveUserToFirestore(user: user) { success in
+                                                self.isSignedIn = success
+                                            }
+                                        }
+                                    }
                                 }
                             }
 
@@ -147,10 +153,20 @@ struct Timecap: View {
                     EmptyView()
                 }
 
+                // Hidden NavigationLink to Home
+                NavigationLink(destination: Home(username: "username").navigationBarBackButtonHidden(true), isActive: $navigateToHome) {
+                    EmptyView()
+                }
             }
             .frame(maxHeight: .infinity, alignment: .top)
             .padding(.top, 134)
             .onAppear {
+                // Check if user is already signed in
+                if let currentUser = Auth.auth().currentUser {
+                    checkUserInFirestore(uid: currentUser.uid) { exists in
+                        self.navigateToHome = exists
+                    }
+                }
                 // Start the animation when the view appears
                 imagesAppeared = true
                 // Trigger haptic feedback when the view first appears
@@ -170,7 +186,7 @@ struct Timecap: View {
         generator.notificationOccurred(.success)
     }
 
-    private func saveUserToFirestore(user: User) {
+    private func saveUserToFirestore(user: User, completion: @escaping (Bool) -> Void) {
         let db = Firestore.firestore()
         let usersRef = db.collection("users")
 
@@ -183,8 +199,21 @@ struct Timecap: View {
         usersRef.document(user.uid).setData(userData) { error in
             if let error = error {
                 print("Error saving user to Firestore: \(error.localizedDescription)")
+                completion(false)
             } else {
                 print("User successfully saved to Firestore")
+                completion(true)
+            }
+        }
+    }
+    
+    private func checkUserInFirestore(uid: String, completion: @escaping (Bool) -> Void) {
+        let usersRef = db.collection("users").document(uid)
+        usersRef.getDocument { document, error in
+            if let document = document, document.exists {
+                completion(true)
+            } else {
+                completion(false)
             }
         }
     }
