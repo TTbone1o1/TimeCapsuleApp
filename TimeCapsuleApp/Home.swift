@@ -16,9 +16,8 @@ struct Home: View {
                     Spacer() // Pushes the VStack to the right
                     
                     Button(action: {
-                        
+                        // Action for button
                     }, label: {
-                        
                         VStack(spacing: 2) {
                             ForEach(0..<3) { _ in
                                 Rectangle()
@@ -108,8 +107,7 @@ struct Home: View {
                 
                 HStack {
                     NavigationLink(destination: CameraController()
-                                   //gets rid of the border UIViewControllerRepresentable creates for camera
-                        .edgesIgnoringSafeArea(.all)
+                                   .edgesIgnoringSafeArea(.all)
                     ) {
                         ZStack {
                             Circle()
@@ -125,6 +123,7 @@ struct Home: View {
                     Spacer()
                         .frame(width: 72)
                     Button(action: {
+                        // Action for button
                     }, label: {
                         Image("Notebook")
                     })
