@@ -24,6 +24,13 @@ struct CameraView: UIViewControllerRepresentable {
     }
 }
 
+class HomeViewController: UIViewController {
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .white // Set up your view
+    }
+}
+
 struct CameraController: View {
     var body: some View {
         CameraView()
