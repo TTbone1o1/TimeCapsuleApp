@@ -21,6 +21,7 @@ struct PostView: View {
             ZStack(alignment: .leading) {
                            if caption.isEmpty {
                                Text("Say something about this day...")
+                                   .font(.system(size: 24, weight: .bold))
                                    .foregroundColor(.black)
                                    .padding(.leading, 8)
                            }
