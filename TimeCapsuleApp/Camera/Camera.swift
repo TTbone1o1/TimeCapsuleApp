@@ -26,7 +26,7 @@ class Camera: UIViewController {
     }()
     
     // NoteBook image button
-    private let noteBookButton: UIButton = {
+    private let whiteButton: UIButton = {
         let button = UIButton(type: .custom)
         let outerCircle = UIView(frame: CGRect(x: 0, y: 0, width: 24, height: 24))
         outerCircle.layer.cornerRadius = 12
@@ -49,7 +49,7 @@ class Camera: UIViewController {
         view.backgroundColor = .black // Set background color to black to better see the preview
         view.layer.addSublayer(previewLayer) // Ensure the previewLayer is added to the view's layer
         view.addSubview(shutterButton)
-        view.addSubview(noteBookButton)
+        view.addSubview(whiteButton)
         checkCameraPermissions()
 
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(didTapTakePhoto))
@@ -83,11 +83,11 @@ class Camera: UIViewController {
         shutterButton.center = CGPoint(x: view.frame.size.width / 2, y: shutterButtonY)
 
         // Position the noteBook button to the right of the shutter button
-        let noteBookButtonX = shutterButton.frame.maxX + 20 // 20 points space
-        noteBookButton.center = CGPoint(x: noteBookButtonX, y: shutterButtonY)
+        let whiteButtonX = shutterButton.frame.minX - 40 // 20 points space
+        whiteButton.center = CGPoint(x: whiteButtonX, y: shutterButtonY)
 
         view.bringSubviewToFront(shutterButton)
-        view.bringSubviewToFront(noteBookButton)
+        view.bringSubviewToFront(whiteButton)
     }
 
     private func checkCameraPermissions() {
