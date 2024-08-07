@@ -25,7 +25,7 @@ class Camera: UIViewController {
         return outerCircle
     }()
     
-    // NoteBook image button
+    // whitbutton image button
     private let whiteButton: UIButton = {
         let button = UIButton(type: .custom)
         let outerCircle = UIView(frame: CGRect(x: 0, y: 0, width: 24, height: 24))
@@ -43,6 +43,22 @@ class Camera: UIViewController {
         button.frame = CGRect(x: 0, y: 0, width: 24, height: 24)
         return button
     }()
+    
+    private let noteBookButton: UIButton = {
+        let button = UIButton(type: .custom)
+        button.frame = CGRect(x: 0, y: 0, width: 24, height: 24)
+        
+        // Set the NoteBook image
+        let image = UIImage(named: "Notebook")?.withRenderingMode(.alwaysTemplate)
+        button.setImage(image, for: .normal)
+        button.imageView?.contentMode = .scaleAspectFit
+
+        button.tintColor = .white // Change this to your desired color
+        button.backgroundColor = .blue
+        return button
+    }()
+
+
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -50,6 +66,7 @@ class Camera: UIViewController {
         view.layer.addSublayer(previewLayer) // Ensure the previewLayer is added to the view's layer
         view.addSubview(shutterButton)
         view.addSubview(whiteButton)
+        view.addSubview(noteBookButton) // Add the noteBookButton to the view
         checkCameraPermissions()
 
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(didTapTakePhoto))
@@ -59,36 +76,28 @@ class Camera: UIViewController {
         edgesForExtendedLayout = []
     }
 
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        // Hide the navigation bar
-        navigationController?.setNavigationBarHidden(true, animated: false)
-    }
-
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        // Show the navigation bar again when the view disappears
-        navigationController?.setNavigationBarHidden(false, animated: false)
-    }
-
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        // Adjust the previewLayer frame to fit the full screen
         previewLayer.frame = view.bounds
         previewLayer.videoGravity = .resizeAspectFill
 
-        // Position the shutter button at the bottom center, respecting the safe area
         let safeAreaInsets = view.safeAreaInsets
         let shutterButtonY = view.frame.size.height - safeAreaInsets.bottom - 75 / 2
         shutterButton.center = CGPoint(x: view.frame.size.width / 2, y: shutterButtonY)
-
-        // Position the noteBook button to the right of the shutter button
-        let whiteButtonX = shutterButton.frame.minX - 40 // 20 points space
+        
+        // Position the whiteButton to the right of the shutterButton
+        let whiteButtonX = shutterButton.frame.minX - 40
         whiteButton.center = CGPoint(x: whiteButtonX, y: shutterButtonY)
-
+        
+        // Position the noteBookButton to the right of the whiteButton
+        let noteBookButtonX = whiteButton.frame.maxX + 140 // Adjust spacing as needed
+        noteBookButton.center = CGPoint(x: noteBookButtonX, y: shutterButtonY)
+        
         view.bringSubviewToFront(shutterButton)
         view.bringSubviewToFront(whiteButton)
+        view.bringSubviewToFront(noteBookButton) // Ensure the noteBookButton is on top
     }
+
 
     private func checkCameraPermissions() {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
