@@ -10,6 +10,7 @@ struct Timecap: View {
     @State private var imagesAppeared = false
     @State private var isSignedIn = false
     @State private var authError: String?
+    @State private var userExists = false // To check if the user exists in Firestore
     let db = Firestore.firestore() // Firestore reference
 
     var body: some View {
@@ -117,8 +118,8 @@ struct Timecap: View {
                                 self.isSignedIn = true
 
                                 if let user = authResult?.user {
-                                    // Save the user to Firestore
-                                    saveUserToFirestore(user: user)
+                                    // Check if user exists in Firestore
+                                    checkUserInFirestore(user: user)
                                 }
                             }
 
@@ -141,12 +142,15 @@ struct Timecap: View {
                     Text("Authorization failed: \(authError)")
                         .foregroundColor(.red)
                 }
-                
-                // Hidden NavigationLink to handle navigation
-                NavigationLink(destination: Photoinfo().navigationBarBackButtonHidden(true), isActive: $isSignedIn) {
+
+                // Conditional NavigationLinks
+                NavigationLink(destination: Create().navigationBarBackButtonHidden(true), isActive: $userExists) {
                     EmptyView()
                 }
-
+                
+                NavigationLink(destination: EmptyView(), isActive: $isSignedIn) {
+                    EmptyView()
+                }
             }
             .frame(maxHeight: .infinity, alignment: .top)
             .padding(.top, 134)
@@ -170,9 +174,26 @@ struct Timecap: View {
         generator.notificationOccurred(.success)
     }
 
+    private func checkUserInFirestore(user: User) {
+        let usersRef = db.collection("users").document(user.uid)
+        usersRef.getDocument { document, error in
+            if let error = error {
+                print("Error checking user existence: \(error.localizedDescription)")
+                return
+            }
+            if let document = document, document.exists {
+                self.userExists = true
+                // The user exists in Firestore, so proceed to Create view
+            } else {
+                self.userExists = false
+                // The user does not exist in Firestore, so sign up
+                saveUserToFirestore(user: user)
+            }
+        }
+    }
+
     private func saveUserToFirestore(user: User) {
-        let db = Firestore.firestore()
-        let usersRef = db.collection("users")
+        let usersRef = db.collection("users").document(user.uid)
 
         let userData: [String: Any] = [
             "uid": user.uid,
@@ -180,15 +201,18 @@ struct Timecap: View {
             "fullName": user.displayName ?? ""
         ]
 
-        usersRef.document(user.uid).setData(userData) { error in
+        usersRef.setData(userData) { error in
             if let error = error {
                 print("Error saving user to Firestore: \(error.localizedDescription)")
             } else {
                 print("User successfully saved to Firestore")
+                self.userExists = true // Ensure userExists is true after saving
             }
         }
     }
 }
+
+
 
 #Preview {
     Timecap()
