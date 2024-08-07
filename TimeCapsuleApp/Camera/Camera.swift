@@ -2,14 +2,13 @@ import AVFoundation
 import UIKit
 
 class Camera: UIViewController {
-
     // Capture Session
     var session: AVCaptureSession?
     // Photo Output
     let output = AVCapturePhotoOutput()
     // Video Preview
     let previewLayer = AVCaptureVideoPreviewLayer()
-
+    
     // Shutter button
     private let shutterButton: UIButton = {
         let outerCircle = UIButton(frame: CGRect(x: 0, y: 0, width: 75, height: 75))
@@ -25,22 +24,24 @@ class Camera: UIViewController {
         outerCircle.addSubview(innerCircle)
         return outerCircle
     }()
+    
+    // NoteBook image button
+    private let noteBookButton: UIButton = {
+        let button = UIButton(type: .custom)
+        let outerCircle = UIView(frame: CGRect(x: 0, y: 0, width: 24, height: 24))
+        outerCircle.layer.cornerRadius = 12
+        outerCircle.layer.borderWidth = 3
+        outerCircle.layer.borderColor = UIColor.gray.cgColor
+        outerCircle.backgroundColor = .clear
 
-    // Added white circle button
-    private let whiteCircleButton: UIButton = {
-        let button = UIButton(frame: CGRect(x: 0, y: 0, width: 75, height: 75))
-        button.layer.cornerRadius = 37.5
-        button.backgroundColor = .white
+        let innerCircle = UIView(frame: CGRect(x: 5.5, y: 5.5, width: 13, height: 13))
+        innerCircle.layer.cornerRadius = 6.5
+        innerCircle.backgroundColor = .gray
+
+        outerCircle.addSubview(innerCircle)
+        button.addSubview(outerCircle)
+        button.frame = CGRect(x: 0, y: 0, width: 24, height: 24)
         return button
-    }()
-
-    // Image view to display captured photo
-    private let imageView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.contentMode = .scaleAspectFill
-        imageView.backgroundColor = .black // Optional: Set background color for visibility
-        imageView.isUserInteractionEnabled = true // Enable user interaction
-        return imageView
     }()
 
     override func viewDidLoad() {
@@ -48,16 +49,12 @@ class Camera: UIViewController {
         view.backgroundColor = .black // Set background color to black to better see the preview
         view.layer.addSublayer(previewLayer) // Ensure the previewLayer is added to the view's layer
         view.addSubview(shutterButton)
-        view.addSubview(whiteCircleButton)
+        view.addSubview(noteBookButton)
         checkCameraPermissions()
 
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(didTapTakePhoto))
         shutterButton.addGestureRecognizer(tapGesture)
 
-        // Add tap gesture recognizer to imageView
-        let imageTapGesture = UITapGestureRecognizer(target: self, action: #selector(didTapImageView))
-        imageView.addGestureRecognizer(imageTapGesture)
-        
         // Set edgesForExtendedLayout to none
         edgesForExtendedLayout = []
     }
@@ -85,11 +82,12 @@ class Camera: UIViewController {
         let shutterButtonY = view.frame.size.height - safeAreaInsets.bottom - 75 / 2
         shutterButton.center = CGPoint(x: view.frame.size.width / 2, y: shutterButtonY)
 
-        // Position the white circle button to the left of the shutter button
-        whiteCircleButton.center = CGPoint(x: shutterButton.frame.origin.x - 50, y: shutterButtonY)
+        // Position the noteBook button to the right of the shutter button
+        let noteBookButtonX = shutterButton.frame.maxX + 20 // 20 points space
+        noteBookButton.center = CGPoint(x: noteBookButtonX, y: shutterButtonY)
 
         view.bringSubviewToFront(shutterButton)
-        view.bringSubviewToFront(whiteCircleButton)
+        view.bringSubviewToFront(noteBookButton)
     }
 
     private func checkCameraPermissions() {
@@ -166,15 +164,6 @@ class Camera: UIViewController {
 
         output.capturePhoto(with: AVCapturePhotoSettings(), delegate: self)
     }
-
-    @objc private func didTapImageView() {
-        imageView.removeFromSuperview() // Remove the image view
-        session?.startRunning() // Restart the camera session
-        shutterButton.isHidden = false // Show the shutter button again
-        UIView.animate(withDuration: 0.3) {
-            self.shutterButton.alpha = 1
-        }
-    }
 }
 
 extension Camera: AVCapturePhotoCaptureDelegate {
@@ -184,12 +173,33 @@ extension Camera: AVCapturePhotoCaptureDelegate {
         }
         session?.stopRunning() // Stop the camera session
 
-        imageView.image = image // Display captured image in imageView
+        // Display captured image in imageView
+        let imageView = UIImageView(image: image)
         imageView.frame = view.bounds
+        imageView.contentMode = .scaleAspectFill
+        imageView.backgroundColor = .black // Optional: Set background color for visibility
+        imageView.isUserInteractionEnabled = true // Enable user interaction
         view.addSubview(imageView)
+        
+        // Add tap gesture recognizer to imageView
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(didTapImageView))
+        imageView.addGestureRecognizer(tapGesture)
+        
+        // Hide the shutter button
+        shutterButton.isHidden = true
     }
-}
 
-#Preview {
-    Camera()
+    @objc private func didTapImageView() {
+        // Remove the image view
+        if let imageView = view.subviews.last as? UIImageView {
+            imageView.removeFromSuperview()
+        }
+        // Restart the camera session
+        session?.startRunning()
+        // Show the shutter button again
+        shutterButton.isHidden = false
+        UIView.animate(withDuration: 0.3) {
+            self.shutterButton.alpha = 1
+        }
+    }
 }
