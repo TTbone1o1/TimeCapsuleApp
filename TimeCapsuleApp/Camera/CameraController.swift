@@ -36,6 +36,7 @@ struct CameraController: View {
             VStack {
                 Spacer()
                 HomeButton()
+                    .padding(.bottom, 30) // Adjust as needed
             }
         }
         .navigationBarHidden(true) // Hide the navigation bar if somehow it's still shown
