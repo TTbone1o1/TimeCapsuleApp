@@ -107,7 +107,7 @@ struct Home: View {
                 Spacer()
                 
                 HStack {
-                    NavigationLink(destination: CameraView()
+                    NavigationLink(destination: CameraController()
                                    //gets rid of the border UIViewControllerRepresentable creates for camera
                         .edgesIgnoringSafeArea(.all)
                     ) {
