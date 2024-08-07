@@ -36,7 +36,7 @@ struct HomeButton: View {
                 }) {
                     Image("Notebook")
                         .renderingMode(.template) // Use template rendering mode
-                        .foregroundColor(.red)
+                        .foregroundColor(.white)
                 }
             }
             .padding(.bottom, 20) // Adjust as needed for safe area or design requirements
