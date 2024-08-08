@@ -21,7 +21,7 @@ class KeyboardObserver: ObservableObject {
 
 struct Create: View {
     @State private var username: String = ""
-    @ObservedObject private var keyboardObserver = KeyboardObserver()
+    @ObservedObject public var keyboardObserver = KeyboardObserver()
     @State private var showModal: Bool = false
     @State private var showCamera: Bool = false
     @State private var userInput: String = ""
