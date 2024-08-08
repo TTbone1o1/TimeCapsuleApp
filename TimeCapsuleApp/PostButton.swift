@@ -8,30 +8,38 @@ struct PostView: View {
     var selectedImage: UIImage?
 
     var body: some View {
-        VStack {
-            Spacer()
-            
-            ZStack(alignment: .leading) {
-                if caption.isEmpty {
-                    Text("Say something about this day...")
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundColor(.white)
-                        .frame(width: 300)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 24)
+        ZStack(alignment: .bottom) {
+            // Scrollable Content
+            ScrollView {
+                VStack {
+                    Spacer()
+                        .frame(height: 310)
+                    
+                    ZStack(alignment: .leading) {
+                        if caption.isEmpty {
+                            Text("Say something about this day...")
+                                .font(.system(size: 24, weight: .bold))
+                                .foregroundColor(.blue)
+                                .frame(width: 300)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 24)
+                        }
+                        TextField("", text: $caption)
+                            .font(.system(size: 24, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(width: 300)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 24)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding()
+                    
+                    Spacer()
                 }
-                TextField("", text: $caption)
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundColor(.white)
-                    .frame(width: 300)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 24)
-                    .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity) // Center content horizontally
             }
-            .padding()
             
-            Spacer()
-            
+            // Navigation Button
             if !keyboardObserver.isKeyboardVisible {
                 NavigationLink(destination: Home(username: username).navigationBarBackButtonHidden(true),
                     isActive: $navigateToHome,
@@ -49,13 +57,12 @@ struct PostView: View {
                                 .font(.system(size: 16, weight: .semibold))
                         }
                     }
-                       
                     }
                 )
-                .padding(.bottom, 20)
                 .simultaneousGesture(TapGesture().onEnded {
                     navigateToHome = true
                 })
+                .padding(.bottom, 20) // Ensure some space from the bottom
             }
         }
         .background(Color.clear) // Ensure background is clear
