@@ -19,7 +19,7 @@ struct PostView: View {
                         if caption.isEmpty {
                             Text("Say something about this day...")
                                 .font(.system(size: 24, weight: .bold))
-                                .foregroundColor(.blue)
+                                .foregroundColor(.white)
                                 .frame(width: 300)
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal, 24)
