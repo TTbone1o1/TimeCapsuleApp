@@ -2,6 +2,10 @@ import AVFoundation
 import SwiftUI
 import UIKit
 
+protocol CameraDelegate: AnyObject {
+    func didTakePhoto()
+}
+
 class Camera: UIViewController {
     // Capture Session
     var session: AVCaptureSession?
@@ -9,6 +13,8 @@ class Camera: UIViewController {
     let output = AVCapturePhotoOutput()
     // Video Preview
     let previewLayer = AVCaptureVideoPreviewLayer()
+
+    weak var delegate: CameraDelegate?
 
     // Shutter button
     private let shutterButton: UIButton = {
@@ -36,31 +42,9 @@ class Camera: UIViewController {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(didTapTakePhoto))
         shutterButton.addGestureRecognizer(tapGesture)
 
-        // Add the SwiftUI buttons
-        //addSwiftUIButtons()
-        
         // Set edgesForExtendedLayout to none
         edgesForExtendedLayout = []
     }
-
-//    private func addSwiftUIButtons() {
-//        let buttonsVC = UIHostingController(rootView: HomeButton())
-//
-//        addChild(buttonsVC)
-//        view.addSubview(buttonsVC.view)
-//        buttonsVC.didMove(toParent: self)
-//
-//        // Position the buttons
-//        buttonsVC.view.translatesAutoresizingMaskIntoConstraints = false
-//        buttonsVC.view.backgroundColor = .clear // Ensure background is clear
-//
-//        NSLayoutConstraint.activate([
-//            buttonsVC.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-//            buttonsVC.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-//            buttonsVC.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-//            buttonsVC.view.topAnchor.constraint(equalTo: view.topAnchor) // Ensure full screen
-//        ])
-//    }
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
@@ -145,6 +129,35 @@ class Camera: UIViewController {
 
         output.capturePhoto(with: AVCapturePhotoSettings(), delegate: self)
     }
+
+    private func showPostView(with image: UIImage) {
+        let postView = PostView(selectedImage: image)
+        let hostingController = UIHostingController(rootView: postView)
+        addChild(hostingController)
+        view.addSubview(hostingController.view)
+        hostingController.didMove(toParent: self)
+
+        // Position the PostView
+        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
+        hostingController.view.backgroundColor = .clear
+
+        NSLayoutConstraint.activate([
+            hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            hostingController.view.topAnchor.constraint(equalTo: view.topAnchor)
+        ])
+    }
+
+    private func removePostView() {
+        for subview in view.subviews {
+            if let hostingController = subview.next as? UIHostingController<AnyView> {
+                hostingController.willMove(toParent: nil)
+                hostingController.view.removeFromSuperview()
+                hostingController.removeFromParent()
+            }
+        }
+    }
 }
 
 extension Camera: AVCapturePhotoCaptureDelegate {
@@ -153,28 +166,12 @@ extension Camera: AVCapturePhotoCaptureDelegate {
             return
         }
         session?.stopRunning()
-
-        let imageView = UIImageView(image: image)
-        imageView.frame = view.bounds
-        imageView.contentMode = .scaleAspectFill
-        imageView.backgroundColor = .black
-        imageView.isUserInteractionEnabled = true
-        view.addSubview(imageView)
         
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(didTapImageView))
-        imageView.addGestureRecognizer(tapGesture)
+        // Notify delegate that photo was taken
+        delegate?.didTakePhoto()
         
+        // Show the PostView
+        showPostView(with: image)
         shutterButton.isHidden = true
-    }
-
-    @objc private func didTapImageView() {
-        if let imageView = view.subviews.last as? UIImageView {
-            imageView.removeFromSuperview()
-        }
-        session?.startRunning()
-        shutterButton.isHidden = false
-        UIView.animate(withDuration: 0.3) {
-            self.shutterButton.alpha = 1
-        }
     }
 }
