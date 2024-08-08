@@ -3,6 +3,8 @@ import SwiftUI
 struct PostView: View {
     @ObservedObject private var keyboardObserver = KeyboardObserver()
     @State private var caption: String = ""
+    @State private var username: String = ""
+    @State private var navigateToHome = false
     var selectedImage: UIImage?
 
     var body: some View {
@@ -31,20 +33,29 @@ struct PostView: View {
             Spacer()
             
             if !keyboardObserver.isKeyboardVisible {
-                ZStack {
-                    Rectangle()
-                        .frame(width: 291, height: 62)
-                        .cornerRadius(40)
-                        .foregroundColor(.black)
-                        .shadow(radius: 24, x: 0, y: 14)
-                    
-                    HStack {
-                        Text("Post")
-                            .foregroundColor(.white)
-                            .font(.system(size: 16, weight: .semibold))
+                NavigationLink(destination: Home(username: username).navigationBarBackButtonHidden(true),
+                    isActive: $navigateToHome,
+                    label: {
+                    ZStack {
+                        Rectangle()
+                            .frame(width: 291, height: 62)
+                            .cornerRadius(40)
+                            .foregroundColor(.black)
+                            .shadow(radius: 24, x: 0, y: 14)
+                        
+                        HStack {
+                            Text("Post")
+                                .foregroundColor(.white)
+                                .font(.system(size: 16, weight: .semibold))
+                        }
                     }
-                }
+                       
+                    }
+                )
                 .padding(.bottom, 20)
+                .simultaneousGesture(TapGesture().onEnded {
+                    navigateToHome = true
+                })
             }
         }
         .background(Color.clear) // Ensure background is clear
