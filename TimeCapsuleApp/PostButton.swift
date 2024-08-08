@@ -1,51 +1,41 @@
-//
-//  PostView.swift
-//  TimeCapsuleApp
-//
-//  Created by Abraham May on 8/7/24.
-//
-
 import SwiftUI
-import Firebase
 
 struct PostView: View {
-    @State private var selectedImage: UIImage?
     @State private var caption: String = ""
+    var selectedImage: UIImage?
 
     var body: some View {
-        
-        
         VStack {
             Spacer()
-            
+
             ZStack(alignment: .leading) {
                 if caption.isEmpty {
-                                    Text("Say something about this day...")
-                                        .font(.system(size: 24, weight: .bold))
-                                        .foregroundColor(.black)
-                                        .frame(width: 300)
-                                        .multilineTextAlignment(.center)
-                                        .padding(.horizontal, 24)
-                                }
-                                TextField("", text: $caption)
-                                    .font(.system(size: 24, weight: .bold))
-                                    .foregroundColor(.black)
-                                    .frame(width: 300) // Minimum height to allow vertical expansion
-                                    .multilineTextAlignment(.center)
-                                    .padding(.horizontal, 24)
-                                    .fixedSize(horizontal: false, vertical: true)
-                       }
-                       .padding()
-            
+                    Text("Say something about this day...")
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(width: 300)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 24)
+                }
+                TextField("", text: $caption)
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(.white)
+                    .frame(width: 300)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 24)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding()
+
             Spacer()
-            
+
             ZStack {
                 Rectangle()
                     .frame(width: 291, height: 62)
                     .cornerRadius(40)
                     .foregroundColor(.black)
                     .shadow(radius: 24, x: 0, y: 14)
-                
+
                 HStack {
                     Text("Post")
                         .foregroundColor(.white)
@@ -54,15 +44,10 @@ struct PostView: View {
             }
             .padding(.bottom, 20)
         }
-    }
-
-    private func postImageWithCaption() {
-        guard let image = selectedImage else { return }
-        
-        // Here you can add code to upload the image and caption to Firebase
+        .background(Color.clear) // Ensure background is clear
     }
 }
 
 #Preview {
-    PostView()
+    PostView(selectedImage: UIImage(systemName: "photo")!) // For preview purposes
 }
