@@ -1,13 +1,14 @@
 import SwiftUI
 
 struct PostView: View {
+    @ObservedObject private var keyboardObserver = KeyboardObserver()
     @State private var caption: String = ""
     var selectedImage: UIImage?
 
     var body: some View {
         VStack {
             Spacer()
-
+            
             ZStack(alignment: .leading) {
                 if caption.isEmpty {
                     Text("Say something about this day...")
@@ -26,23 +27,25 @@ struct PostView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             .padding()
-
+            
             Spacer()
-
-            ZStack {
-                Rectangle()
-                    .frame(width: 291, height: 62)
-                    .cornerRadius(40)
-                    .foregroundColor(.black)
-                    .shadow(radius: 24, x: 0, y: 14)
-
-                HStack {
-                    Text("Post")
-                        .foregroundColor(.white)
-                        .font(.system(size: 16, weight: .semibold))
+            
+            if !keyboardObserver.isKeyboardVisible {
+                ZStack {
+                    Rectangle()
+                        .frame(width: 291, height: 62)
+                        .cornerRadius(40)
+                        .foregroundColor(.black)
+                        .shadow(radius: 24, x: 0, y: 14)
+                    
+                    HStack {
+                        Text("Post")
+                            .foregroundColor(.white)
+                            .font(.system(size: 16, weight: .semibold))
+                    }
                 }
+                .padding(.bottom, 20)
             }
-            .padding(.bottom, 20)
         }
         .background(Color.clear) // Ensure background is clear
     }
