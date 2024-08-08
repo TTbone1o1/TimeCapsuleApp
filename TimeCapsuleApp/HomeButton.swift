@@ -1,6 +1,10 @@
 import SwiftUI
 
 struct HomeButton: View {
+    
+    @State private var username: String = ""
+    @State private var navigateToHome = false
+    
     var body: some View {
         VStack {
             Spacer()
@@ -21,13 +25,19 @@ struct HomeButton: View {
                 Spacer()
                     .frame(width: 72)
                 
-                NavigationLink(destination: Home(username: "YourUsername")) {
+                NavigationLink(destination: Home(username: username).navigationBarBackButtonHidden(true),
+                    isActive: $navigateToHome,
+                    label: {
                     Image("Notebook")
                         .renderingMode(.template)
                         .foregroundColor(.white)
-                }
+                    }
+                )
+                .simultaneousGesture(TapGesture().onEnded {
+                    navigateToHome = true
+                })
             }
-            .padding(.bottom, 20) // Adjust as needed for safe area or design requirements
+            .padding(.bottom, 20)
         }
     }
 }
@@ -37,3 +47,4 @@ struct HomeButton_Previews: PreviewProvider {
         HomeButton()
     }
 }
+               
