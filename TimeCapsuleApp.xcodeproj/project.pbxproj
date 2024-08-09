@@ -20,6 +20,7 @@
 		CD4B48E72C5D2BBC008DC1D2 /* Timecap.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4B48E62C5D2BBC008DC1D2 /* Timecap.swift */; };
 		CD4B48E92C5D6B19008DC1D2 /* Create.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4B48E82C5D6B19008DC1D2 /* Create.swift */; };
 		CD4B48ED2C5D9EF5008DC1D2 /* Camera.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4B48EC2C5D9EF5008DC1D2 /* Camera.swift */; };
+		CDA00CC52C66BAFB002C0B50 /* TransparentBlurView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA00CC42C66BAFB002C0B50 /* TransparentBlurView.swift */; };
 		CDA2DF762C60431D0005FB4E /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = CDA2DF752C60431D0005FB4E /* FirebaseFirestore */; };
 		CDA2DF782C6043260005FB4E /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = CDA2DF772C6043260005FB4E /* FirebaseStorage */; };
 		CDA2DF7A2C611DBE0005FB4E /* Photoinfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA2DF792C611DBE0005FB4E /* Photoinfo.swift */; };
@@ -43,6 +44,7 @@
 		CD4B48E62C5D2BBC008DC1D2 /* Timecap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Timecap.swift; sourceTree = "<group>"; };
 		CD4B48E82C5D6B19008DC1D2 /* Create.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Create.swift; sourceTree = "<group>"; };
 		CD4B48EC2C5D9EF5008DC1D2 /* Camera.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Camera.swift; sourceTree = "<group>"; };
+		CDA00CC42C66BAFB002C0B50 /* TransparentBlurView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransparentBlurView.swift; sourceTree = "<group>"; };
 		CDA2DF792C611DBE0005FB4E /* Photoinfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Photoinfo.swift; sourceTree = "<group>"; };
 		CDA2DF7B2C611DCF0005FB4E /* Writeinfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Writeinfo.swift; sourceTree = "<group>"; };
 		CDA2DF7E2C6167270005FB4E /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
@@ -112,6 +114,7 @@
 				CDA2DF852C6416ED0005FB4E /* PostButton.swift */,
 				CDA2DF7D2C611DEF0005FB4E /* Info */,
 				CD3671B72C5C3AC1002DA9F2 /* ContentView.swift */,
+				CDA00CC42C66BAFB002C0B50 /* TransparentBlurView.swift */,
 				CD4B48E82C5D6B19008DC1D2 /* Create.swift */,
 				CD1E8CB52C5FD3E300C01341 /* MainView.swift */,
 				CD1E8CAE2C5EB7C400C01341 /* Camera */,
@@ -231,6 +234,7 @@
 				CDA2DF842C63CDDD0005FB4E /* HomeButton.swift in Sources */,
 				CD4B48E92C5D6B19008DC1D2 /* Create.swift in Sources */,
 				CDA2DF862C6416EE0005FB4E /* PostButton.swift in Sources */,
+				CDA00CC52C66BAFB002C0B50 /* TransparentBlurView.swift in Sources */,
 				CD1E8CAC2C5EB66700C01341 /* CameraController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
