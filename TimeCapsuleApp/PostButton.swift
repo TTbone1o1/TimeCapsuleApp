@@ -1,10 +1,16 @@
 import SwiftUI
+import Firebase
+import FirebaseStorage
+import FirebaseAuth
+import FirebaseFirestore
+import AuthenticationServices
 
 struct PostView: View {
     @ObservedObject private var keyboardObserver = KeyboardObserver()
     @State private var caption: String = ""
     @State private var username: String = ""
     @State private var navigateToHome = false
+    @State private var isUploading = false // To handle uploading state
     var selectedImage: UIImage?
 
     var body: some View {
@@ -40,7 +46,7 @@ struct PostView: View {
             }
             
             // Navigation Button
-            if !keyboardObserver.isKeyboardVisible {
+            if !keyboardObserver.isKeyboardVisible && !isUploading {
                 NavigationLink(destination: Home().navigationBarBackButtonHidden(true),
                     isActive: $navigateToHome,
                     label: {
@@ -60,12 +66,69 @@ struct PostView: View {
                     }
                 )
                 .simultaneousGesture(TapGesture().onEnded {
-                    navigateToHome = true
+                    if let image = selectedImage {
+                        isUploading = true
+                        uploadPhoto(image: image)
+                    }
                 })
                 .padding(.bottom, 20) // Ensure some space from the bottom
             }
         }
         .background(Color.clear) // Ensure background is clear
+    }
+
+    private func uploadPhoto(image: UIImage) {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+
+        // Create a unique identifier for the photo
+        let photoID = UUID().uuidString
+        let storageRef = Storage.storage().reference().child("\(photoID).jpg")
+
+        // Convert UIImage to Data
+        guard let imageData = image.jpegData(compressionQuality: 0.75) else { return }
+
+        // Upload the photo
+        storageRef.putData(imageData, metadata: nil) { metadata, error in
+            if let error = error {
+                print("Error uploading photo: \(error.localizedDescription)")
+                return
+            }
+
+            // Get the download URL
+            storageRef.downloadURL { url, error in
+                if let error = error {
+                    print("Error getting download URL: \(error.localizedDescription)")
+                    return
+                }
+
+                if let downloadURL = url {
+                    // Save the metadata to Firestore
+                    savePhotoMetadata(photoURL: downloadURL.absoluteString, caption: caption)
+                }
+            }
+        }
+    }
+
+    private func savePhotoMetadata(photoURL: String, caption: String) {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+
+        let db = Firestore.firestore()
+        let photoData: [String: Any] = [
+            "photoURL": photoURL,
+            "caption": caption,
+            "timestamp": Timestamp(date: Date())
+        ]
+
+        db.collection("users").document(uid).collection("photos").addDocument(data: photoData) { error in
+            if let error = error {
+                print("Error saving photo metadata: \(error.localizedDescription)")
+            } else {
+                print("Photo metadata successfully saved")
+                navigateToHome = true
+            }
+
+            isUploading = false
+        }
     }
 }
 
