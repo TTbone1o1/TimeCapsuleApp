@@ -132,6 +132,7 @@ struct Home: View {
                         }
                         .padding()
                     }
+                    .scrollIndicators(.hidden)
                 }
 
                 Spacer()
