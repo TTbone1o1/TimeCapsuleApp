@@ -1,7 +1,12 @@
 import SwiftUI
+import Firebase
+import FirebaseAuth
+
+import FirebaseFirestore
+import AuthenticationServices
 
 struct Home: View {
-    var username: String // Added username property
+    @State private var username: String = ""
     @State private var imagesAppeared = false
     
     var body: some View {
@@ -13,7 +18,7 @@ struct Home: View {
                         .fontWeight(.bold)
                         .padding()
                     
-                    Spacer() // Pushes the VStack to the right
+                    Spacer()
                     
                     Button(action: {
                         // Action for button
@@ -23,7 +28,7 @@ struct Home: View {
                                 Rectangle()
                                     .frame(width: 16, height: 3)
                                     .cornerRadius(20)
-                                    .foregroundColor(.black) // Change color as needed
+                                    .foregroundColor(.black)
                             }
                         }
                         .padding(.trailing)
@@ -107,16 +112,16 @@ struct Home: View {
                 
                 HStack {
                     NavigationLink(destination: CameraController()
-                                   .edgesIgnoringSafeArea(.all)
+                        .edgesIgnoringSafeArea(.all)
                     ) {
                         ZStack {
                             Circle()
-                                .stroke(Color.gray, lineWidth: 3) // Added white stroke
+                                .stroke(Color.gray, lineWidth: 3)
                                 .frame(width: 24, height: 24)
                             
                             Circle()
                                 .frame(width: 13, height: 13)
-                                .foregroundColor(.gray) // Change color as needed
+                                .foregroundColor(.gray)
                         }
                     }
                     
@@ -129,28 +134,43 @@ struct Home: View {
                     })
                 }
             }
-            .padding() // Optional: Adds padding around the VStack
-            .frame(maxHeight: .infinity) // Ensure VStack takes full height of the screen
+            .padding()
+            .frame(maxHeight: .infinity)
             .onAppear {
-                // Start the animation when the view appears
+                fetchUsername()
                 imagesAppeared = true
-                // Trigger haptic feedback when the view first appears
                 triggerHaptic()
             }
             .onDisappear {
-                // Reset the animation state if necessary
                 imagesAppeared = false
             }
         }
     }
-}
-
-private func triggerHaptic() {
-    let generator = UINotificationFeedbackGenerator()
-    generator.prepare()
-    generator.notificationOccurred(.success)
+    
+    private func fetchUsername() {
+        guard let user = Auth.auth().currentUser else { return }
+        let db = Firestore.firestore()
+        let usernameDocRef = db.collection("users").document(user.uid).collection("username").document("info")
+        
+        usernameDocRef.getDocument { document, error in
+            if let document = document, document.exists {
+                let username = document.data()?["username"] as? String
+                self.username = username ?? ""
+            } else {
+                print("Username not found in Firestore")
+                self.username = "No Username"
+            }
+        }
+    }
+    
+    
+    private func triggerHaptic() {
+        let generator = UINotificationFeedbackGenerator()
+        generator.prepare()
+        generator.notificationOccurred(.success)
+    }
 }
 
 #Preview {
-    Home(username: "Sample") // Provide a sample username for preview
+    Home()
 }
