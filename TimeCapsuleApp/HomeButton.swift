@@ -10,7 +10,7 @@ struct HomeButton: View {
             Spacer()
             
             HStack {
-                NavigationLink(destination: Home(username: "YourUsername")) {
+                NavigationLink(destination: Home()) {
                     ZStack {
                         Circle()
                             .stroke(Color.gray, lineWidth: 3)
@@ -25,7 +25,7 @@ struct HomeButton: View {
                 Spacer()
                     .frame(width: 72)
                 
-                NavigationLink(destination: Home(username: username).navigationBarBackButtonHidden(true),
+                NavigationLink(destination: Home().navigationBarBackButtonHidden(true),
                     isActive: $navigateToHome,
                     label: {
                     Image("Notebook")
