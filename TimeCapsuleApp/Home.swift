@@ -2,18 +2,19 @@ import SwiftUI
 import Firebase
 import FirebaseAuth
 import FirebaseFirestore
-import AuthenticationServices
+import FirebaseStorage
 
 struct Home: View {
     @State private var username: String = ""
     @State private var imagesAppeared = false
-    @State private var hasPostedPhoto = false // New state to track if the user has posted
+    @State private var hasPostedPhoto = false
+    @State private var imageUrls: [String] = []
 
     var body: some View {
         NavigationView {
             VStack {
                 HStack {
-                    Text(username.isEmpty ? "No Username" : username) // Display the username
+                    Text(username.isEmpty ? "No Username" : username)
                         .font(.system(size: 18))
                         .fontWeight(.bold)
                         .padding()
@@ -37,7 +38,7 @@ struct Home: View {
                 
                 Spacer()
                 
-                if !hasPostedPhoto { // Conditionally render based on hasPostedPhoto
+                if !hasPostedPhoto {
                     Text("Take a photo to start")
                         .font(.system(size: 18))
                         .padding(.bottom, 30)
@@ -108,6 +109,29 @@ struct Home: View {
                         }
                         Spacer()
                     }
+                } else {
+                    // Display the fetched images
+                    ScrollView {
+                        VStack {
+                            ForEach(imageUrls, id: \.self) { imageUrl in
+                                AsyncImage(url: URL(string: imageUrl)) { image in
+                                    image
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(width: 313, height: 421)
+                                        .cornerRadius(33)
+                                        .clipped()
+                                } placeholder: {
+                                    ProgressView()
+                                }
+                                .padding(.bottom, 20)
+                                .onAppear {
+                                    print("Loading image from URL: \(imageUrl)") // Debugging: print image URL
+                                }
+                            }
+                        }
+                        .padding()
+                    }
                 }
 
                 Spacer()
@@ -140,7 +164,7 @@ struct Home: View {
             .frame(maxHeight: .infinity)
             .onAppear {
                 fetchUsername()
-                checkIfUserHasPosted() // Check if the user has posted
+                checkIfUserHasPosted()
                 imagesAppeared = true
                 triggerHaptic()
             }
@@ -172,10 +196,34 @@ struct Home: View {
         
         photosCollectionRef.getDocuments { snapshot, error in
             if let snapshot = snapshot {
-                self.hasPostedPhoto = !snapshot.isEmpty // If there are documents, the user has posted
+                self.hasPostedPhoto = !snapshot.isEmpty
+                if self.hasPostedPhoto {
+                    self.fetchImageUrls()
+                }
             } else {
                 print("Error fetching photos: \(error?.localizedDescription ?? "Unknown error")")
                 self.hasPostedPhoto = false
+            }
+        }
+    }
+    
+    private func fetchImageUrls() {
+        guard let user = Auth.auth().currentUser else { return }
+        let db = Firestore.firestore()
+        let photosCollectionRef = db.collection("users").document(user.uid).collection("photos")
+        
+        photosCollectionRef.getDocuments { snapshot, error in
+            if let snapshot = snapshot {
+                self.imageUrls = snapshot.documents.compactMap { document in
+                    let data = document.data()
+                    if let url = data["photoURL"] as? String {
+                        print("Fetched image URL: \(url)") // Debug log
+                        return url
+                    }
+                    return nil
+                }
+            } else {
+                print("Error fetching image URLs: \(error?.localizedDescription ?? "Unknown error")")
             }
         }
     }
@@ -190,6 +238,3 @@ struct Home: View {
 #Preview {
     Home()
 }
-
-
-
