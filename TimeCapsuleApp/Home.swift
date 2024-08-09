@@ -12,131 +12,144 @@ struct Home: View {
 
     var body: some View {
         NavigationView {
-            VStack {
-                HStack {
-                    Text(username.isEmpty ? "No Username" : username)
-                        .font(.system(size: 18))
-                        .fontWeight(.bold)
-                        .padding()
-                    
-                    Spacer()
-                    
-                    Button(action: {
-                        // Action for button
-                    }, label: {
-                        VStack(spacing: 2) {
-                            ForEach(0..<3) { _ in
-                                Rectangle()
-                                    .frame(width: 16, height: 3)
-                                    .cornerRadius(20)
-                                    .foregroundColor(.black)
-                            }
-                        }
-                        .padding(.trailing)
-                    })
-                }
-                
-                Spacer()
-                
-                if !hasPostedPhoto {
-                    Text("Take a photo to start")
-                        .font(.system(size: 18))
-                        .padding(.bottom, 30)
-                        .fontWeight(.bold)
-                    
+            ZStack {
+                VStack {
                     HStack {
+                        Text(username.isEmpty ? "No Username" : username)
+                            .font(.system(size: 18))
+                            .fontWeight(.bold)
+                            .padding()
+                        
                         Spacer()
                         
-                        HStack {
-                            Image("1")
-                                .resizable()
-                                .frame(width: 82.37, height: 120.26)
-                                .cornerRadius(19)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 19)
-                                        .stroke(Color.white, lineWidth: 4)
-                                )
-                                .rotationEffect(Angle(degrees: -16))
-                                .offset(x: 25, y: 15)
-                                .shadow(radius: 24, x: 0, y: 14)
-                                .zIndex(3)
-                                .scaleEffect(imagesAppeared ? 1 : 0)
-                                .animation(.interpolatingSpring(stiffness: 60, damping: 7).delay(0.1), value: imagesAppeared)
-                                .onAppear {
-                                    if imagesAppeared {
-                                        triggerHaptic()
-                                    }
-                                }
-                            
-                            Image("2")
-                                .resizable()
-                                .frame(width: 82.37, height: 120.26)
-                                .cornerRadius(19)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 19)
-                                        .stroke(Color.white, lineWidth: 4)
-                                )
-                                .zIndex(2)
-                                .rotationEffect(Angle(degrees: -2))
-                                .shadow(radius: 24, x: 0, y: 14)
-                                .scaleEffect(imagesAppeared ? 1 : 0)
-                                .animation(.interpolatingSpring(stiffness: 60, damping: 7).delay(0.2), value: imagesAppeared)
-                                .onAppear {
-                                    if imagesAppeared {
-                                        triggerHaptic()
-                                    }
-                                }
-                            
-                            Image("3")
-                                .resizable()
-                                .frame(width: 82.37, height: 120.26)
-                                .cornerRadius(19)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 19)
-                                        .stroke(Color.white, lineWidth: 4)
-                                )
-                                .zIndex(1)
-                                .rotationEffect(Angle(degrees: 17))
-                                .shadow(radius: 24, x: 0, y: 14)
-                                .offset(x: -33, y: 15)
-                                .scaleEffect(imagesAppeared ? 1 : 0)
-                                .animation(.interpolatingSpring(stiffness: 60, damping: 7).delay(0.3), value: imagesAppeared)
-                                .onAppear {
-                                    if imagesAppeared {
-                                        triggerHaptic()
-                                    }
-                                }
-                        }
-                        Spacer()
-                    }
-                } else {
-                    // Display the fetched images
-                    ScrollView {
-                        VStack {
-                            ForEach(imageUrls, id: \.self) { imageUrl in
-                                AsyncImage(url: URL(string: imageUrl)) { image in
-                                    image
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fill)
-                                        .frame(width: 313, height: 421)
-                                        .cornerRadius(33)
-                                        .clipped()
-                                } placeholder: {
-                                    ProgressView()
-                                }
-                                .padding(.bottom, 20)
-                                .onAppear {
-                                    print("Loading image from URL: \(imageUrl)") // Debugging: print image URL
+                        Button(action: {
+                            // Action for button
+                        }, label: {
+                            VStack(spacing: 2) {
+                                ForEach(0..<3) { _ in
+                                    Rectangle()
+                                        .frame(width: 16, height: 3)
+                                        .cornerRadius(20)
+                                        .foregroundColor(.black)
                                 }
                             }
-                        }
-                        .padding()
+                            .padding(.trailing)
+                        })
                     }
-                    .scrollIndicators(.hidden)
-                }
+                    
+                    Spacer()
 
-                Spacer()
+                    if !hasPostedPhoto {
+                        Text("Take a photo to start")
+                            .font(.system(size: 18))
+                            .padding(.bottom, 30)
+                            .fontWeight(.bold)
+                        
+                        HStack {
+                            Spacer()
+                            
+                            HStack {
+                                Image("1")
+                                    .resizable()
+                                    .frame(width: 82.37, height: 120.26)
+                                    .cornerRadius(19)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 19)
+                                            .stroke(Color.white, lineWidth: 4)
+                                    )
+                                    .rotationEffect(Angle(degrees: -16))
+                                    .offset(x: 25, y: 15)
+                                    .shadow(radius: 24, x: 0, y: 14)
+                                    .zIndex(3)
+                                    .scaleEffect(imagesAppeared ? 1 : 0)
+                                    .animation(.interpolatingSpring(stiffness: 60, damping: 7).delay(0.1), value: imagesAppeared)
+                                    .onAppear {
+                                        if imagesAppeared {
+                                            triggerHaptic()
+                                        }
+                                    }
+                                
+                                Image("2")
+                                    .resizable()
+                                    .frame(width: 82.37, height: 120.26)
+                                    .cornerRadius(19)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 19)
+                                            .stroke(Color.white, lineWidth: 4)
+                                    )
+                                    .zIndex(2)
+                                    .rotationEffect(Angle(degrees: -2))
+                                    .shadow(radius: 24, x: 0, y: 14)
+                                    .scaleEffect(imagesAppeared ? 1 : 0)
+                                    .animation(.interpolatingSpring(stiffness: 60, damping: 7).delay(0.2), value: imagesAppeared)
+                                    .onAppear {
+                                        if imagesAppeared {
+                                            triggerHaptic()
+                                        }
+                                    }
+                                
+                                Image("3")
+                                    .resizable()
+                                    .frame(width: 82.37, height: 120.26)
+                                    .cornerRadius(19)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 19)
+                                            .stroke(Color.white, lineWidth: 4)
+                                    )
+                                    .zIndex(1)
+                                    .rotationEffect(Angle(degrees: 17))
+                                    .shadow(radius: 24, x: 0, y: 14)
+                                    .offset(x: -33, y: 15)
+                                    .scaleEffect(imagesAppeared ? 1 : 0)
+                                    .animation(.interpolatingSpring(stiffness: 60, damping: 7).delay(0.3), value: imagesAppeared)
+                                    .onAppear {
+                                        if imagesAppeared {
+                                            triggerHaptic()
+                                        }
+                                    }
+                            }
+                            Spacer()
+                        }
+                    } else {
+                        ScrollView {
+                            VStack {
+                                ForEach(imageUrls, id: \.self) { imageUrl in
+                                    AsyncImage(url: URL(string: imageUrl)) { image in
+                                        image
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fill)
+                                            .frame(width: 313, height: 421)
+                                            .cornerRadius(33)
+                                            .clipped()
+                                    } placeholder: {
+                                        ProgressView()
+                                    }
+                                    .padding(.bottom, 20)
+                                    .onAppear {
+                                        print("Loading image from URL: \(imageUrl)") // Debugging: print image URL
+                                    }
+                                }
+                            }
+                            .padding()
+                        }
+                        .scrollIndicators(.hidden)
+                    }
+
+                    Spacer()
+                }
+                .padding()
+                .frame(maxHeight: .infinity)
+                .onAppear {
+                    fetchUsername()
+                    checkIfUserHasPosted()
+                    imagesAppeared = true
+                    triggerHaptic()
+                }
+                .onDisappear {
+                    imagesAppeared = false
+                }
                 
+                // Floating HStack at the bottom
                 HStack {
                     NavigationLink(destination: CameraController()
                         .edgesIgnoringSafeArea(.all)
@@ -160,18 +173,11 @@ struct Home: View {
                         Image("Notebook")
                     })
                 }
+                .zIndex(1) // Ensure the HStack is above the scrollable content
+                .padding(.bottom, 50) // Adjust padding to place it correctly at the bottom
+                .frame(maxHeight: .infinity, alignment: .bottom)
             }
-            .padding()
-            .frame(maxHeight: .infinity)
-            .onAppear {
-                fetchUsername()
-                checkIfUserHasPosted()
-                imagesAppeared = true
-                triggerHaptic()
-            }
-            .onDisappear {
-                imagesAppeared = false
-            }
+            .edgesIgnoringSafeArea(.bottom)
         }
     }
     
