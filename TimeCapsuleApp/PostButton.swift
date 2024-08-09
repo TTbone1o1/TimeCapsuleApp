@@ -41,7 +41,7 @@ struct PostView: View {
             
             // Navigation Button
             if !keyboardObserver.isKeyboardVisible {
-                NavigationLink(destination: Home(username: username).navigationBarBackButtonHidden(true),
+                NavigationLink(destination: Home().navigationBarBackButtonHidden(true),
                     isActive: $navigateToHome,
                     label: {
                     ZStack {
