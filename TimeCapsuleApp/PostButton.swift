@@ -82,7 +82,7 @@ struct PostView: View {
 
         // Create a unique identifier for the photo
         let photoID = UUID().uuidString
-        let storageRef = Storage.storage().reference().child("\(photoID).jpg")
+        let storageRef = Storage.storage().reference().child("users/\(uid)/photos/\(photoID).jpg")
 
         // Convert UIImage to Data
         guard let imageData = image.jpegData(compressionQuality: 0.75) else { return }
