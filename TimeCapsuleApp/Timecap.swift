@@ -154,7 +154,7 @@ struct Timecap: View {
                 }
 
                 // Hidden NavigationLink to Home
-                NavigationLink(destination: Home(username: "username").navigationBarBackButtonHidden(true), isActive: $navigateToHome) {
+                NavigationLink(destination: Home().navigationBarBackButtonHidden(true), isActive: $navigateToHome) {
                     EmptyView()
                 }
             }
