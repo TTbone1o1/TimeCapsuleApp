@@ -11,173 +11,174 @@ struct Timecap: View {
     @State private var isSignedIn = false
     @State private var authError: String?
     @State private var navigateToHome = false
+    @State private var isLoading = true // Added loading state
     let db = Firestore.firestore() // Firestore reference
 
     var body: some View {
-        NavigationView {
-            VStack {
-                Text("TimeCap")
-                    .font(.system(size: 39))
-                    .fontWeight(.semibold)
-
-                Text("only one photo a day.")
-                    .font(.system(size: 22))
-                    .foregroundColor(.gray)
-
-                HStack {
-                    Spacer()
-                    HStack {
-                        Image("1")
-                            .resizable()
-                            .frame(width: 116, height: 169.35)
-                            .cornerRadius(19)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 19)
-                                    .stroke(Color.white, lineWidth: 4)
-                            )
-                            .rotationEffect(Angle(degrees: -16))
-                            .offset(x: 25, y: 15)
-                            .shadow(radius: 24, x: 0, y: 14)
-                            .zIndex(3)
-                            .scaleEffect(imagesAppeared ? 1 : 0)
-                            .animation(.interpolatingSpring(stiffness: 60, damping: 6).delay(0.1), value: imagesAppeared)
-                            .onAppear {
-                                if imagesAppeared {
-                                    triggerHaptic()
-                                }
-                            }
-
-                        Image("2")
-                            .resizable()
-                            .frame(width: 116, height: 169.35)
-                            .cornerRadius(19)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 19)
-                                    .stroke(Color.white, lineWidth: 4)
-                            )
-                            .zIndex(2)
-                            .rotationEffect(Angle(degrees: -2))
-                            .shadow(radius: 24, x: 0, y: 14)
-                            .scaleEffect(imagesAppeared ? 1 : 0)
-                            .animation(.interpolatingSpring(stiffness: 60, damping: 6).delay(0.2), value: imagesAppeared)
-                            .onAppear {
-                                if imagesAppeared {
-                                    triggerHaptic()
-                                }
-                            }
-
-                        Image("3")
-                            .resizable()
-                            .frame(width: 116, height: 169.35)
-                            .cornerRadius(19)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 19)
-                                    .stroke(Color.white, lineWidth: 4)
-                            )
-                            .zIndex(1)
-                            .rotationEffect(Angle(degrees: 17))
-                            .shadow(radius: 24, x: 0, y: 14)
-                            .offset(x: -33, y: 15)
-                            .scaleEffect(imagesAppeared ? 1 : 0)
-                            .animation(.interpolatingSpring(stiffness: 60, damping: 6).delay(0.3), value: imagesAppeared)
-                            .onAppear {
-                                if imagesAppeared {
-                                    triggerHaptic()
-                                }
-                            }
-                    }
-                    .frame(maxHeight: .infinity, alignment: .top)
-                    .padding(.top, 118)
-
-                    Spacer()
+        if isLoading {
+            ProgressView() // Show a loading indicator while checking the user's status
+                .onAppear {
+                    checkUserStatus()
                 }
+        } else {
+            NavigationView {
+                VStack {
+                    Text("TimeCap")
+                        .font(.system(size: 39))
+                        .fontWeight(.semibold)
 
-                // Sign in button
-                SignInWithAppleButton { request in
-                    request.requestedScopes = [.fullName, .email]
-                } onCompletion: { result in
-                    switch result {
-                    case .success(let authResults):
-                        switch authResults.credential {
-                        case let appleIDCredential as ASAuthorizationAppleIDCredential:
-                            // Extract the token and authenticate with Firebase
-                            guard let identityToken = appleIDCredential.identityToken else {
-                                print("Unable to fetch identity token")
-                                return
-                            }
-                            let tokenString = String(data: identityToken, encoding: .utf8) ?? ""
-                            let firebaseCredential = OAuthProvider.credential(withProviderID: "apple.com", idToken: tokenString, rawNonce: "")
+                    Text("only one photo a day.")
+                        .font(.system(size: 22))
+                        .foregroundColor(.gray)
 
-                            Auth.auth().signIn(with: firebaseCredential) { authResult, error in
-                                if let error = error {
-                                    print("Firebase sign in error: \(error.localizedDescription)")
-                                    self.authError = error.localizedDescription
+                    HStack {
+                        Spacer()
+                        HStack {
+                            Image("1")
+                                .resizable()
+                                .frame(width: 116, height: 169.35)
+                                .cornerRadius(19)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 19)
+                                        .stroke(Color.white, lineWidth: 4)
+                                )
+                                .rotationEffect(Angle(degrees: -16))
+                                .offset(x: 25, y: 15)
+                                .shadow(radius: 24, x: 0, y: 14)
+                                .zIndex(3)
+                                .scaleEffect(imagesAppeared ? 1 : 0)
+                                .animation(.interpolatingSpring(stiffness: 60, damping: 6).delay(0.1), value: imagesAppeared)
+                                .onAppear {
+                                    if imagesAppeared {
+                                        triggerHaptic()
+                                    }
+                                }
+
+                            Image("2")
+                                .resizable()
+                                .frame(width: 116, height: 169.35)
+                                .cornerRadius(19)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 19)
+                                        .stroke(Color.white, lineWidth: 4)
+                                )
+                                .zIndex(2)
+                                .rotationEffect(Angle(degrees: -2))
+                                .shadow(radius: 24, x: 0, y: 14)
+                                .scaleEffect(imagesAppeared ? 1 : 0)
+                                .animation(.interpolatingSpring(stiffness: 60, damping: 6).delay(0.2), value: imagesAppeared)
+                                .onAppear {
+                                    if imagesAppeared {
+                                        triggerHaptic()
+                                    }
+                                }
+
+                            Image("3")
+                                .resizable()
+                                .frame(width: 116, height: 169.35)
+                                .cornerRadius(19)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 19)
+                                        .stroke(Color.white, lineWidth: 4)
+                                )
+                                .zIndex(1)
+                                .rotationEffect(Angle(degrees: 17))
+                                .shadow(radius: 24, x: 0, y: 14)
+                                .offset(x: -33, y: 15)
+                                .scaleEffect(imagesAppeared ? 1 : 0)
+                                .animation(.interpolatingSpring(stiffness: 60, damping: 6).delay(0.3), value: imagesAppeared)
+                                .onAppear {
+                                    if imagesAppeared {
+                                        triggerHaptic()
+                                    }
+                                }
+                        }
+                        .frame(maxHeight: .infinity, alignment: .top)
+                        .padding(.top, 118)
+
+                        Spacer()
+                    }
+
+                    // Sign in button
+                    SignInWithAppleButton { request in
+                        request.requestedScopes = [.fullName, .email]
+                    } onCompletion: { result in
+                        switch result {
+                        case .success(let authResults):
+                            switch authResults.credential {
+                            case let appleIDCredential as ASAuthorizationAppleIDCredential:
+                                // Extract the token and authenticate with Firebase
+                                guard let identityToken = appleIDCredential.identityToken else {
+                                    print("Unable to fetch identity token")
                                     return
                                 }
-                                // User is signed in
-                                if let user = authResult?.user {
-                                    checkUserInFirestore(uid: user.uid) { exists in
-                                        if exists {
-                                            self.navigateToHome = true
-                                        } else {
-                                            saveUserToFirestore(user: user) { success in
-                                                self.isSignedIn = success
+                                let tokenString = String(data: identityToken, encoding: .utf8) ?? ""
+                                let firebaseCredential = OAuthProvider.credential(withProviderID: "apple.com", idToken: tokenString, rawNonce: "")
+
+                                Auth.auth().signIn(with: firebaseCredential) { authResult, error in
+                                    if let error = error {
+                                        print("Firebase sign in error: \(error.localizedDescription)")
+                                        self.authError = error.localizedDescription
+                                        return
+                                    }
+                                    // User is signed in
+                                    if let user = authResult?.user {
+                                        checkUserInFirestore(uid: user.uid) { exists in
+                                            if exists {
+                                                self.navigateToHome = true
+                                            } else {
+                                                saveUserToFirestore(user: user) { success in
+                                                    self.isSignedIn = success
+                                                }
                                             }
                                         }
                                     }
                                 }
+
+                            default:
+                                break
                             }
-
-                        default:
-                            break
+                        case .failure(let error):
+                            authError = error.localizedDescription
+                            print("Authorization failed: \(error.localizedDescription)")
                         }
-                    case .failure(let error):
-                        authError = error.localizedDescription
-                        print("Authorization failed: \(error.localizedDescription)")
                     }
-                }
-                .signInWithAppleButtonStyle(.black)
-                .frame(width: 291, height: 62)
-                .cornerRadius(40)
-                .shadow(radius: 24, x: 0, y: 14)
-                .padding(.bottom, 20)
-                // End sign in button
+                    .signInWithAppleButtonStyle(.black)
+                    .frame(width: 291, height: 62)
+                    .cornerRadius(40)
+                    .shadow(radius: 24, x: 0, y: 14)
+                    .padding(.bottom, 20)
+                    // End sign in button
 
-                if let authError = authError {
-                    Text("Authorization failed: \(authError)")
-                        .foregroundColor(.red)
-                }
-                
-                // Hidden NavigationLink to handle navigation
-                NavigationLink(destination: Photoinfo().navigationBarBackButtonHidden(true), isActive: $isSignedIn) {
-                    EmptyView()
-                }
-
-                // Hidden NavigationLink to Home
-                NavigationLink(destination: Home().navigationBarBackButtonHidden(true), isActive: $navigateToHome) {
-                    EmptyView()
-                }
-            }
-            .frame(maxHeight: .infinity, alignment: .top)
-            .padding(.top, 134)
-            .onAppear {
-                // Check if user is already signed in
-                if let currentUser = Auth.auth().currentUser {
-                    checkUserInFirestore(uid: currentUser.uid) { exists in
-                        self.navigateToHome = exists
+                    if let authError = authError {
+                        Text("Authorization failed: \(authError)")
+                            .foregroundColor(.red)
                     }
+                    
+                    // Hidden NavigationLink to handle navigation
+                    NavigationLink(destination: Photoinfo().navigationBarBackButtonHidden(true), isActive: $isSignedIn) {
+                        EmptyView()
+                    }
+                    .isDetailLink(false) // Prevent unintended navigation behavior
+
+                    // Hidden NavigationLink to Home
+                    NavigationLink(destination: Home().navigationBarBackButtonHidden(true), isActive: $navigateToHome) {
+                        EmptyView()
+                    }
+                    .isDetailLink(false) // Prevent unintended navigation behavior
                 }
-                // Start the animation when the view appears
-                imagesAppeared = true
-                // Trigger haptic feedback when the view first appears
-                triggerHaptic()
+                .frame(maxHeight: .infinity, alignment: .top)
+                .padding(.top, 134)
+                .onAppear {
+                    imagesAppeared = true
+                    triggerHaptic()
+                }
+                .onDisappear {
+                    imagesAppeared = false
+                }
             }
-            .onDisappear {
-                // Reset the animation state if necessary
-                imagesAppeared = false
-            }
+            .navigationViewStyle(StackNavigationViewStyle())
         }
-        .navigationViewStyle(StackNavigationViewStyle())
     }
 
     private func triggerHaptic() {
@@ -215,6 +216,17 @@ struct Timecap: View {
             } else {
                 completion(false)
             }
+        }
+    }
+
+    private func checkUserStatus() {
+        if let currentUser = Auth.auth().currentUser {
+            checkUserInFirestore(uid: currentUser.uid) { exists in
+                self.navigateToHome = exists
+                self.isLoading = false // Set loading to false once status is checked
+            }
+        } else {
+            self.isLoading = false // Set loading to false if no user is signed in
         }
     }
 }
