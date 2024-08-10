@@ -37,11 +37,13 @@ struct MessageButton: View {
             
             ZStack{
                 Capsule()
+                    .foregroundColor(.gray)
+                    .opacity(0.4)
                     .frame(width: 40, height: 6)
             }
             .frame(height: 40)
             .frame(maxWidth: /*@START_MENU_TOKEN@*/.infinity/*@END_MENU_TOKEN@*/)
-            .background(Color.blue.opacity(0.00001))
+            .background(Color.white.opacity(0.00001))
             .gesture(dragGesture)
             
             ZStack{
@@ -56,8 +58,8 @@ struct MessageButton: View {
                     
                     Text("You can only take a photo a day!")
                         .font(.system(size: 24, weight: .bold))
-                        .foregroundColor(.white)
-                        .frame(width: 200)
+                        .foregroundColor(.black)
+                        .frame(width: 209)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 24)
                     
@@ -90,7 +92,7 @@ struct MessageButton: View {
                 Rectangle()
                     .frame(height: curHeight / 2)
             }
-                .foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/))
+                .foregroundColor(/*@START_MENU_TOKEN@*/.white/*@END_MENU_TOKEN@*/))
     }
     
     @State private var prevDragTranslation = CGSizeZero
