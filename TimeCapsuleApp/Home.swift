@@ -181,7 +181,7 @@ struct Home: View {
                                 
                                 Spacer()
                                     .frame(width: 72)
-                                
+                            }
                                 Button(action: {
                                     // Action for button
                                 }, label: {
@@ -189,7 +189,6 @@ struct Home: View {
                                         .renderingMode(.template) // Use template rendering mode to apply color
                                         .foregroundColor(.white) // Set the color of the image
                                 })
-                            }
                         }
                         .zIndex(1) // Ensure the HStack is above the scrollable content
                         .padding(.bottom, 50) // Adjust padding to place it correctly at the bottom
