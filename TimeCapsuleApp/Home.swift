@@ -9,6 +9,7 @@ struct Home: View {
     @State private var imagesAppeared = false
     @State private var hasPostedPhoto = false
     @State private var imageUrls: [String] = []
+    @State private var photoCount: Int = 0
 
     var body: some View {
         GeometryReader{
@@ -160,7 +161,7 @@ struct Home: View {
                     // Floating HStack at the bottom
                     ZStack {
                         TransparentBlurView(removeAllFilters: true)
-                            .blur(radius: 35)
+                            .blur(radius: 25)
                             .frame(height: 100 + safeArea.bottom)
                             .zIndex(1)
                             .offset(y: 400)
@@ -170,26 +171,25 @@ struct Home: View {
                             ) {
                                 ZStack {
                                     Circle()
-                                        .stroke(hasPostedPhoto ? Color.white : Color.gray, lineWidth: 3)
+                                        .stroke(photoCount >= 2 ? Color.white : Color.gray, lineWidth: 3)
                                         .frame(width: 24, height: 24)
                                     
                                     Circle()
                                         .frame(width: 13, height: 13)
-                                        .foregroundColor(hasPostedPhoto ? .white : .gray)
+                                        .foregroundColor(photoCount >= 2 ? .white : .gray)
                                 }
-                                .opacity(hasPostedPhoto ? 0.4 : 0.2) // Adjust opacity based on state
+                                .opacity(photoCount >= 2 ? 0.4 : 0.2) // Set opacity to 40%
                                 
                                 Spacer()
                                     .frame(width: 72)
-                                
                             }
-                            Button(action: {
-                                // Action for button
-                            }, label: {
-                                Image("Notebook")
-                                    .renderingMode(.template) // Use template rendering mode to apply color
-                                    .foregroundColor(hasPostedPhoto ? .white : .gray) // Set the color of the image based on state
-                            })
+                                Button(action: {
+                                    // Action for button
+                                }, label: {
+                                    Image("Notebook")
+                                        .renderingMode(.template) // Use template rendering mode to apply color
+                                        .foregroundColor(photoCount >= 2 ? .white : .gray) // Set the color of the image
+                                })
                         }
                         .zIndex(1) // Ensure the HStack is above the scrollable content
                         .padding(.bottom, 50) // Adjust padding to place it correctly at the bottom
@@ -240,20 +240,21 @@ struct Home: View {
         let photosCollectionRef = db.collection("users").document(user.uid).collection("photos")
         
         photosCollectionRef.getDocuments { snapshot, error in
-            if let snapshot = snapshot {
-                self.imageUrls = snapshot.documents.compactMap { document in
-                    let data = document.data()
-                    if let url = data["photoURL"] as? String {
-                        print("Fetched image URL: \(url)") // Debug log
-                        return url
+                    if let snapshot = snapshot {
+                        self.photoCount = snapshot.count
+                        self.imageUrls = snapshot.documents.compactMap { document in
+                            let data = document.data()
+                            if let url = data["photoURL"] as? String {
+                                print("Fetched image URL: \(url)") // Debug log
+                                return url
+                            }
+                            return nil
+                        }
+                    } else {
+                        print("Error fetching image URLs: \(error?.localizedDescription ?? "Unknown error")")
                     }
-                    return nil
                 }
-            } else {
-                print("Error fetching image URLs: \(error?.localizedDescription ?? "Unknown error")")
             }
-        }
-    }
     
     private func triggerHaptic() {
         let generator = UINotificationFeedbackGenerator()
