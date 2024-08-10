@@ -20,9 +20,7 @@ class Camera: UIViewController {
     private let shutterButton: UIButton = {
         let outerCircle = UIButton(frame: CGRect(x: 0, y: 0, width: 75, height: 75))
         outerCircle.layer.cornerRadius = 37.5
-        outerCircle.layer.borderWidth = 2
-        outerCircle.layer.borderColor = UIColor.white.cgColor
-        outerCircle.backgroundColor = .clear
+        outerCircle.backgroundColor = .white
 
         let innerCircle = UIView(frame: CGRect(x: 5, y: 5, width: 65, height: 65))
         innerCircle.layer.cornerRadius = 32.5
