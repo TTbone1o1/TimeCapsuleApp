@@ -19,7 +19,7 @@ struct Home: View {
                 ZStack {
                     VStack {
                         HStack {
-                            Text(username.isEmpty ? "No Username" : username)
+                            Text(username.isEmpty ? "" : username)
                                 .font(.system(size: 18))
                                 .fontWeight(.bold)
                                 .padding()
@@ -114,6 +114,7 @@ struct Home: View {
                                 }
                                 Spacer()
                             }
+                            Spacer()
                         } else {
                             ScrollView {
                                 VStack(spacing: 45) {
