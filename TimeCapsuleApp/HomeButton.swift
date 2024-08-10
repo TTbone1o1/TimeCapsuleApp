@@ -13,12 +13,12 @@ struct HomeButton: View {
                 NavigationLink(destination: Home()) {
                     ZStack {
                         Circle()
-                            .stroke(Color.gray, lineWidth: 3)
+                            .stroke(Color.white, lineWidth: 3)
                             .frame(width: 24, height: 24)
                         
                         Circle()
                             .frame(width: 13, height: 13)
-                            .foregroundColor(.gray)
+                            .foregroundColor(.white)
                     }
                 }
                 
@@ -31,6 +31,7 @@ struct HomeButton: View {
                     Image("Notebook")
                         .renderingMode(.template)
                         .foregroundColor(.white)
+                        .opacity(0.4)
                     }
                 )
                 .simultaneousGesture(TapGesture().onEnded {
