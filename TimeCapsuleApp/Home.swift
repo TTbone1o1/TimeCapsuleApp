@@ -160,7 +160,7 @@ struct Home: View {
                     // Floating HStack at the bottom
                     ZStack {
                         TransparentBlurView(removeAllFilters: true)
-                            .blur(radius: 15)
+                            .blur(radius: 35)
                             .frame(height: 100 + safeArea.bottom)
                             .zIndex(1)
                             .offset(y: 400)
