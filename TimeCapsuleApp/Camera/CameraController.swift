@@ -34,6 +34,7 @@ struct CameraView: UIViewControllerRepresentable {
 
 struct CameraController: View {
     @State private var navigateToHome = false
+    @State private var isShowingMessage = false
 
     var body: some View {
         ZStack {
@@ -47,8 +48,15 @@ struct CameraController: View {
                         .padding(.bottom, 30) // Adjust as needed
                 }
             }
+            
+            // Add your MessageButton here
+            MessageButton(isShowing: $isShowingMessage)
         }
         .navigationBarHidden(true) // Hide the navigation bar if somehow it's still shown
+        .onAppear {
+            // Example: show the message button when the view appears
+            isShowingMessage = true
+        }
     }
     
     class Coordinator: NSObject, CameraDelegate {
@@ -66,23 +74,6 @@ struct CameraController: View {
         }
     }
 }
-
-
-//struct PostButton: View {
-//    var body: some View {
-//        Button(action: {
-//            // Define the action for posting the photo
-//            print("Post Button tapped!")
-//        }) {
-//            Text("Post")
-//                .font(.title)
-//                .padding()
-//                .background(Color.blue)
-//                .foregroundColor(.white)
-//                .cornerRadius(10)
-//        }
-//    }
-//}
 
 struct CameraController_Previews: PreviewProvider {
     static var previews: some View {
