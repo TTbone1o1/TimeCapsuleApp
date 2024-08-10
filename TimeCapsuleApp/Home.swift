@@ -115,27 +115,32 @@ struct Home: View {
                             }
                         } else {
                             ScrollView {
-                                VStack {
+                                VStack(spacing: 45) {
                                     ForEach(imageUrls, id: \.self) { imageUrl in
                                         AsyncImage(url: URL(string: imageUrl)) { image in
                                             image
                                                 .resizable()
                                                 .aspectRatio(contentMode: .fill)
-                                                .frame(width: 313, height: 421)
+                                                .frame(width: 313, height: 421) // Fixed width
                                                 .cornerRadius(33)
-                                                .clipped()
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: 33)
+                                                        .stroke(Color.clear, lineWidth: 0) // Overlay to maintain corner radius
+                                                )
+                                                .shadow(radius: 20, x: 0, y: 24) // Apply the shadow here
                                         } placeholder: {
                                             ProgressView()
                                         }
-                                        .padding(.bottom, 20)
-                                        .onAppear {
-                                            print("Loading image from URL: \(imageUrl)") // Debugging: print image URL
-                                        }
+                                        .frame(maxWidth: .infinity) // Ensure the image is centered and takes up full width
+                                        .padding(.horizontal, (UIScreen.main.bounds.width - 313) / 2) // Adjust padding to ensure the image is centered
                                     }
                                 }
-                                .padding()
+                                .padding(.vertical, 20) // Optional: Add vertical padding for spacing between images
                             }
+                            .ignoresSafeArea(edges: [.leading, .trailing]) // Ignore safe area on left and right sides
                             .scrollIndicators(.hidden)
+
+
                         }
 
                         Spacer()
