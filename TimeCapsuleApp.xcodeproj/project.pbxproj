@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		CD1E8CAC2C5EB66700C01341 /* CameraController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1E8CAB2C5EB66700C01341 /* CameraController.swift */; };
 		CD1E8CB02C5EE1CE00C01341 /* Home.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1E8CAF2C5EE1CE00C01341 /* Home.swift */; };
-		CD1E8CB62C5FD3E300C01341 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1E8CB52C5FD3E300C01341 /* MainView.swift */; };
 		CD1E8CBE2C6000F200C01341 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = CD1E8CBD2C6000F200C01341 /* GoogleService-Info.plist */; };
 		CD1E8CC12C6001E800C01341 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = CD1E8CC02C6001E800C01341 /* FirebaseAnalytics */; };
 		CD1E8CC42C60090900C01341 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = CD1E8CC32C60090900C01341 /* FirebaseAuth */; };
@@ -21,6 +20,7 @@
 		CD4B48E92C5D6B19008DC1D2 /* Create.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4B48E82C5D6B19008DC1D2 /* Create.swift */; };
 		CD4B48ED2C5D9EF5008DC1D2 /* Camera.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4B48EC2C5D9EF5008DC1D2 /* Camera.swift */; };
 		CDA00CC52C66BAFB002C0B50 /* TransparentBlurView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA00CC42C66BAFB002C0B50 /* TransparentBlurView.swift */; };
+		CDA00CC82C67FCB7002C0B50 /* MessageButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA00CC72C67FCB7002C0B50 /* MessageButton.swift */; };
 		CDA2DF762C60431D0005FB4E /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = CDA2DF752C60431D0005FB4E /* FirebaseFirestore */; };
 		CDA2DF782C6043260005FB4E /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = CDA2DF772C6043260005FB4E /* FirebaseStorage */; };
 		CDA2DF7A2C611DBE0005FB4E /* Photoinfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA2DF792C611DBE0005FB4E /* Photoinfo.swift */; };
@@ -33,7 +33,6 @@
 /* Begin PBXFileReference section */
 		CD1E8CAB2C5EB66700C01341 /* CameraController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraController.swift; sourceTree = "<group>"; };
 		CD1E8CAF2C5EE1CE00C01341 /* Home.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Home.swift; sourceTree = "<group>"; };
-		CD1E8CB52C5FD3E300C01341 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
 		CD1E8CBD2C6000F200C01341 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../../../Downloads/GoogleService-Info.plist"; sourceTree = "<group>"; };
 		CD1E8CC52C600A9500C01341 /* TimeCapsuleApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TimeCapsuleApp.entitlements; sourceTree = "<group>"; };
 		CD3671B22C5C3AC1002DA9F2 /* TimeCapsuleApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TimeCapsuleApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -45,6 +44,7 @@
 		CD4B48E82C5D6B19008DC1D2 /* Create.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Create.swift; sourceTree = "<group>"; };
 		CD4B48EC2C5D9EF5008DC1D2 /* Camera.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Camera.swift; sourceTree = "<group>"; };
 		CDA00CC42C66BAFB002C0B50 /* TransparentBlurView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransparentBlurView.swift; sourceTree = "<group>"; };
+		CDA00CC72C67FCB7002C0B50 /* MessageButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageButton.swift; sourceTree = "<group>"; };
 		CDA2DF792C611DBE0005FB4E /* Photoinfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Photoinfo.swift; sourceTree = "<group>"; };
 		CDA2DF7B2C611DCF0005FB4E /* Writeinfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Writeinfo.swift; sourceTree = "<group>"; };
 		CDA2DF7E2C6167270005FB4E /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
@@ -107,16 +107,14 @@
 			isa = PBXGroup;
 			children = (
 				CD1E8CC52C600A9500C01341 /* TimeCapsuleApp.entitlements */,
-				CD4B48E62C5D2BBC008DC1D2 /* Timecap.swift */,
 				CD3671B52C5C3AC1002DA9F2 /* TimeCapsuleApp.swift */,
+				CD4B48E62C5D2BBC008DC1D2 /* Timecap.swift */,
 				CD1E8CAF2C5EE1CE00C01341 /* Home.swift */,
-				CDA2DF832C63CDDD0005FB4E /* HomeButton.swift */,
-				CDA2DF852C6416ED0005FB4E /* PostButton.swift */,
+				CDA00CC62C67FC83002C0B50 /* Button */,
 				CDA2DF7D2C611DEF0005FB4E /* Info */,
 				CD3671B72C5C3AC1002DA9F2 /* ContentView.swift */,
-				CDA00CC42C66BAFB002C0B50 /* TransparentBlurView.swift */,
 				CD4B48E82C5D6B19008DC1D2 /* Create.swift */,
-				CD1E8CB52C5FD3E300C01341 /* MainView.swift */,
+				CDA00CC42C66BAFB002C0B50 /* TransparentBlurView.swift */,
 				CD1E8CAE2C5EB7C400C01341 /* Camera */,
 				CD3671B92C5C3AC7002DA9F2 /* Assets.xcassets */,
 				CD1E8CBD2C6000F200C01341 /* GoogleService-Info.plist */,
@@ -132,6 +130,16 @@
 				CD3671BC2C5C3AC7002DA9F2 /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		CDA00CC62C67FC83002C0B50 /* Button */ = {
+			isa = PBXGroup;
+			children = (
+				CDA2DF832C63CDDD0005FB4E /* HomeButton.swift */,
+				CDA2DF852C6416ED0005FB4E /* PostButton.swift */,
+				CDA00CC72C67FCB7002C0B50 /* MessageButton.swift */,
+			);
+			path = Button;
 			sourceTree = "<group>";
 		};
 		CDA2DF7D2C611DEF0005FB4E /* Info */ = {
@@ -224,8 +232,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				CD3671B82C5C3AC1002DA9F2 /* ContentView.swift in Sources */,
-				CD1E8CB62C5FD3E300C01341 /* MainView.swift in Sources */,
 				CD4B48ED2C5D9EF5008DC1D2 /* Camera.swift in Sources */,
+				CDA00CC82C67FCB7002C0B50 /* MessageButton.swift in Sources */,
 				CDA2DF7A2C611DBE0005FB4E /* Photoinfo.swift in Sources */,
 				CD4B48E72C5D2BBC008DC1D2 /* Timecap.swift in Sources */,
 				CDA2DF7C2C611DCF0005FB4E /* Writeinfo.swift in Sources */,
