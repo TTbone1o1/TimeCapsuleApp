@@ -170,22 +170,26 @@ struct Home: View {
                             ) {
                                 ZStack {
                                     Circle()
-                                        .stroke(Color.gray, lineWidth: 3)
+                                        .stroke(Color.white, lineWidth: 3)
                                         .frame(width: 24, height: 24)
                                     
                                     Circle()
                                         .frame(width: 13, height: 13)
-                                        .foregroundColor(.gray)
+                                        .foregroundColor(.white)
                                 }
+                                .opacity(0.4) // Set opacity to 40%
+                                
+                                Spacer()
+                                    .frame(width: 72)
+                                
+                                Button(action: {
+                                    // Action for button
+                                }, label: {
+                                    Image("Notebook")
+                                        .renderingMode(.template) // Use template rendering mode to apply color
+                                        .foregroundColor(.white) // Set the color of the image
+                                })
                             }
-                            
-                            Spacer()
-                                .frame(width: 72)
-                            Button(action: {
-                                // Action for button
-                            }, label: {
-                                Image("Notebook")
-                            })
                         }
                         .zIndex(1) // Ensure the HStack is above the scrollable content
                         .padding(.bottom, 50) // Adjust padding to place it correctly at the bottom
