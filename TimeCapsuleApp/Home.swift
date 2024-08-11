@@ -10,10 +10,11 @@ struct Home: View {
     @State private var hasPostedPhoto = false
     @State private var imageUrls: [String] = []
     @State private var photoCount: Int = 0
+    @State private var isShowingMessage = false
 
     var body: some View {
-        GeometryReader{
-            let safeArea = $0.safeAreaInsets
+        GeometryReader { geometry in
+            let safeArea = geometry.safeAreaInsets
             
             NavigationView {
                 ZStack {
@@ -28,7 +29,7 @@ struct Home: View {
                             
                             Button(action: {
                                 // Action for button
-                            }, label: {
+                            }) {
                                 VStack(spacing: 2) {
                                     ForEach(0..<3) { _ in
                                         Rectangle()
@@ -38,7 +39,7 @@ struct Home: View {
                                     }
                                 }
                                 .padding(.trailing)
-                            })
+                            }
                         }
                         
                         Spacer()
@@ -141,8 +142,6 @@ struct Home: View {
                             }
                             .ignoresSafeArea(edges: [.leading, .trailing]) // Ignore safe area on left and right sides
                             .scrollIndicators(.hidden)
-
-
                         }
 
                         Spacer()
@@ -184,18 +183,18 @@ struct Home: View {
                                 Spacer()
                                     .frame(width: 72)
                             }
-                                Button(action: {
-                                    // Action for button
-                                }, label: {
-                                    Image("Notebook")
-                                        .renderingMode(.template) // Use template rendering mode to apply color
-                                        .foregroundColor(photoCount >= 2 ? .white : .gray) // Set the color of the image
-                                })
+                            Button(action: {
+                                // Action for button
+                            }) {
+                                Image("Notebook")
+                                    .renderingMode(.template) // Use template rendering mode to apply color
+                                    .foregroundColor(photoCount >= 2 ? .white : .gray) // Set the color of the image
+                            }
                         }
                         .zIndex(1) // Ensure the HStack is above the scrollable content
                         .padding(.bottom, 50) // Adjust padding to place it correctly at the bottom
-                    .frame(maxHeight: .infinity, alignment: .bottom)
                     }
+                    .frame(maxHeight: .infinity, alignment: .bottom)
                 }
                 .edgesIgnoringSafeArea(.bottom)
             }
@@ -224,10 +223,22 @@ struct Home: View {
         
         photosCollectionRef.getDocuments { snapshot, error in
             if let snapshot = snapshot {
-                self.hasPostedPhoto = !snapshot.isEmpty
+                let today = Calendar.current.startOfDay(for: Date())
+                let postedToday = snapshot.documents.contains { document in
+                    if let timestamp = document.data()["timestamp"] as? Timestamp {
+                        let photoDate = Calendar.current.startOfDay(for: timestamp.dateValue())
+                        return photoDate == today
+                    }
+                    return false
+                }
+                
+                self.hasPostedPhoto = postedToday
                 if self.hasPostedPhoto {
                     self.fetchImageUrls()
                 }
+                
+                // Show the message button if user has posted today
+                self.isShowingMessage = postedToday
             } else {
                 print("Error fetching photos: \(error?.localizedDescription ?? "Unknown error")")
                 self.hasPostedPhoto = false
@@ -241,29 +252,30 @@ struct Home: View {
         let photosCollectionRef = db.collection("users").document(user.uid).collection("photos")
         
         photosCollectionRef.getDocuments { snapshot, error in
-                    if let snapshot = snapshot {
-                        self.photoCount = snapshot.count
-                        self.imageUrls = snapshot.documents.compactMap { document in
-                            let data = document.data()
-                            if let url = data["photoURL"] as? String {
-                                print("Fetched image URL: \(url)") // Debug log
-                                return url
-                            }
-                            return nil
-                        }
-                    } else {
-                        print("Error fetching image URLs: \(error?.localizedDescription ?? "Unknown error")")
+            if let snapshot = snapshot {
+                self.photoCount = snapshot.count
+                self.imageUrls = snapshot.documents.compactMap { document in
+                    let data = document.data()
+                    if let url = data["photoURL"] as? String {
+                        print("Fetched image URL: \(url)") // Debug log
+                        return url
                     }
+                    return nil
                 }
+            } else {
+                print("Error fetching image URLs: \(error?.localizedDescription ?? "Unknown error")")
             }
+        }
+    }
     
     private func triggerHaptic() {
         let generator = UINotificationFeedbackGenerator()
-        generator.prepare()
         generator.notificationOccurred(.success)
     }
 }
 
-#Preview {
-    Home()
+struct Home_Previews: PreviewProvider {
+    static var previews: some View {
+        Home()
+    }
 }
