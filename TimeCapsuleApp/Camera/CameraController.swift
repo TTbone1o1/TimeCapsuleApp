@@ -1,4 +1,8 @@
 import SwiftUI
+import Firebase
+import FirebaseAuth
+import FirebaseFirestore
+import FirebaseStorage
 
 struct CameraView: UIViewControllerRepresentable {
     @Binding var navigateToHome: Bool
@@ -38,9 +42,11 @@ struct CameraController: View {
 
     var body: some View {
         ZStack {
-            CameraView(navigateToHome: $navigateToHome, cameraDelegate: CameraController.Coordinator(self))
+            // CameraView is at the bottom
+            CameraView(navigateToHome: $navigateToHome, cameraDelegate: Coordinator(self))
                 .edgesIgnoringSafeArea(.all)
             
+            // HomeButton is below MessageButton
             if !navigateToHome {
                 VStack {
                     Spacer()
@@ -48,14 +54,35 @@ struct CameraController: View {
                         .padding(.bottom, 30) // Adjust as needed
                 }
             }
-            
-            // Add your MessageButton here
-            MessageButton(isShowing: $isShowingMessage)
+
+            // MessageButton is on top of HomeButton
+            if isShowingMessage {
+                MessageButton(isShowing: $isShowingMessage)
+                    .transition(.move(edge: .bottom))
+            }
         }
         .navigationBarHidden(true) // Hide the navigation bar if somehow it's still shown
         .onAppear {
-            // Example: show the message button when the view appears
-            isShowingMessage = true
+            checkIfPostedToday()
+        }
+    }
+    
+    private func checkIfPostedToday() {
+        guard let user = Auth.auth().currentUser else { return }
+        let db = Firestore.firestore()
+        let photosCollectionRef = db.collection("users").document(user.uid).collection("photos")
+        
+        let today = Calendar.current.startOfDay(for: Date())
+        let query = photosCollectionRef.whereField("timestamp", isGreaterThanOrEqualTo: today)
+            .whereField("timestamp", isLessThan: Calendar.current.date(byAdding: .day, value: 1, to: today)!)
+        
+        query.getDocuments { snapshot, error in
+            if let snapshot = snapshot {
+                self.isShowingMessage = !snapshot.isEmpty
+            } else {
+                print("Error checking if posted today: \(error?.localizedDescription ?? "Unknown error")")
+                self.isShowingMessage = false
+            }
         }
     }
     
@@ -69,7 +96,11 @@ struct CameraController: View {
         func didTakePhoto() {
             // Handle the photo taken event
             DispatchQueue.main.async {
-                self.parent.navigateToHome = true
+                if self.parent.isShowingMessage {
+                    self.parent.navigateToHome = false // Stay on current view
+                } else {
+                    self.parent.navigateToHome = true
+                }
             }
         }
     }
