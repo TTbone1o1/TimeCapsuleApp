@@ -11,6 +11,7 @@ struct MessageButton: View {
     
     @Binding var isShowing : Bool
     @State private var curHeight: CGFloat = 400
+    @State private var navigateToHome = false
     
     let minHeight: CGFloat = 400
     let maxHeight: CGFloat = 700
@@ -65,9 +66,9 @@ struct MessageButton: View {
                     
                     Spacer()
                     
-                    Button {
-                        //This button is going to take you back to Home.swift
-                    } label: {
+                    NavigationLink(destination: Home().navigationBarBackButtonHidden(true),
+                        isActive: $navigateToHome,
+                        label: {
                         ZStack {
                             Rectangle()
                                 .frame(width: 291, height: 62)
@@ -81,7 +82,9 @@ struct MessageButton: View {
                                     .font(.system(size: 16, weight: .semibold))
                             }
                         }
-                    }
+                        }
+                    )
+                    
                  
                 }
                 .padding(.horizontal, 30)
