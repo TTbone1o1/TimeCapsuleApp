@@ -61,23 +61,24 @@ struct MessageButton: View {
 
                         Spacer()
 
-                        Button(action: {
-                            isShowing = false
-                        }) {
-                            ZStack {
-                                Rectangle()
-                                    .frame(width: 291, height: 62)
-                                    .cornerRadius(40)
-                                    .foregroundColor(.black)
-                                    .shadow(radius: 24, x: 0, y: 14)
-
-                                HStack {
-                                    Text("Sounds good")
-                                        .foregroundColor(.white)
-                                        .font(.system(size: 16, weight: .semibold))
+                        NavigationLink(destination: Home().navigationBarBackButtonHidden(true),
+                            isActive: $navigateToHome,
+                            label: {
+                                ZStack {
+                                    Rectangle()
+                                        .frame(width: 291, height: 62)
+                                        .cornerRadius(40)
+                                        .foregroundColor(.black)
+                                        .shadow(radius: 24, x: 0, y: 14)
+    
+                                    HStack {
+                                        Text("Sounds good")
+                                            .foregroundColor(.white)
+                                            .font(.system(size: 16, weight: .semibold))
+                                    }
                                 }
                             }
-                        }
+                        )
                     }
                     .padding(.horizontal, 30)
                 }
