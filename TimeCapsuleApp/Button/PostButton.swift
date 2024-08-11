@@ -80,6 +80,33 @@ struct PostView: View {
     private func uploadPhoto(image: UIImage) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
 
+        // Check if the user has already posted today
+        let db = Firestore.firestore()
+        let photosCollectionRef = db.collection("users").document(uid).collection("photos")
+
+        let startOfToday = Calendar.current.startOfDay(for: Date())
+        photosCollectionRef
+            .whereField("timestamp", isGreaterThanOrEqualTo: Timestamp(date: startOfToday))
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("Error checking today's post: \(error.localizedDescription)")
+                    return
+                }
+
+                if let snapshot = snapshot, !snapshot.isEmpty {
+                    print("User has already posted today")
+                    // Optionally, you can show an alert here to notify the user
+                    return
+                } else {
+                    // If no posts were found for today, proceed with the upload
+                    performUpload(image: image)
+                }
+            }
+    }
+    
+    private func performUpload(image: UIImage) {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+
         // Create a unique identifier for the photo
         let photoID = UUID().uuidString
         let storageRef = Storage.storage().reference().child("users/\(uid)/photos/\(photoID).jpg")
