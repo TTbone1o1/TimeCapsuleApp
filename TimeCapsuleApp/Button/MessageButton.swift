@@ -65,19 +65,24 @@ struct MessageButton: View {
                     
                     Spacer()
                     
-                    ZStack {
-                        Rectangle()
-                            .frame(width: 291, height: 62)
-                            .cornerRadius(40)
-                            .foregroundColor(.black)
-                            .shadow(radius: 24, x: 0, y: 14)
-                        
-                        HStack {
-                            Text("Sounds good")
-                                .foregroundColor(.white)
-                                .font(.system(size: 16, weight: .semibold))
+                    Button {
+                        //This button is going to take you back to Home.swift
+                    } label: {
+                        ZStack {
+                            Rectangle()
+                                .frame(width: 291, height: 62)
+                                .cornerRadius(40)
+                                .foregroundColor(.black)
+                                .shadow(radius: 24, x: 0, y: 14)
+                            
+                            HStack {
+                                Text("Sounds good")
+                                    .foregroundColor(.white)
+                                    .font(.system(size: 16, weight: .semibold))
+                            }
                         }
                     }
+                 
                 }
                 .padding(.horizontal, 30)
             }
