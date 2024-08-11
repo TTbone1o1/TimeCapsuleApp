@@ -10,7 +10,6 @@ struct HomeButton: View {
             Spacer()
             
             HStack {
-                NavigationLink(destination: Home()) {
                     ZStack {
                         Circle()
                             .stroke(Color.white, lineWidth: 3)
@@ -20,7 +19,6 @@ struct HomeButton: View {
                             .frame(width: 13, height: 13)
                             .foregroundColor(.white)
                     }
-                }
                 
                 Spacer()
                     .frame(width: 72)
