@@ -164,7 +164,7 @@ struct Home: View {
                             .blur(radius: 25)
                             .frame(height: 100 + safeArea.bottom)
                             .zIndex(1)
-                            .offset(y: 400)
+                            .offset(y: 15)
                         HStack {
                             NavigationLink(destination: CameraController()
                                 .edgesIgnoringSafeArea(.all)
@@ -192,7 +192,7 @@ struct Home: View {
                             }
                         }
                         .zIndex(1) // Ensure the HStack is above the scrollable content
-                        .padding(.bottom, 50) // Adjust padding to place it correctly at the bottom
+                        .padding(.bottom, -10) // Adjust padding to place it correctly at the bottom
                     }
                     .frame(maxHeight: .infinity, alignment: .bottom)
                 }
