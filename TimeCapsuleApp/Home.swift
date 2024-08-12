@@ -8,7 +8,7 @@ struct Home: View {
     @State private var username: String = ""
     @State private var imagesAppeared = false
     @State private var hasPostedPhoto = false
-    @State private var imageUrls: [String] = []
+    @State private var imageUrls: [(String, String)] = [] // Updated to store (URL, Caption) tuples
     @State private var photoCount: Int = 0
     @State private var isShowingMessage = false
 
@@ -119,23 +119,33 @@ struct Home: View {
                         } else {
                             ScrollView {
                                 VStack(spacing: 45) {
-                                    ForEach(imageUrls, id: \.self) { imageUrl in
-                                        AsyncImage(url: URL(string: imageUrl)) { image in
-                                            image
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fill)
-                                                .frame(width: 313, height: 421) // Fixed width
-                                                .cornerRadius(33)
-                                                .overlay(
-                                                    RoundedRectangle(cornerRadius: 33)
-                                                        .stroke(Color.clear, lineWidth: 0) // Overlay to maintain corner radius
-                                                )
-                                                .shadow(radius: 20, x: 0, y: 24) // Apply the shadow here
-                                        } placeholder: {
-                                            ProgressView()
+                                    ForEach(imageUrls, id: \.0) { imageUrl, caption in
+                                        ZStack(alignment: .center) {
+                                            AsyncImage(url: URL(string: imageUrl)) { image in
+                                                image
+                                                    .resizable()
+                                                    .aspectRatio(contentMode: .fill)
+                                                    .frame(width: 313, height: 421) // Fixed width
+                                                    .cornerRadius(33)
+                                                    .overlay(
+                                                        RoundedRectangle(cornerRadius: 33)
+                                                            .stroke(Color.clear, lineWidth: 0) // Overlay to maintain corner radius
+                                                    )
+                                                    .shadow(radius: 20, x: 0, y: 24) // Apply the shadow here
+                                            } placeholder: {
+                                                ProgressView()
+                                            }
+                                            .frame(maxWidth: .infinity) // Ensure the image is centered and takes up full width
+                                            .padding(.horizontal, (UIScreen.main.bounds.width - 313) / 2) // Adjust padding to ensure the image is centered
+                                            
+                                            Text(shortenCaption(caption))
+                                                .font(.system(size: 24))
+                                                .frame(width: 277, height: 58)
+                                                .background(Color.black.opacity(0.6))
+                                                .foregroundColor(.white)
+                                                .cornerRadius(5)
+                                                .padding(50)
                                         }
-                                        .frame(maxWidth: .infinity) // Ensure the image is centered and takes up full width
-                                        .padding(.horizontal, (UIScreen.main.bounds.width - 313) / 2) // Adjust padding to ensure the image is centered
                                     }
                                 }
                                 .padding(.vertical, 20) // Optional: Add vertical padding for spacing between images
@@ -230,9 +240,9 @@ struct Home: View {
                 self.photoCount = snapshot.count
                 self.imageUrls = snapshot.documents.compactMap { document in
                     let data = document.data()
-                    if let url = data["photoURL"] as? String {
-                        print("Fetched image URL: \(url)") // Debug log
-                        return url
+                    if let url = data["photoURL"] as? String, let caption = data["caption"] as? String {
+                        print("Fetched image URL: \(url) with caption: \(caption)") // Debug log
+                        return (url, caption)
                     }
                     return nil
                 }
@@ -246,10 +256,16 @@ struct Home: View {
             }
         }
     }
+
+    private func shortenCaption(_ caption: String) -> String {
+        let words = caption.split(separator: " ")
+        let limitedWords = words.prefix(8)
+        let shortCaption = limitedWords.joined(separator: " ")
+        return shortCaption
+    }
     
     private func triggerHaptic() {
-        let generator = UINotificationFeedbackGenerator()
-        generator.notificationOccurred(.success)
+        // Trigger haptic feedback (optional)
     }
 }
 
