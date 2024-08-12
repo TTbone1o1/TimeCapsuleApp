@@ -30,7 +30,7 @@ struct CameraView: UIViewControllerRepresentable {
         }
 
         func didTakePhoto() {
-            // Handle the photo taken event
+            // Notify CameraController when a photo is taken
             parent.navigateToHome = true
         }
     }
@@ -47,8 +47,8 @@ struct CameraController: View {
                 .edgesIgnoringSafeArea(.all)
             
             // HomeButton is below MessageButton
-            if !navigateToHome {
-                VStack {
+            VStack {
+                if !navigateToHome {
                     Spacer()
                     HomeButton()
                         .padding(.bottom, 30) // Adjust as needed
@@ -63,11 +63,11 @@ struct CameraController: View {
         }
         .navigationBarHidden(true) // Hide the navigation bar if somehow it's still shown
         .onAppear {
-            checkIfPostedToday()
+            // Optionally show the message button when the view appears
         }
     }
     
-    private func checkIfPostedToday() {
+    private func checkIfPostedToday(completion: @escaping (Bool) -> Void) {
         guard let user = Auth.auth().currentUser else { return }
         let db = Firestore.firestore()
         let photosCollectionRef = db.collection("users").document(user.uid).collection("photos")
@@ -78,10 +78,10 @@ struct CameraController: View {
         
         query.getDocuments { snapshot, error in
             if let snapshot = snapshot {
-                self.isShowingMessage = !snapshot.isEmpty
+                completion(!snapshot.isEmpty)
             } else {
                 print("Error checking if posted today: \(error?.localizedDescription ?? "Unknown error")")
-                self.isShowingMessage = false
+                completion(false)
             }
         }
     }
@@ -94,12 +94,18 @@ struct CameraController: View {
         }
 
         func didTakePhoto() {
-            // Handle the photo taken event
-            DispatchQueue.main.async {
-                if self.parent.isShowingMessage {
-                    self.parent.navigateToHome = false // Stay on current view
+            // Check if the user has posted today
+            parent.checkIfPostedToday { hasPostedToday in
+                if hasPostedToday {
+                    // Show the message button if the user has posted today
+                    DispatchQueue.main.async {
+                        self.parent.isShowingMessage = true
+                    }
                 } else {
-                    self.parent.navigateToHome = true
+                    // Handle the case where the user has not posted today
+                    DispatchQueue.main.async {
+                        self.parent.navigateToHome = true
+                    }
                 }
             }
         }
