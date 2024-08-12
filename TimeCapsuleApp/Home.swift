@@ -8,7 +8,7 @@ struct Home: View {
     @State private var username: String = ""
     @State private var imagesAppeared = false
     @State private var hasPostedPhoto = false
-    @State private var imageUrls: [(String, String)] = [] // Updated to store (URL, Caption) tuples
+    @State private var imageUrls: [(String, String, Timestamp)] = [] // Updated to store (URL, Caption, Timestamp) tuples
     @State private var photoCount: Int = 0
     @State private var isShowingMessage = false
 
@@ -119,7 +119,7 @@ struct Home: View {
                         } else {
                             ScrollView {
                                 VStack(spacing: 45) {
-                                    ForEach(imageUrls, id: \.0) { imageUrl, caption in
+                                    ForEach(imageUrls, id: \.0) { imageUrl, caption, timestamp in
                                         ZStack(alignment: .bottom) {
                                             AsyncImage(url: URL(string: imageUrl)) { image in
                                                 image
@@ -138,13 +138,20 @@ struct Home: View {
                                             .frame(maxWidth: .infinity) // Ensure the image is centered and takes up full width
                                             .padding(.horizontal, (UIScreen.main.bounds.width - 313) / 2) // Adjust padding to ensure the image is centered
 
-                                            Text(shortenCaption(caption))
-                                                .font(.system(size: 24))
-                                                   .padding(.horizontal, 28) // Add padding on the left and right
-                                                   .frame(width: 348, height: 70, alignment: .leading) // Align text to the leading edge of the frame
-                                                   .foregroundColor(.white)
-                                                   .cornerRadius(5)
-                                                   .padding(.bottom, 16)
+                                            VStack(alignment: .leading, spacing: 5) {
+                                                Text(formatDate(timestamp.dateValue()))
+                                                    .font(.system(size: 18))
+                                                    .foregroundColor(.white)
+                                                    .padding(.horizontal, 28) // Add padding on the left and right
+                                                    .frame(width: 348, height: 30, alignment: .leading) // Adjust height for timestamp
+                                                Text(shortenCaption(caption))
+                                                    .font(.system(size: 24))
+                                                    .padding(.horizontal, 28) // Add padding on the left and right
+                                                    .frame(width: 348, height: 70, alignment: .leading) // Align text to the leading edge of the frame
+                                                    .foregroundColor(.white)
+                                                    .cornerRadius(5)
+                                                    .padding(.bottom, 16)
+                                            }
                                         }
                                     }
                                 }
@@ -240,9 +247,11 @@ struct Home: View {
                 self.photoCount = snapshot.count
                 self.imageUrls = snapshot.documents.compactMap { document in
                     let data = document.data()
-                    if let url = data["photoURL"] as? String, let caption = data["caption"] as? String {
-                        print("Fetched image URL: \(url) with caption: \(caption)") // Debug log
-                        return (url, caption)
+                    if let url = data["photoURL"] as? String,
+                       let caption = data["caption"] as? String,
+                       let timestamp = data["timestamp"] as? Timestamp {
+                        print("Fetched image URL: \(url) with caption: \(caption) and timestamp: \(timestamp.dateValue())") // Debug log
+                        return (url, caption, timestamp)
                     }
                     return nil
                 }
@@ -264,6 +273,12 @@ struct Home: View {
         return shortCaption
     }
     
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d" // Format for "Aug 12"
+        return formatter.string(from: date)
+    }
+
     private func triggerHaptic() {
         // Trigger haptic feedback (optional)
     }
