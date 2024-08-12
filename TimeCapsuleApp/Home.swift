@@ -44,7 +44,7 @@ struct Home: View {
                         
                         Spacer()
 
-                        if !hasPostedPhoto {
+                        if imageUrls.isEmpty {
                             Text("Take a photo to start")
                                 .font(.system(size: 18))
                                 .padding(.bottom, 30)
@@ -149,10 +149,7 @@ struct Home: View {
                     .padding()
                     .frame(maxHeight: .infinity)
                     .onAppear {
-                        fetchUsername()
-                        checkIfUserHasPosted()
-                        imagesAppeared = true
-                        triggerHaptic()
+                        onAppearLogic() // Updated function call
                     }
                     .onDisappear {
                         imagesAppeared = false
@@ -201,6 +198,13 @@ struct Home: View {
         }
     }
     
+    private func onAppearLogic() {
+        fetchUsername()
+        fetchAllPhotos()  // Ensures photos are always fetched
+        imagesAppeared = true
+        triggerHaptic()
+    }
+    
     private func fetchUsername() {
         guard let user = Auth.auth().currentUser else { return }
         let db = Firestore.firestore()
@@ -216,37 +220,7 @@ struct Home: View {
         }
     }
     
-    private func checkIfUserHasPosted() {
-        guard let user = Auth.auth().currentUser else { return }
-        let db = Firestore.firestore()
-        let photosCollectionRef = db.collection("users").document(user.uid).collection("photos")
-        
-        photosCollectionRef.getDocuments { snapshot, error in
-            if let snapshot = snapshot {
-                let today = Calendar.current.startOfDay(for: Date())
-                let postedToday = snapshot.documents.contains { document in
-                    if let timestamp = document.data()["timestamp"] as? Timestamp {
-                        let photoDate = Calendar.current.startOfDay(for: timestamp.dateValue())
-                        return photoDate == today
-                    }
-                    return false
-                }
-                
-                self.hasPostedPhoto = postedToday
-                if self.hasPostedPhoto {
-                    self.fetchImageUrls()
-                }
-                
-                // Show the message button if user has posted today
-                self.isShowingMessage = postedToday
-            } else {
-                print("Error fetching photos: \(error?.localizedDescription ?? "Unknown error")")
-                self.hasPostedPhoto = false
-            }
-        }
-    }
-    
-    private func fetchImageUrls() {
+    private func fetchAllPhotos() {
         guard let user = Auth.auth().currentUser else { return }
         let db = Firestore.firestore()
         let photosCollectionRef = db.collection("users").document(user.uid).collection("photos")
@@ -261,6 +235,11 @@ struct Home: View {
                         return url
                     }
                     return nil
+                }
+                if self.imageUrls.isEmpty {
+                    print("No photos found.")
+                } else {
+                    print("Photos found: \(self.imageUrls)")
                 }
             } else {
                 print("Error fetching image URLs: \(error?.localizedDescription ?? "Unknown error")")
