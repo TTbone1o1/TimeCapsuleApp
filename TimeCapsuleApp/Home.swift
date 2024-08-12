@@ -120,7 +120,7 @@ struct Home: View {
                             ScrollView {
                                 VStack(spacing: 45) {
                                     ForEach(imageUrls, id: \.0) { imageUrl, caption in
-                                        ZStack(alignment: .center) {
+                                        ZStack(alignment: .bottom) {
                                             AsyncImage(url: URL(string: imageUrl)) { image in
                                                 image
                                                     .resizable()
@@ -137,14 +137,14 @@ struct Home: View {
                                             }
                                             .frame(maxWidth: .infinity) // Ensure the image is centered and takes up full width
                                             .padding(.horizontal, (UIScreen.main.bounds.width - 313) / 2) // Adjust padding to ensure the image is centered
-                                            
+
                                             Text(shortenCaption(caption))
                                                 .font(.system(size: 24))
-                                                .frame(width: 277, height: 58)
-                                                .background(Color.black.opacity(0.6))
-                                                .foregroundColor(.white)
-                                                .cornerRadius(5)
-                                                .padding(50)
+                                                   .padding(.horizontal, 28) // Add padding on the left and right
+                                                   .frame(width: 348, height: 70, alignment: .leading) // Align text to the leading edge of the frame
+                                                   .foregroundColor(.white)
+                                                   .cornerRadius(5)
+                                                   .padding(.bottom, 16)
                                         }
                                     }
                                 }
