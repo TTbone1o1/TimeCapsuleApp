@@ -21,6 +21,7 @@
 		CD4B48ED2C5D9EF5008DC1D2 /* Camera.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4B48EC2C5D9EF5008DC1D2 /* Camera.swift */; };
 		CDA00CC52C66BAFB002C0B50 /* TransparentBlurView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA00CC42C66BAFB002C0B50 /* TransparentBlurView.swift */; };
 		CDA00CC82C67FCB7002C0B50 /* MessageButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA00CC72C67FCB7002C0B50 /* MessageButton.swift */; };
+		CDA00CCA2C6ADC74002C0B50 /* ImagePreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA00CC92C6ADC73002C0B50 /* ImagePreview.swift */; };
 		CDA2DF762C60431D0005FB4E /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = CDA2DF752C60431D0005FB4E /* FirebaseFirestore */; };
 		CDA2DF782C6043260005FB4E /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = CDA2DF772C6043260005FB4E /* FirebaseStorage */; };
 		CDA2DF7A2C611DBE0005FB4E /* Photoinfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA2DF792C611DBE0005FB4E /* Photoinfo.swift */; };
@@ -45,6 +46,7 @@
 		CD4B48EC2C5D9EF5008DC1D2 /* Camera.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Camera.swift; sourceTree = "<group>"; };
 		CDA00CC42C66BAFB002C0B50 /* TransparentBlurView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransparentBlurView.swift; sourceTree = "<group>"; };
 		CDA00CC72C67FCB7002C0B50 /* MessageButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageButton.swift; sourceTree = "<group>"; };
+		CDA00CC92C6ADC73002C0B50 /* ImagePreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePreview.swift; sourceTree = "<group>"; };
 		CDA2DF792C611DBE0005FB4E /* Photoinfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Photoinfo.swift; sourceTree = "<group>"; };
 		CDA2DF7B2C611DCF0005FB4E /* Writeinfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Writeinfo.swift; sourceTree = "<group>"; };
 		CDA2DF7E2C6167270005FB4E /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
@@ -109,6 +111,7 @@
 				CD1E8CC52C600A9500C01341 /* TimeCapsuleApp.entitlements */,
 				CD3671B52C5C3AC1002DA9F2 /* TimeCapsuleApp.swift */,
 				CD4B48E62C5D2BBC008DC1D2 /* Timecap.swift */,
+				CDA00CC92C6ADC73002C0B50 /* ImagePreview.swift */,
 				CD1E8CAF2C5EE1CE00C01341 /* Home.swift */,
 				CDA00CC62C67FC83002C0B50 /* Button */,
 				CDA2DF7D2C611DEF0005FB4E /* Info */,
@@ -235,6 +238,7 @@
 				CD4B48ED2C5D9EF5008DC1D2 /* Camera.swift in Sources */,
 				CDA00CC82C67FCB7002C0B50 /* MessageButton.swift in Sources */,
 				CDA2DF7A2C611DBE0005FB4E /* Photoinfo.swift in Sources */,
+				CDA00CCA2C6ADC74002C0B50 /* ImagePreview.swift in Sources */,
 				CD4B48E72C5D2BBC008DC1D2 /* Timecap.swift in Sources */,
 				CDA2DF7C2C611DCF0005FB4E /* Writeinfo.swift in Sources */,
 				CD3671B62C5C3AC1002DA9F2 /* TimeCapsuleApp.swift in Sources */,
