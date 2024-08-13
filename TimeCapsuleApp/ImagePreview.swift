@@ -8,8 +8,44 @@
 import SwiftUI
 
 struct ImagePreview: View {
+    @Namespace private var previewSmoothly
+    @State private var preview = false
+    @State private var selectedImage: String?
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        ZStack {
+            if preview{
+                if let selectedImage = selectedImage {
+                    image(selectedImage)
+                        .ignoresSafeArea()
+                }
+            } else {
+                Grid{
+                    GridRow {
+                        image("1")
+                        image("2")
+                    }
+                    GridRow {
+                        image("3")
+                        image("4")
+                    }
+                }
+                .padding(10)
+            }
+        }
+    }
+    
+    func image(_ imageName: String) -> some View {
+        Image(imageName)
+            .resizable()
+            .matchedGeometryEffect(id: imageName, in: previewSmoothly)
+            .zIndex(selectedImage == imageName ? 1 : 0)
+            .onTapGesture {
+                withAnimation(Animation.easeInOut(duration: 0.3)){
+                    selectedImage = imageName
+                    preview.toggle()
+                }
+            }
     }
 }
 
