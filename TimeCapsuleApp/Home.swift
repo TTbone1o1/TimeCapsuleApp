@@ -13,7 +13,6 @@ struct Home: View {
     @State private var isShowingMessage = false
     @State private var selectedImageUrl: String? = nil
 
-
     var body: some View {
         GeometryReader { geometry in
             let safeArea = geometry.safeAreaInsets
@@ -32,7 +31,37 @@ struct Home: View {
                         imagesAppeared = false
                     }
                     
-                    floatingFooter(safeArea: safeArea)
+                    // Fullscreen image view, placed above other content
+                    if let selectedImageUrl = selectedImageUrl {
+                        ZStack {
+                            AsyncImage(url: URL(string: selectedImageUrl)) { image in
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+                                    .edgesIgnoringSafeArea(.all) // Cover the entire screen
+                                    .onTapGesture {
+                                        self.selectedImageUrl = nil
+                                    }
+                            } placeholder: {
+                                ProgressView()
+                            }
+                            .zIndex(3) // Highest zIndex to ensure it is on top of everything
+                        }
+                    }
+
+                    // Transparent color for tapping to dismiss
+                    if selectedImageUrl != nil {
+                        Color.clear
+                            .edgesIgnoringSafeArea(.all)
+                            .onTapGesture {
+                                self.selectedImageUrl = nil
+                            }
+                            .zIndex(2) // Ensure this view is below the fullscreen image view but above other content
+                    }
+
+                    floatingFooter(safeArea: safeArea, isVisible: selectedImageUrl == nil) // Pass visibility state
+                        .zIndex(1) // Ensure this view is below the fullscreen image view and overlay
                 }
                 .edgesIgnoringSafeArea(.bottom)
             }
@@ -119,60 +148,72 @@ struct Home: View {
     }
     
     private var imageGalleryView: some View {
-        ScrollView {
-            VStack(spacing: 45) {
-                ForEach(imageUrls, id: \.0) { imageUrl, caption, timestamp in
-                    ZStack(alignment: .bottom) {
-                        AsyncImage(url: URL(string: imageUrl)) { image in
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(width: 313, height: 421)
-                                .cornerRadius(33)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 33)
-                                        .stroke(Color.clear, lineWidth: 0)
-                                )
-                                .shadow(radius: 20, x: 0, y: 24)
-                                .onTapGesture {
-                                    handleImageTap(imageUrl: imageUrl)
-                                }
-                        } placeholder: {
-                            ProgressView()
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.horizontal, (UIScreen.main.bounds.width - 313) / 2)
-                        
-                        VStack(alignment: .leading, spacing: 5) {
-                            Text(formatDate(timestamp.dateValue()))
-                                .font(.system(size: 18))
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 28)
-                                .frame(width: 348, height: 30, alignment: .leading)
-                            Text(shortenCaption(caption))
-                                .font(.system(size: 24))
-                                .padding(.horizontal, 28)
-                                .frame(width: 348, height: 70, alignment: .leading)
-                                .foregroundColor(.white)
-                                .cornerRadius(5)
-                                .padding(.bottom, 16)
+        ZStack {
+            // Main content (image gallery)
+            ScrollView {
+                VStack(spacing: 45) {
+                    ForEach(imageUrls, id: \.0) { imageUrl, caption, timestamp in
+                        ZStack(alignment: .bottom) {
+                            AsyncImage(url: URL(string: imageUrl)) { image in
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: 313, height: 421) // Fixed width
+                                    .cornerRadius(33)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 33)
+                                            .stroke(Color.clear, lineWidth: 0) // Overlay to maintain corner radius
+                                    )
+                                    .shadow(radius: 20, x: 0, y: 24)
+                                    .onTapGesture {
+                                        print("Tapped image with URL: \(imageUrl)") // Debug statement
+                                        if selectedImageUrl == imageUrl {
+                                            // Deselect image if tapped again
+                                            selectedImageUrl = nil
+                                        } else {
+                                            // Select new image
+                                            selectedImageUrl = imageUrl
+                                        }
+                                    }
+                            } placeholder: {
+                                ProgressView()
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.horizontal, (UIScreen.main.bounds.width - 313) / 2)
+                            
+                            VStack(alignment: .leading, spacing: 5) {
+                                Text(formatDate(timestamp.dateValue()))
+                                    .font(.system(size: 18))
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 28)
+                                    .frame(width: 348, height: 30, alignment: .leading)
+                                Text(shortenCaption(caption))
+                                    .font(.system(size: 24))
+                                    .padding(.horizontal, 28)
+                                    .frame(width: 348, height: 70, alignment: .leading)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(5)
+                                    .padding(.bottom, 16)
+                            }
                         }
                     }
                 }
+                .padding(.vertical, 20)
             }
-            .padding(.vertical, 20)
+            .ignoresSafeArea(edges: [.leading, .trailing])
+            .scrollIndicators(.hidden)
         }
-        .ignoresSafeArea(edges: [.leading, .trailing])
-        .scrollIndicators(.hidden)
     }
     
-    private func floatingFooter(safeArea: EdgeInsets) -> some View {
+    private func floatingFooter(safeArea: EdgeInsets, isVisible: Bool) -> some View {
         ZStack {
             TransparentBlurView(removeAllFilters: true)
                 .blur(radius: 25)
                 .frame(height: 100 + safeArea.bottom)
-                .zIndex(1)
+                .zIndex(1) // Lower zIndex to be behind other views
                 .offset(y: 15)
+                .opacity(isVisible ? 1 : 0) // Control visibility based on isVisible
+            
             HStack {
                 NavigationLink(destination: CameraController().edgesIgnoringSafeArea(.all)) {
                     ZStack {
@@ -197,10 +238,11 @@ struct Home: View {
                         .foregroundColor(photoCount >= 2 ? .white : .gray)
                 }
             }
-            .zIndex(1)
+            .zIndex(1) // Same zIndex as the footer, ensuring the footer is always beneath
             .padding(.bottom, -10)
         }
         .frame(maxHeight: .infinity, alignment: .bottom)
+        .animation(.easeInOut(duration: 0.3), value: isVisible) // Smooth transition for visibility change
     }
 
     private func onAppearLogic() {
