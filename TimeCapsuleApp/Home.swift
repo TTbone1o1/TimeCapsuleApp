@@ -12,6 +12,9 @@ struct Home: View {
     @State private var photoCount: Int = 0
     @State private var isShowingMessage = false
     @State private var selectedImageUrl: String? = nil
+    @State private var selectedImageCaption: String = ""
+    @State private var selectedImageTimestamp: Timestamp? = nil
+    @State private var isCaptionVisible: Bool = false
 
     var body: some View {
         GeometryReader { geometry in
@@ -42,11 +45,19 @@ struct Home: View {
                                     .edgesIgnoringSafeArea(.all) // Cover the entire screen
                                     .onTapGesture {
                                         self.selectedImageUrl = nil
+                                        self.selectedImageCaption = ""
+                                        self.selectedImageTimestamp = nil
+                                        self.isCaptionVisible = false
                                     }
                             } placeholder: {
                                 ProgressView()
                             }
                             .zIndex(3) // Highest zIndex to ensure it is on top of everything
+                        }
+                        .onAppear {
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                self.isCaptionVisible = true
+                            }
                         }
                     }
 
@@ -56,12 +67,43 @@ struct Home: View {
                             .edgesIgnoringSafeArea(.all)
                             .onTapGesture {
                                 self.selectedImageUrl = nil
+                                self.selectedImageCaption = ""
+                                self.selectedImageTimestamp = nil
+                                self.isCaptionVisible = false
                             }
                             .zIndex(2) // Ensure this view is below the fullscreen image view but above other content
                     }
 
                     floatingFooter(safeArea: safeArea, isVisible: selectedImageUrl == nil) // Pass visibility state
                         .zIndex(1) // Ensure this view is below the fullscreen image view and overlay
+                    
+                    // Caption view
+                    if selectedImageUrl != nil {
+                        VStack {
+                            Spacer()
+                            HStack {
+                                VStack(alignment: .leading, spacing: 5) {
+                                    Text(formatDate(selectedImageTimestamp?.dateValue() ?? Date()))
+                                        .font(.system(size: 18))
+                                        .foregroundColor(.white)
+                                        .padding(.horizontal, 28)
+                                        .frame(width: 348, height: 30, alignment: .leading)
+                                    Text(shortenCaption(selectedImageCaption))
+                                        .font(.system(size: 24))
+                                        .padding(.horizontal, 28)
+                                        .frame(width: 348, height: 70, alignment: .leading)
+                                        .foregroundColor(.white)
+                                        .cornerRadius(5)
+                                        .padding(.bottom, 16)
+                                }
+                                .padding(.bottom, 53) // Pacing from the bottom
+                                .opacity(isCaptionVisible ? 1 : 0) // Fade in/out based on visibility
+                                .animation(.easeInOut(duration: 0.3), value: isCaptionVisible) // Smooth transition for visibility change
+                            }
+                            .padding(.horizontal)
+                        }
+                        .zIndex(1) // Ensure this view is above other content
+                    }
                 }
                 .edgesIgnoringSafeArea(.bottom)
             }
@@ -166,13 +208,18 @@ struct Home: View {
                                     )
                                     .shadow(radius: 20, x: 0, y: 24)
                                     .onTapGesture {
-                                        print("Tapped image with URL: \(imageUrl)") // Debug statement
                                         if selectedImageUrl == imageUrl {
                                             // Deselect image if tapped again
                                             selectedImageUrl = nil
+                                            selectedImageCaption = ""
+                                            selectedImageTimestamp = nil
+                                            isCaptionVisible = false
                                         } else {
                                             // Select new image
                                             selectedImageUrl = imageUrl
+                                            selectedImageCaption = caption
+                                            selectedImageTimestamp = timestamp
+                                            isCaptionVisible = true
                                         }
                                     }
                             } placeholder: {
