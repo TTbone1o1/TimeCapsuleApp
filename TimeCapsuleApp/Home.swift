@@ -8,13 +8,14 @@ struct Home: View {
     @State private var username: String = ""
     @State private var imagesAppeared = false
     @State private var hasPostedPhoto = false
-    @State private var imageUrls: [(String, String, Timestamp)] = [] // Store (URL, Caption, Timestamp) tuples
+    @State private var imageUrls: [(String, String, Timestamp)] = [] // Updated to store (URL, Caption, Timestamp) tuples
     @State private var photoCount: Int = 0
     @State private var isShowingMessage = false
-    @State private var selectedImageUrl: String? = nil // State to manage selected image
 
     var body: some View {
         GeometryReader { geometry in
+            let safeArea = geometry.safeAreaInsets
+            
             NavigationView {
                 ZStack {
                     VStack {
@@ -124,34 +125,29 @@ struct Home: View {
                                                 image
                                                     .resizable()
                                                     .aspectRatio(contentMode: .fill)
-                                                    .frame(width: 313, height: 421)
+                                                    .frame(width: 313, height: 421) // Fixed width
                                                     .cornerRadius(33)
                                                     .overlay(
                                                         RoundedRectangle(cornerRadius: 33)
-                                                            .stroke(Color.clear, lineWidth: 0)
+                                                            .stroke(Color.clear, lineWidth: 0) // Overlay to maintain corner radius
                                                     )
-                                                    .shadow(radius: 20, x: 0, y: 24)
+                                                    .shadow(radius: 20, x: 0, y: 24) // Apply the shadow here
                                             } placeholder: {
                                                 ProgressView()
                                             }
-                                            .frame(maxWidth: .infinity)
-                                            .padding(.horizontal, (UIScreen.main.bounds.width - 313) / 2)
-                                            .onTapGesture {
-                                                withAnimation {
-                                                    selectedImageUrl = imageUrl // Set selected image on tap
-                                                }
-                                            }
+                                            .frame(maxWidth: .infinity) // Ensure the image is centered and takes up full width
+                                            .padding(.horizontal, (UIScreen.main.bounds.width - 313) / 2) // Adjust padding to ensure the image is centered
 
                                             VStack(alignment: .leading, spacing: 5) {
                                                 Text(formatDate(timestamp.dateValue()))
                                                     .font(.system(size: 18))
                                                     .foregroundColor(.white)
-                                                    .padding(.horizontal, 28)
-                                                    .frame(width: 348, height: 30, alignment: .leading)
+                                                    .padding(.horizontal, 28) // Add padding on the left and right
+                                                    .frame(width: 348, height: 30, alignment: .leading) // Adjust height for timestamp
                                                 Text(shortenCaption(caption))
                                                     .font(.system(size: 24))
-                                                    .padding(.horizontal, 28)
-                                                    .frame(width: 348, height: 70, alignment: .leading)
+                                                    .padding(.horizontal, 28) // Add padding on the left and right
+                                                    .frame(width: 348, height: 70, alignment: .leading) // Align text to the leading edge of the frame
                                                     .foregroundColor(.white)
                                                     .cornerRadius(5)
                                                     .padding(.bottom, 16)
@@ -159,9 +155,9 @@ struct Home: View {
                                         }
                                     }
                                 }
-                                .padding(.vertical, 20)
+                                .padding(.vertical, 20) // Optional: Add vertical padding for spacing between images
                             }
-                            .ignoresSafeArea(edges: [.leading, .trailing])
+                            .ignoresSafeArea(edges: [.leading, .trailing]) // Ignore safe area on left and right sides
                             .scrollIndicators(.hidden)
                         }
 
@@ -180,7 +176,7 @@ struct Home: View {
                     ZStack {
                         TransparentBlurView(removeAllFilters: true)
                             .blur(radius: 25)
-                            .frame(height: 100 + geometry.safeAreaInsets.bottom)
+                            .frame(height: 100 + safeArea.bottom)
                             .zIndex(1)
                             .offset(y: 15)
                         HStack {
@@ -196,7 +192,7 @@ struct Home: View {
                                         .frame(width: 13, height: 13)
                                         .foregroundColor(photoCount >= 2 ? .white : .gray)
                                 }
-                                .opacity(photoCount >= 2 ? 0.4 : 0.2)
+                                .opacity(photoCount >= 2 ? 0.4 : 0.2) // Set opacity to 40%
                                 
                                 Spacer()
                                     .frame(width: 72)
@@ -205,36 +201,14 @@ struct Home: View {
                                 // Action for button
                             }) {
                                 Image("Notebook")
-                                    .renderingMode(.template)
-                                    .foregroundColor(photoCount >= 2 ? .white : .gray)
+                                    .renderingMode(.template) // Use template rendering mode to apply color
+                                    .foregroundColor(photoCount >= 2 ? .white : .gray) // Set the color of the image
                             }
                         }
-                        .zIndex(1)
-                        .padding(.bottom, -10)
+                        .zIndex(1) // Ensure the HStack is above the scrollable content
+                        .padding(.bottom, -10) // Adjust padding to place it correctly at the bottom
                     }
                     .frame(maxHeight: .infinity, alignment: .bottom)
-                    
-                    // Full-Screen Image Overlay
-                    if let selectedImageUrl = selectedImageUrl {
-                        ZStack {
-                            Color.black.opacity(0.8)
-                                .edgesIgnoringSafeArea(.all) // Background overlay
-                            AsyncImage(url: URL(string: selectedImageUrl)) { image in
-                                image
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill) // Ensure the image fills the screen
-                                    .edgesIgnoringSafeArea(.all) // Ignore safe areas
-                                    .onTapGesture {
-                                        withAnimation {
-                                            self.selectedImageUrl = nil // Dismiss the full-screen image
-                                        }
-                                    }
-                            } placeholder: {
-                                ProgressView()
-                            }
-                        }
-                        .zIndex(2) // Ensure it's above everything
-                    }
                 }
                 .edgesIgnoringSafeArea(.bottom)
             }
