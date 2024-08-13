@@ -11,6 +11,8 @@ struct Home: View {
     @State private var imageUrls: [(String, String, Timestamp)] = [] // Updated to store (URL, Caption, Timestamp) tuples
     @State private var photoCount: Int = 0
     @State private var isShowingMessage = false
+    @State private var selectedImageUrl: String? = nil
+
 
     var body: some View {
         GeometryReader { geometry in
@@ -19,205 +21,191 @@ struct Home: View {
             NavigationView {
                 ZStack {
                     VStack {
-                        HStack {
-                            Text(username.isEmpty ? "" : username)
-                                .font(.system(size: 18))
-                                .fontWeight(.bold)
-                                .padding()
-                            
-                            Spacer()
-                            
-                            Button(action: {
-                                // Action for button
-                            }) {
-                                VStack(spacing: 2) {
-                                    ForEach(0..<3) { _ in
-                                        Rectangle()
-                                            .frame(width: 16, height: 3)
-                                            .cornerRadius(20)
-                                            .foregroundColor(.black)
-                                    }
-                                }
-                                .padding(.trailing)
-                            }
-                        }
-                        
-                        Spacer()
-
-                        if imageUrls.isEmpty {
-                            Text("Take a photo to start")
-                                .font(.system(size: 18))
-                                .padding(.bottom, 30)
-                                .fontWeight(.bold)
-                            
-                            HStack {
-                                Spacer()
-                                
-                                HStack {
-                                    Image("1")
-                                        .resizable()
-                                        .frame(width: 82.37, height: 120.26)
-                                        .cornerRadius(19)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 19)
-                                                .stroke(Color.white, lineWidth: 4)
-                                        )
-                                        .rotationEffect(Angle(degrees: -16))
-                                        .offset(x: 25, y: 15)
-                                        .shadow(radius: 24, x: 0, y: 14)
-                                        .zIndex(3)
-                                        .scaleEffect(imagesAppeared ? 1 : 0)
-                                        .animation(.interpolatingSpring(stiffness: 60, damping: 7).delay(0.1), value: imagesAppeared)
-                                        .onAppear {
-                                            if imagesAppeared {
-                                                triggerHaptic()
-                                            }
-                                        }
-                                    
-                                    Image("2")
-                                        .resizable()
-                                        .frame(width: 82.37, height: 120.26)
-                                        .cornerRadius(19)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 19)
-                                                .stroke(Color.white, lineWidth: 4)
-                                        )
-                                        .zIndex(2)
-                                        .rotationEffect(Angle(degrees: -2))
-                                        .shadow(radius: 24, x: 0, y: 14)
-                                        .scaleEffect(imagesAppeared ? 1 : 0)
-                                        .animation(.interpolatingSpring(stiffness: 60, damping: 7).delay(0.2), value: imagesAppeared)
-                                        .onAppear {
-                                            if imagesAppeared {
-                                                triggerHaptic()
-                                            }
-                                        }
-                                    
-                                    Image("3")
-                                        .resizable()
-                                        .frame(width: 82.37, height: 120.26)
-                                        .cornerRadius(19)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 19)
-                                                .stroke(Color.white, lineWidth: 4)
-                                        )
-                                        .zIndex(1)
-                                        .rotationEffect(Angle(degrees: 17))
-                                        .shadow(radius: 24, x: 0, y: 14)
-                                        .offset(x: -33, y: 15)
-                                        .scaleEffect(imagesAppeared ? 1 : 0)
-                                        .animation(.interpolatingSpring(stiffness: 60, damping: 7).delay(0.3), value: imagesAppeared)
-                                        .onAppear {
-                                            if imagesAppeared {
-                                                triggerHaptic()
-                                            }
-                                        }
-                                }
-                                Spacer()
-                            }
-                            Spacer()
-                        } else {
-                            ScrollView {
-                                VStack(spacing: 45) {
-                                    ForEach(imageUrls, id: \.0) { imageUrl, caption, timestamp in
-                                        ZStack(alignment: .bottom) {
-                                            AsyncImage(url: URL(string: imageUrl)) { image in
-                                                image
-                                                    .resizable()
-                                                    .aspectRatio(contentMode: .fill)
-                                                    .frame(width: 313, height: 421) // Fixed width
-                                                    .cornerRadius(33)
-                                                    .overlay(
-                                                        RoundedRectangle(cornerRadius: 33)
-                                                            .stroke(Color.clear, lineWidth: 0) // Overlay to maintain corner radius
-                                                    )
-                                                    .shadow(radius: 20, x: 0, y: 24) // Apply the shadow here
-                                            } placeholder: {
-                                                ProgressView()
-                                            }
-                                            .frame(maxWidth: .infinity) // Ensure the image is centered and takes up full width
-                                            .padding(.horizontal, (UIScreen.main.bounds.width - 313) / 2) // Adjust padding to ensure the image is centered
-
-                                            VStack(alignment: .leading, spacing: 5) {
-                                                Text(formatDate(timestamp.dateValue()))
-                                                    .font(.system(size: 18))
-                                                    .foregroundColor(.white)
-                                                    .padding(.horizontal, 28) // Add padding on the left and right
-                                                    .frame(width: 348, height: 30, alignment: .leading) // Adjust height for timestamp
-                                                Text(shortenCaption(caption))
-                                                    .font(.system(size: 24))
-                                                    .padding(.horizontal, 28) // Add padding on the left and right
-                                                    .frame(width: 348, height: 70, alignment: .leading) // Align text to the leading edge of the frame
-                                                    .foregroundColor(.white)
-                                                    .cornerRadius(5)
-                                                    .padding(.bottom, 16)
-                                            }
-                                        }
-                                    }
-                                }
-                                .padding(.vertical, 20) // Optional: Add vertical padding for spacing between images
-                            }
-                            .ignoresSafeArea(edges: [.leading, .trailing]) // Ignore safe area on left and right sides
-                            .scrollIndicators(.hidden)
-                        }
-
+                        header
+                        content
                         Spacer()
                     }
                     .padding()
                     .frame(maxHeight: .infinity)
-                    .onAppear {
-                        onAppearLogic() // Updated function call
-                    }
+                    .onAppear(perform: onAppearLogic)
                     .onDisappear {
                         imagesAppeared = false
                     }
                     
-                    // Floating HStack at the bottom
-                    ZStack {
-                        TransparentBlurView(removeAllFilters: true)
-                            .blur(radius: 25)
-                            .frame(height: 100 + safeArea.bottom)
-                            .zIndex(1)
-                            .offset(y: 15)
-                        HStack {
-                            NavigationLink(destination: CameraController()
-                                .edgesIgnoringSafeArea(.all)
-                            ) {
-                                ZStack {
-                                    Circle()
-                                        .stroke(photoCount >= 2 ? Color.white : Color.gray, lineWidth: 3)
-                                        .frame(width: 24, height: 24)
-                                    
-                                    Circle()
-                                        .frame(width: 13, height: 13)
-                                        .foregroundColor(photoCount >= 2 ? .white : .gray)
-                                }
-                                .opacity(photoCount >= 2 ? 0.4 : 0.2) // Set opacity to 40%
-                                
-                                Spacer()
-                                    .frame(width: 72)
-                            }
-                            Button(action: {
-                                // Action for button
-                            }) {
-                                Image("Notebook")
-                                    .renderingMode(.template) // Use template rendering mode to apply color
-                                    .foregroundColor(photoCount >= 2 ? .white : .gray) // Set the color of the image
-                            }
-                        }
-                        .zIndex(1) // Ensure the HStack is above the scrollable content
-                        .padding(.bottom, -10) // Adjust padding to place it correctly at the bottom
-                    }
-                    .frame(maxHeight: .infinity, alignment: .bottom)
+                    floatingFooter(safeArea: safeArea)
                 }
                 .edgesIgnoringSafeArea(.bottom)
             }
         }
     }
     
+    private var header: some View {
+        HStack {
+            Text(username.isEmpty ? "" : username)
+                .font(.system(size: 18))
+                .fontWeight(.bold)
+                .padding()
+            
+            Spacer()
+            
+            Button(action: {
+                // Action for button
+            }) {
+                VStack(spacing: 2) {
+                    ForEach(0..<3) { _ in
+                        Rectangle()
+                            .frame(width: 16, height: 3)
+                            .cornerRadius(20)
+                            .foregroundColor(.black)
+                    }
+                }
+                .padding(.trailing)
+            }
+        }
+    }
+    
+    private var content: some View {
+        Group {
+            if imageUrls.isEmpty {
+                emptyStateView
+            } else {
+                imageGalleryView
+            }
+        }
+    }
+    
+    private var emptyStateView: some View {
+        VStack {
+            Text("Take a photo to start")
+                .font(.system(size: 18))
+                .padding(.bottom, 30)
+                .fontWeight(.bold)
+            
+            HStack {
+                Spacer()
+                
+                HStack {
+                    imageView(imageName: "1", zIndex: 3, rotation: -16, offset: (25, 15), delay: 0.1)
+                    imageView(imageName: "2", zIndex: 2, rotation: -2, delay: 0.2)
+                    imageView(imageName: "3", zIndex: 1, rotation: 17, offset: (-33, 15), delay: 0.3)
+                }
+                
+                Spacer()
+            }
+            Spacer()
+        }
+    }
+    
+    private func imageView(imageName: String, zIndex: Double, rotation: Double, offset: (x: CGFloat, y: CGFloat) = (0, 0), delay: Double) -> some View {
+        Image(imageName)
+            .resizable()
+            .frame(width: 82.37, height: 120.26)
+            .cornerRadius(19)
+            .overlay(
+                RoundedRectangle(cornerRadius: 19)
+                    .stroke(Color.white, lineWidth: 4)
+            )
+            .rotationEffect(Angle(degrees: rotation))
+            .offset(x: offset.x, y: offset.y)
+            .shadow(radius: 24, x: 0, y: 14)
+            .zIndex(zIndex)
+            .scaleEffect(imagesAppeared ? 1 : 0)
+            .animation(.interpolatingSpring(stiffness: 60, damping: 7).delay(delay), value: imagesAppeared)
+            .onAppear {
+                if imagesAppeared {
+                    triggerHaptic()
+                }
+            }
+    }
+    
+    private var imageGalleryView: some View {
+        ScrollView {
+            VStack(spacing: 45) {
+                ForEach(imageUrls, id: \.0) { imageUrl, caption, timestamp in
+                    ZStack(alignment: .bottom) {
+                        AsyncImage(url: URL(string: imageUrl)) { image in
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 313, height: 421)
+                                .cornerRadius(33)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 33)
+                                        .stroke(Color.clear, lineWidth: 0)
+                                )
+                                .shadow(radius: 20, x: 0, y: 24)
+                                .onTapGesture {
+                                    handleImageTap(imageUrl: imageUrl)
+                                }
+                        } placeholder: {
+                            ProgressView()
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.horizontal, (UIScreen.main.bounds.width - 313) / 2)
+                        
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text(formatDate(timestamp.dateValue()))
+                                .font(.system(size: 18))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 28)
+                                .frame(width: 348, height: 30, alignment: .leading)
+                            Text(shortenCaption(caption))
+                                .font(.system(size: 24))
+                                .padding(.horizontal, 28)
+                                .frame(width: 348, height: 70, alignment: .leading)
+                                .foregroundColor(.white)
+                                .cornerRadius(5)
+                                .padding(.bottom, 16)
+                        }
+                    }
+                }
+            }
+            .padding(.vertical, 20)
+        }
+        .ignoresSafeArea(edges: [.leading, .trailing])
+        .scrollIndicators(.hidden)
+    }
+    
+    private func floatingFooter(safeArea: EdgeInsets) -> some View {
+        ZStack {
+            TransparentBlurView(removeAllFilters: true)
+                .blur(radius: 25)
+                .frame(height: 100 + safeArea.bottom)
+                .zIndex(1)
+                .offset(y: 15)
+            HStack {
+                NavigationLink(destination: CameraController().edgesIgnoringSafeArea(.all)) {
+                    ZStack {
+                        Circle()
+                            .stroke(photoCount >= 2 ? Color.white : Color.gray, lineWidth: 3)
+                            .frame(width: 24, height: 24)
+                        
+                        Circle()
+                            .frame(width: 13, height: 13)
+                            .foregroundColor(photoCount >= 2 ? .white : .gray)
+                    }
+                    .opacity(photoCount >= 2 ? 0.4 : 0.2)
+                    
+                    Spacer()
+                        .frame(width: 72)
+                }
+                Button(action: {
+                    // Action for button
+                }) {
+                    Image("Notebook")
+                        .renderingMode(.template)
+                        .foregroundColor(photoCount >= 2 ? .white : .gray)
+                }
+            }
+            .zIndex(1)
+            .padding(.bottom, -10)
+        }
+        .frame(maxHeight: .infinity, alignment: .bottom)
+    }
+
     private func onAppearLogic() {
         fetchUsername()
-        fetchAllPhotos()  // Ensures photos are always fetched
+        fetchAllPhotos()
         imagesAppeared = true
         triggerHaptic()
     }
@@ -281,6 +269,11 @@ struct Home: View {
 
     private func triggerHaptic() {
         // Trigger haptic feedback (optional)
+    }
+
+    private func handleImageTap(imageUrl: String) {
+        print("Image tapped: \(imageUrl)")
+        // Add any other logic here
     }
 }
 
