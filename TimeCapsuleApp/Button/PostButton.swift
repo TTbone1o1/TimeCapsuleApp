@@ -13,6 +13,7 @@ struct PostView: View {
     @State private var isUploading = false
     @State private var moveToTop = false
     @State private var timestamp: String = "" // New state for timestamp
+    @State private var showBlurView: Bool = false // New state for showing blur view
     var selectedImage: UIImage?
 
     var body: some View {
@@ -20,46 +21,67 @@ struct PostView: View {
             GeometryReader { geometry in
                 ScrollView {
                     VStack {
+                        // Spacer to adjust content position based on moveToTop state
                         Spacer()
-                            .frame(height: moveToTop ? 75 : 310)
+                            .frame(height: moveToTop ? 55 : 315)
                         
-                        // Display formatted timestamp
-                        if !timestamp.isEmpty {
-                            Text(timestamp)
-                                .font(.system(size: 18))
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 28)
-                                .frame(width: 348, height: 30, alignment: .center)
-                        }
-                        
-                        ZStack(alignment: .leading) {
-                            if caption.isEmpty {
-                                Text("Say something about this day...")
-                                    .font(.system(size: 24, weight: .bold))
-                                    .foregroundColor(.white)
-                                    .frame(width: 300)
-                                    .multilineTextAlignment(.center)
-                                    .padding(.horizontal, 24)
+                        // Main content area
+                        ZStack {
+                            if showBlurView {
+                                // Show the blur view at the top of the screen
+                                TransparentBlurView(removeAllFilters: true)
+                                    .blur(radius: 5)
+                                    .frame(height: 200) // Adjust height as needed
+                                    .edgesIgnoringSafeArea(.top)
+                                    .offset(y: -110)
+                                   // .zIndex(1) // Ensure blur view is below the timestamp
                             }
-                            TextField("", text: $caption, onCommit: {
-                                withAnimation {
-                                    moveToTop = true
+                            
+                            // Display formatted timestamp
+                            if !timestamp.isEmpty {
+                                Text(timestamp)
+                                    .font(.system(size: 18))
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 28)
+                                    .frame(width: 348, height: 30, alignment: .center)
+                                    .background(showBlurView ? Color.clear : Color.black.opacity(0.3))
+                                    .offset(y: -100)
+                                    .zIndex(2) // Ensure timestamp is on top of the blur view
+                            }
+                            
+                            ZStack(alignment: .leading) {
+                                if caption.isEmpty {
+                                    Text("Say something about this day...")
+                                        .font(.system(size: 24, weight: .bold))
+                                        .foregroundColor(.white)
+                                        .frame(width: 300)
+                                        .multilineTextAlignment(.center)
+                                        .padding(.horizontal, 24)
                                 }
-                                // Update timestamp with formatted date
-                                timestamp = formatDate(date: Date())
-                            })
-                            .font(.system(size: 24, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(width: 300)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 24)
-                            .fixedSize(horizontal: false, vertical: true)
+                                TextField("", text: $caption, onCommit: {
+                                    withAnimation {
+                                        moveToTop = true
+                                        // Update timestamp with formatted date
+                                        timestamp = formatDate(date: Date())
+                                        // Show blur view when return is pressed
+                                        showBlurView = true
+                                    }
+                                })
+                                .font(.system(size: 24, weight: .bold))
+                                .foregroundColor(.white)
+                                .frame(width: 300)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 24)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .offset(y: moveToTop ? -55 : 0) // Move caption on top of blur when moving up
+                                .zIndex(3)
+                            }
+                            .padding()
+                            
+                            Spacer()
                         }
-                        .padding()
-                        
-                        Spacer()
+                        .frame(width: geometry.size.width)
                     }
-                    .frame(width: geometry.size.width)
                 }
             }
 
