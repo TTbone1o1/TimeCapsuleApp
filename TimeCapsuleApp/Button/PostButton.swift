@@ -10,9 +10,9 @@ struct PostView: View {
     @State private var caption: String = ""
     @State private var username: String = ""
     @State private var navigateToHome = false
-    @State private var isUploading = false // To handle uploading state
-    @State private var moveToTop = false // State to move the TextField to the top
-    @State private var timestamp: String = "" // State for the timestamp
+    @State private var isUploading = false
+    @State private var moveToTop = false
+    @State private var timestamp: String = "" // New state for timestamp
     var selectedImage: UIImage?
 
     var body: some View {
@@ -23,13 +23,13 @@ struct PostView: View {
                         Spacer()
                             .frame(height: moveToTop ? 75 : 310)
                         
-                        // Timestamp Text
+                        // Display formatted timestamp
                         if !timestamp.isEmpty {
                             Text(timestamp)
                                 .font(.system(size: 18))
                                 .foregroundColor(.white)
                                 .padding(.horizontal, 28)
-                                .frame(width: 348, height: 30, alignment: .leading)
+                                .frame(width: 348, height: 30, alignment: .center)
                         }
                         
                         ZStack(alignment: .leading) {
@@ -44,8 +44,9 @@ struct PostView: View {
                             TextField("", text: $caption, onCommit: {
                                 withAnimation {
                                     moveToTop = true
-                                    timestamp = formatDate(date: Date()) // Set the timestamp when text is committed
                                 }
+                                // Update timestamp with formatted date
+                                timestamp = formatDate(date: Date())
                             })
                             .font(.system(size: 24, weight: .bold))
                             .foregroundColor(.white)
@@ -58,7 +59,7 @@ struct PostView: View {
                         
                         Spacer()
                     }
-                    .frame(width: geometry.size.width) // Center content horizontally
+                    .frame(width: geometry.size.width)
                 }
             }
 
@@ -86,17 +87,16 @@ struct PostView: View {
                         uploadPhoto(image: image)
                     }
                 })
-                .padding(.bottom, 20) // Ensure some space from the bottom
+                .padding(.bottom, 20)
             }
         }
-        .background(Color.clear) // Ensure background is clear
+        .background(Color.clear)
     }
 
-    // Function to format the date as a string
+    // Helper function to format the date
     private func formatDate(date: Date) -> String {
         let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .short
+        formatter.dateFormat = "MMM d" // Format for "Aug 13"
         return formatter.string(from: date)
     }
 
@@ -118,10 +118,8 @@ struct PostView: View {
 
                 if let snapshot = snapshot, !snapshot.isEmpty {
                     print("User has already posted today")
-                    // Optionally, you can show an alert here to notify the user
                     return
                 } else {
-                    // If no posts were found for today, proceed with the upload
                     performUpload(image: image)
                 }
             }
@@ -130,21 +128,17 @@ struct PostView: View {
     private func performUpload(image: UIImage) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
 
-        // Create a unique identifier for the photo
         let photoID = UUID().uuidString
         let storageRef = Storage.storage().reference().child("users/\(uid)/photos/\(photoID).jpg")
 
-        // Convert UIImage to Data
         guard let imageData = image.jpegData(compressionQuality: 0.75) else { return }
 
-        // Upload the photo
         storageRef.putData(imageData, metadata: nil) { metadata, error in
             if let error = error {
                 print("Error uploading photo: \(error.localizedDescription)")
                 return
             }
 
-            // Get the download URL
             storageRef.downloadURL { url, error in
                 if let error = error {
                     print("Error getting download URL: \(error.localizedDescription)")
@@ -152,7 +146,6 @@ struct PostView: View {
                 }
 
                 if let downloadURL = url {
-                    // Save the metadata to Firestore
                     savePhotoMetadata(photoURL: downloadURL.absoluteString, caption: caption)
                 }
             }
@@ -183,5 +176,5 @@ struct PostView: View {
 }
 
 #Preview {
-    PostView(selectedImage: UIImage(systemName: "photo")!) // For preview purposes
+    PostView(selectedImage: UIImage(systemName: "photo")!)
 }
