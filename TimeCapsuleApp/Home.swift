@@ -228,19 +228,28 @@ struct Home: View {
                             .frame(maxWidth: .infinity)
                             .padding(.horizontal, (UIScreen.main.bounds.width - 313) / 2)
                             
-                            VStack(alignment: .leading, spacing: 5) {
-                                Text(formatDate(timestamp.dateValue()))
-                                    .font(.system(size: 18))
-                                    .foregroundColor(.white)
-                                    .padding(.horizontal, 28)
-                                    .frame(width: 348, height: 30, alignment: .leading)
-                                Text(shortenCaption(caption))
-                                    .font(.system(size: 24))
-                                    .padding(.horizontal, 28)
-                                    .frame(width: 348, height: 70, alignment: .leading)
-                                    .foregroundColor(.white)
-                                    .cornerRadius(5)
-                                    .padding(.bottom, 16)
+                            ZStack {
+                                TransparentBlurView(removeAllFilters: true)
+                                    .blur(radius: 5)
+                                    .frame(width: 312, height: 85)
+                                    //.cornerRadius(33)
+                                    //.zIndex(1) // Lower zIndex to be behind other views
+                                    .offset(y: 19)
+                                    //.opacity(isVisible ? 1 : 0) // Control visibility based on isVisible
+                                VStack(alignment: .leading, spacing: 5) {
+                                    Text(formatDate(timestamp.dateValue()))
+                                        .font(.system(size: 18))
+                                        .foregroundColor(.white)
+                                        .padding(.horizontal, 28)
+                                        .frame(width: 348, height: 30, alignment: .leading)
+                                    Text(shortenCaption(caption))
+                                        .font(.system(size: 24))
+                                        .padding(.horizontal, 28)
+                                        .frame(width: 348, height: 70, alignment: .leading)
+                                        .foregroundColor(.white)
+                                        .cornerRadius(5)
+                                        .padding(.bottom, 16)
+                                }
                             }
                         }
                     }
