@@ -11,45 +11,50 @@ struct PostView: View {
     @State private var username: String = ""
     @State private var navigateToHome = false
     @State private var isUploading = false // To handle uploading state
+    @State private var moveToTop = false // State to move the TextField to the top
     var selectedImage: UIImage?
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            // Scrollable Content
-            ScrollView {
-                VStack {
-                    Spacer()
-                        .frame(height: 310)
-                    
-                    ZStack(alignment: .leading) {
-                        if caption.isEmpty {
-                            Text("Say something about this day...")
-                                .font(.system(size: 24, weight: .bold))
-                                .foregroundColor(.white)
-                                .frame(width: 300)
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal, 24)
-                        }
-                        TextField("", text: $caption)
+            GeometryReader { geometry in
+                ScrollView {
+                    VStack {
+                        Spacer()
+                            .frame(height: moveToTop ? 75 : 310)
+                        
+                        ZStack(alignment: .leading) {
+                            if caption.isEmpty {
+                                Text("Say something about this day...")
+                                    .font(.system(size: 24, weight: .bold))
+                                    .foregroundColor(.white)
+                                    .frame(width: 300)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal, 24)
+                            }
+                            TextField("", text: $caption, onCommit: {
+                                withAnimation {
+                                    moveToTop = true
+                                }
+                            })
                             .font(.system(size: 24, weight: .bold))
                             .foregroundColor(.white)
                             .frame(width: 300)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 24)
                             .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .padding()
+                        
+                        Spacer()
                     }
-                    .padding()
-                    
-                    Spacer()
+                    .frame(width: geometry.size.width) // Center content horizontally
                 }
-                .frame(maxWidth: .infinity) // Center content horizontally
             }
-            
-            // Navigation Button
+
             if !keyboardObserver.isKeyboardVisible && !isUploading {
                 NavigationLink(destination: Home().navigationBarBackButtonHidden(true),
-                    isActive: $navigateToHome,
-                    label: {
+                               isActive: $navigateToHome,
+                               label: {
                     ZStack {
                         Rectangle()
                             .frame(width: 291, height: 62)
@@ -63,8 +68,7 @@ struct PostView: View {
                                 .font(.system(size: 16, weight: .semibold))
                         }
                     }
-                    }
-                )
+                })
                 .simultaneousGesture(TapGesture().onEnded {
                     if let image = selectedImage {
                         isUploading = true
