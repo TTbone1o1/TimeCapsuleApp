@@ -255,7 +255,7 @@ struct Home: View {
     private func floatingFooter(safeArea: EdgeInsets, isVisible: Bool) -> some View {
         ZStack {
             TransparentBlurView(removeAllFilters: true)
-                .blur(radius: 25)
+                .blur(radius: 10)
                 .frame(height: 100 + safeArea.bottom)
                 .zIndex(1) // Lower zIndex to be behind other views
                 .offset(y: 15)
@@ -290,6 +290,7 @@ struct Home: View {
         }
         .frame(maxHeight: .infinity, alignment: .bottom)
         .animation(.easeInOut(duration: 0.3), value: isVisible) // Smooth transition for visibility change
+        .opacity(isVisible ? 1 : 0)
     }
 
     private func onAppearLogic() {
