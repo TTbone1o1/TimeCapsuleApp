@@ -258,7 +258,7 @@ struct Home: View {
                 .blur(radius: 10)
                 .frame(height: 100 + safeArea.bottom)
                 .zIndex(1) // Lower zIndex to be behind other views
-                .offset(y: 15)
+                .offset(y: 35)
                 .opacity(isVisible ? 1 : 0) // Control visibility based on isVisible
             
             HStack {
