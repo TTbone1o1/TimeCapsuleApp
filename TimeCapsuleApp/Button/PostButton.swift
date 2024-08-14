@@ -12,6 +12,7 @@ struct PostView: View {
     @State private var navigateToHome = false
     @State private var isUploading = false // To handle uploading state
     @State private var moveToTop = false // State to move the TextField to the top
+    @State private var timestamp: String = "" // State for the timestamp
     var selectedImage: UIImage?
 
     var body: some View {
@@ -21,6 +22,15 @@ struct PostView: View {
                     VStack {
                         Spacer()
                             .frame(height: moveToTop ? 75 : 310)
+                        
+                        // Timestamp Text
+                        if !timestamp.isEmpty {
+                            Text(timestamp)
+                                .font(.system(size: 18))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 28)
+                                .frame(width: 348, height: 30, alignment: .leading)
+                        }
                         
                         ZStack(alignment: .leading) {
                             if caption.isEmpty {
@@ -34,6 +44,7 @@ struct PostView: View {
                             TextField("", text: $caption, onCommit: {
                                 withAnimation {
                                     moveToTop = true
+                                    timestamp = formatDate(date: Date()) // Set the timestamp when text is committed
                                 }
                             })
                             .font(.system(size: 24, weight: .bold))
@@ -79,6 +90,14 @@ struct PostView: View {
             }
         }
         .background(Color.clear) // Ensure background is clear
+    }
+
+    // Function to format the date as a string
+    private func formatDate(date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return formatter.string(from: date)
     }
 
     private func uploadPhoto(image: UIImage) {
