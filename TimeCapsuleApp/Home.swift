@@ -81,21 +81,22 @@ struct Home: View {
                     if selectedImageUrl != nil {
                         VStack {
                             Spacer()
-                            HStack {
+                            HStack(alignment: .center) {
                                 VStack(alignment: .leading, spacing: 5) {
                                     Text(formatDate(selectedImageTimestamp?.dateValue() ?? Date()))
                                         .font(.system(size: 18))
                                         .foregroundColor(.white)
                                         .padding(.horizontal, 28)
-                                        .frame(width: 348, height: 30, alignment: .leading)
+                                        .frame(width: 348, height: 30, alignment: .center)
                                     Text(shortenCaption(selectedImageCaption))
                                         .font(.system(size: 24))
                                         .padding(.horizontal, 28)
-                                        .frame(width: 348, height: 70, alignment: .leading)
+                                        .frame(width: 348, height: 70, alignment: .center)
                                         .foregroundColor(.white)
                                         .cornerRadius(5)
                                         .padding(.bottom, 16)
                                 }
+                                .multilineTextAlignment(.center)
                                 .padding(.bottom, 53) // Pacing from the bottom
                                 .opacity(isCaptionVisible ? 1 : 0) // Fade in/out based on visibility
                                 .animation(.easeInOut(duration: 0.3), value: isCaptionVisible) // Smooth transition for visibility change
