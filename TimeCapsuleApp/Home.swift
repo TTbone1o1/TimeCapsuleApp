@@ -83,10 +83,10 @@ struct Home: View {
                             Spacer()
                             
                             ZStack {
-                                TransparentBlurView(removeAllFilters: true)
-                                    .blur(radius: 10)
-                                    .frame(height: 200 + safeArea.bottom)
-                                    .offset(y: 55)
+//                                TransparentBlurView(removeAllFilters: true)
+//                                    .blur(radius: 10)
+//                                    .frame(height: 200 + safeArea.bottom)
+//                                    .offset(y: 55)
                                 
                                 HStack {
                                     Spacer()
@@ -262,13 +262,13 @@ struct Home: View {
                             .padding(.horizontal, (UIScreen.main.bounds.width - 313) / 2)
                             
                             ZStack {
-                                TransparentBlurView(removeAllFilters: true)
-                                    .blur(radius: 5)
-                                    .frame(width: 312, height: 85)
-                                    //.cornerRadius(33)
-                                    //.zIndex(1) // Lower zIndex to be behind other views
-                                    .offset(y: 19)
-                                    //.opacity(isVisible ? 1 : 0) // Control visibility based on isVisible
+//                                TransparentBlurView(removeAllFilters: true)
+//                                    .blur(radius: 5)
+//                                    .frame(width: 312, height: 85)
+//                                    //.cornerRadius(33)
+//                                    //.zIndex(1) // Lower zIndex to be behind other views
+//                                    .offset(y: 19)
+//                                    //.opacity(isVisible ? 1 : 0) // Control visibility based on isVisible
                                 VStack(alignment: .leading, spacing: 5) {
                                     Text(formatDate(timestamp.dateValue()))
                                         .font(.system(size: 18))
