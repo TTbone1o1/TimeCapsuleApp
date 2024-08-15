@@ -180,6 +180,8 @@ struct Home: View {
     
     private var emptyStateView: some View {
         VStack {
+            Spacer()
+                .frame(height: 200)
             Text("Take a photo to start")
                 .font(.system(size: 18))
                 .padding(.bottom, 30)
