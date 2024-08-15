@@ -86,30 +86,53 @@ struct Home: View {
                                 TransparentBlurView(removeAllFilters: true)
                                     .blur(radius: 10)
                                     .frame(height: 200 + safeArea.bottom)
-                                    //.zIndex(1) // Lower zIndex to be behind other views
                                     .offset(y: 55)
-                                HStack(alignment: .center) {
-                                    VStack(alignment: .leading, spacing: 5) {
+                                
+                                HStack {
+                                    Spacer()
+                                    VStack(alignment: .center, spacing: 5) {
                                         Text(formatDate(selectedImageTimestamp?.dateValue() ?? Date()))
                                             .font(.system(size: 18))
                                             .foregroundColor(.white)
-                                            .padding(.horizontal, 28)
                                             .frame(width: 348, height: 30, alignment: .center)
-                                        Text(shortenCaption(selectedImageCaption))
-                                            .font(.system(size: 24))
-                                            .padding(.horizontal, 28)
-                                            .frame(width: 348, height: 70, alignment: .center)
-                                            .foregroundColor(.white)
-                                            .cornerRadius(5)
-                                            .padding(.bottom, 16)
+                                        
+                                        GeometryReader { geometry in
+                                            ScrollViewReader { scrollViewProxy in
+                                                ScrollView {
+                                                    VStack(alignment: .center, spacing: 5) {
+                                                        ForEach(selectedImageCaption.split(separator: "\n"), id: \.self) { line in
+                                                            Text(String(line))
+                                                                .font(.system(size: 24))
+                                                                .foregroundColor(.white)
+                                                                .frame(width: geometry.size.width, alignment: .center)
+                                                                .animation(.easeInOut(duration: 0.5)) // Adjust the duration for your desired effect
+                                                        }
+                                                    }
+                                                    .onAppear {
+                                                        // Simulate line-by-line scrolling with delay
+                                                        let lines = selectedImageCaption.split(separator: "\n").count
+                                                        for index in 0..<lines {
+                                                            DispatchQueue.main.asyncAfter(deadline: .now() + (Double(index) * 1.0)) { // Adjust delay as needed
+                                                                withAnimation {
+                                                                    scrollViewProxy.scrollTo(selectedImageCaption.split(separator: "\n")[index], anchor: .top)
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        .frame(height: 70)
+                                        .cornerRadius(5)
+                                        .padding(.bottom, 16)
                                     }
                                     .offset(y: 35)
                                     .multilineTextAlignment(.center)
-                                    .padding(.bottom, 53) // Pacing from the bottom
-                                    .opacity(isCaptionVisible ? 1 : 0) // Fade in/out based on visibility
-                                    .animation(.easeInOut(duration: 0.3), value: isCaptionVisible) // Smooth transition for visibility change
+                                    .padding(.bottom, 53)
+                                    .opacity(isCaptionVisible ? 1 : 0)
+                                    .animation(.easeInOut(duration: 0.3), value: isCaptionVisible)
+                                    Spacer()
                                 }
-                                .padding(.horizontal)
                             }
                         }
                         .zIndex(1) // Ensure this view is above other content
