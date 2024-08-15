@@ -10,11 +10,11 @@ class Notification {
 
     func scheduleNotification(for userId: String) {
         let content = UNMutableNotificationContent()
-        content.title = "Time to Post!"
-        content.body = "Hey, it's time to talk about what you did today."
+        content.title = "Rex!"
+        content.body = "Rex."
         content.sound = .default
 
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 60, repeats: true)
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 30, repeats: true)
         let request = UNNotificationRequest(identifier: "timeToPostNotification_\(userId)", content: content, trigger: trigger)
 
         UNUserNotificationCenter.current().add(request) { error in
