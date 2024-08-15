@@ -4,6 +4,8 @@ import FirebaseStorage
 import FirebaseAuth
 import FirebaseFirestore
 import AuthenticationServices
+import Firebase
+import UserNotifications
 
 struct PostView: View {
     @ObservedObject private var keyboardObserver = KeyboardObserver()
@@ -195,6 +197,39 @@ struct PostView: View {
             isUploading = false
         }
     }
+    
+    func checkIfUserPostedToday(uid: String, completion: @escaping (Bool) -> Void) {
+        let db = Firestore.firestore()
+        let photosCollectionRef = db.collection("users").document(uid).collection("photos")
+
+        let startOfToday = Calendar.current.startOfDay(for: Date())
+        photosCollectionRef
+            .whereField("timestamp", isGreaterThanOrEqualTo: Timestamp(date: startOfToday))
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("Error checking today's post: \(error.localizedDescription)")
+                    completion(false)
+                    return
+                }
+
+                if let snapshot = snapshot, !snapshot.isEmpty {
+                    completion(true) // User has posted today
+                } else {
+                    completion(false) // No posts today
+                }
+            }
+    }
+
+    func checkAndScheduleNotification(uid: String) {
+        checkIfUserPostedToday(uid: uid) { hasPosted in
+            if !hasPosted {
+                Notification.shared.scheduleNotification()
+            } else {
+                Notification.shared.cancelNotifications()
+            }
+        }
+    }
+    
 }
 
 #Preview {
