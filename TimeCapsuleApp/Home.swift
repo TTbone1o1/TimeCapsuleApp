@@ -15,6 +15,7 @@ struct Home: View {
     @State private var selectedImageCaption: String = ""
     @State private var selectedImageTimestamp: Timestamp? = nil
     @State private var isCaptionVisible: Bool = false
+    @State private var hasSeenIntroMessage: Bool = UserDefaults.standard.bool(forKey: "hasSeenIntroMessage")
 
     var body: some View {
         GeometryReader { geometry in
@@ -170,7 +171,7 @@ struct Home: View {
     
     private var content: some View {
         Group {
-            if imageUrls.isEmpty {
+            if imageUrls.isEmpty && !hasSeenIntroMessage {
                 emptyStateView
             } else {
                 imageGalleryView
@@ -199,6 +200,11 @@ struct Home: View {
                 Spacer()
             }
             Spacer()
+        }
+        .onAppear {
+            // Mark that the user has seen the intro message
+            UserDefaults.standard.set(true, forKey: "hasSeenIntroMessage")
+            hasSeenIntroMessage = true
         }
     }
     
