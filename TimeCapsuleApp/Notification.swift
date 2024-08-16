@@ -9,19 +9,36 @@ class Notification {
     private init() {}
 
     func scheduleNotification(for userId: String) {
+        // Remove existing notifications for this userId first
+        cancelNotifications(for: userId)
+        
+        // Get the current date and time
+        let now = Date()
+        
+        // Define the time you want the notification to trigger (e.g., 12:00 PM)
+        var dateComponents = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: now)
+        dateComponents.hour = 12
+        dateComponents.minute = 0
+        dateComponents.second = 0
+
+        // If the current time is already past 12 PM, schedule for tomorrow
+        if now >= Calendar.current.date(from: dateComponents)! {
+            dateComponents.day! += 1
+        }
+
         let content = UNMutableNotificationContent()
-        content.title = "Rex!"
-        content.body = "Rex."
+        content.title = "Time to Post!"
+        content.body = "Hey, it's time to talk about what you did today."
         content.sound = .default
 
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 30, repeats: true)
+        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
         let request = UNNotificationRequest(identifier: "timeToPostNotification_\(userId)", content: content, trigger: trigger)
 
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
                 print("Error scheduling notification: \(error.localizedDescription)")
             } else {
-                print("Notification scheduled successfully for user \(userId).")
+                print("Notification scheduled successfully for user \(userId) at 12:00 PM.")
             }
         }
     }
@@ -58,6 +75,13 @@ class Notification {
             }
         }
     }
+    
+    func clearAllNotifications() {
+        UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+        UNUserNotificationCenter.current().removeAllDeliveredNotifications()
+        print("All notifications cleared.")
+    }
+
 
     func updatePostDate(for userId: String) {
         let userRef = db.collection("users").document(userId)
