@@ -8,14 +8,14 @@ struct Home: View {
     @State private var username: String = ""
     @State private var imagesAppeared = false
     @State private var hasPostedPhoto = false
-    @State private var imageUrls: [(String, String, Timestamp)] = [] // Updated to store (URL, Caption, Timestamp) tuples
+    @State private var imageUrls: [(String, String, Timestamp)] = [] // Store (URL, Caption, Timestamp) tuples
     @State private var photoCount: Int = 0
     @State private var isShowingMessage = false
     @State private var selectedImageUrl: String? = nil
     @State private var selectedImageCaption: String = ""
     @State private var selectedImageTimestamp: Timestamp? = nil
     @State private var isCaptionVisible: Bool = false
-    @State private var hasSeenIntroMessage: Bool = UserDefaults.standard.bool(forKey: "hasSeenIntroMessage")
+    @State private var isImageLoaded: Bool = false // New state for tracking image load status
 
     var body: some View {
         GeometryReader { geometry in
@@ -38,27 +38,44 @@ struct Home: View {
                     // Fullscreen image view, placed above other content
                     if let selectedImageUrl = selectedImageUrl {
                         ZStack {
-                            AsyncImage(url: URL(string: selectedImageUrl)) { image in
-                                image
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
-                                    .edgesIgnoringSafeArea(.all) // Cover the entire screen
-                                    .onTapGesture {
-                                        self.selectedImageUrl = nil
-                                        self.selectedImageCaption = ""
-                                        self.selectedImageTimestamp = nil
-                                        self.isCaptionVisible = false
-                                    }
-                            } placeholder: {
-                                ProgressView()
+                            AsyncImage(url: URL(string: selectedImageUrl)) { phase in
+                                switch phase {
+                                case .empty:
+                                    // Do nothing during loading phase
+                                    EmptyView()
+                                case .success(let image):
+                                    image
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+                                        .edgesIgnoringSafeArea(.all) // Cover the entire screen
+                                        .onAppear {
+                                            self.isImageLoaded = true
+                                        }
+                                        .onTapGesture {
+                                            self.selectedImageUrl = nil
+                                            self.selectedImageCaption = ""
+                                            self.selectedImageTimestamp = nil
+                                            self.isCaptionVisible = false
+                                            self.isImageLoaded = false // Reset for next image
+                                        }
+                                case .failure:
+                                    // Handle the failure case, maybe display a placeholder image or error
+                                    Image(systemName: "xmark.circle")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: 100, height: 100)
+                                @unknown default:
+                                    EmptyView()
+                                }
                             }
                             .zIndex(3) // Highest zIndex to ensure it is on top of everything
-                        }
-                        .onAppear {
-                            withAnimation(.easeInOut(duration: 0.3)) {
-                                self.isCaptionVisible = true
+                            .onAppear {
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    self.isCaptionVisible = true
+                                }
                             }
+
                         }
                     }
 
@@ -71,6 +88,7 @@ struct Home: View {
                                 self.selectedImageCaption = ""
                                 self.selectedImageTimestamp = nil
                                 self.isCaptionVisible = false
+                                self.isImageLoaded = false // Reset for next image
                             }
                             .zIndex(2) // Ensure this view is below the fullscreen image view but above other content
                     }
@@ -79,16 +97,11 @@ struct Home: View {
                         .zIndex(1) // Ensure this view is below the fullscreen image view and overlay
                     
                     // Caption view
-                    if selectedImageUrl != nil {
+                    if selectedImageUrl != nil && isImageLoaded {
                         VStack {
                             Spacer()
                             
                             ZStack {
-//                                TransparentBlurView(removeAllFilters: true)
-//                                    .blur(radius: 10)
-//                                    .frame(height: 200 + safeArea.bottom)
-//                                    .offset(y: 55)
-                                
                                 HStack {
                                     Spacer()
                                     VStack(alignment: .center, spacing: 5) {
@@ -171,7 +184,7 @@ struct Home: View {
     
     private var content: some View {
         Group {
-            if imageUrls.isEmpty && !hasSeenIntroMessage {
+            if imageUrls.isEmpty {
                 emptyStateView
             } else {
                 imageGalleryView
@@ -200,11 +213,6 @@ struct Home: View {
                 Spacer()
             }
             Spacer()
-        }
-        .onAppear {
-            // Mark that the user has seen the intro message
-            UserDefaults.standard.set(true, forKey: "hasSeenIntroMessage")
-            hasSeenIntroMessage = true
         }
     }
     
@@ -255,6 +263,7 @@ struct Home: View {
                                             selectedImageCaption = ""
                                             selectedImageTimestamp = nil
                                             isCaptionVisible = false
+                                            isImageLoaded = false // Reset for next image
                                         } else {
                                             // Select new image
                                             selectedImageUrl = imageUrl
@@ -270,13 +279,6 @@ struct Home: View {
                             .padding(.horizontal, (UIScreen.main.bounds.width - 313) / 2)
                             
                             ZStack {
-//                                TransparentBlurView(removeAllFilters: true)
-//                                    .blur(radius: 5)
-//                                    .frame(width: 312, height: 85)
-//                                    //.cornerRadius(33)
-//                                    //.zIndex(1) // Lower zIndex to be behind other views
-//                                    .offset(y: 19)
-//                                    //.opacity(isVisible ? 1 : 0) // Control visibility based on isVisible
                                 VStack(alignment: .leading, spacing: 5) {
                                     Text(formatDate(timestamp.dateValue()))
                                         .font(.system(size: 18))
