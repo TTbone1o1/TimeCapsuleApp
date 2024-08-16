@@ -172,7 +172,6 @@ struct Timecap: View {
                 .onAppear {
                     imagesAppeared = true
                     triggerHaptic()
-                    Notification.shared.scheduleNotification()
                 }
                 .onDisappear {
                     imagesAppeared = false
