@@ -219,16 +219,6 @@ struct PostView: View {
                 }
             }
     }
-
-    func checkAndScheduleNotification(uid: String) {
-        checkIfUserPostedToday(uid: uid) { hasPosted in
-            if !hasPosted {
-                Notification.shared.scheduleNotification()
-            } else {
-                Notification.shared.cancelNotifications()
-            }
-        }
-    }
     
 }
 
