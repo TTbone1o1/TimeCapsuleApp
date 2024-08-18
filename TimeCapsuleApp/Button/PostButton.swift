@@ -16,6 +16,7 @@ struct PostView: View {
     @State private var moveToTop = false
     @State private var timestamp: String = "" // New state for timestamp
     @State private var showBlurView: Bool = false // New state for showing blur view
+    @State private var showCameraController = false // New state to present the CameraController
     var selectedImage: UIImage?
 
     var body: some View {
@@ -113,19 +114,26 @@ struct PostView: View {
                 .padding(.bottom, 20)
             }
             
-            // Add a black circle in the top left corner
+            // Add a black circle in the top left corner with a tap gesture to retake photo
             VStack {
                 HStack {
                     Circle()
                         .fill(Color.black)
                         .frame(width: 50, height: 50)
                         .padding([.top, .leading], 20) // Adjust padding as needed
+                        .onTapGesture {
+                            showCameraController = true // Toggle the CameraController view
+                        }
                     Spacer()
                 }
                 Spacer()
             }
         }
         .background(Color.clear)
+        .fullScreenCover(isPresented: $showCameraController) {
+            CameraController() // Present CameraController
+                .edgesIgnoringSafeArea(.all)
+        }
     }
 
     // Helper function to format the date
@@ -148,11 +156,13 @@ struct PostView: View {
             .getDocuments { snapshot, error in
                 if let error = error {
                     print("Error checking today's post: \(error.localizedDescription)")
+                    isUploading = false
                     return
                 }
 
                 if let snapshot = snapshot, !snapshot.isEmpty {
                     print("User has already posted today")
+                    isUploading = false
                     return
                 } else {
                     performUpload(image: image)
@@ -166,17 +176,22 @@ struct PostView: View {
         let photoID = UUID().uuidString
         let storageRef = Storage.storage().reference().child("users/\(uid)/photos/\(photoID).jpg")
 
-        guard let imageData = image.jpegData(compressionQuality: 0.75) else { return }
+        guard let imageData = image.jpegData(compressionQuality: 0.75) else {
+            isUploading = false
+            return
+        }
 
         storageRef.putData(imageData, metadata: nil) { metadata, error in
             if let error = error {
                 print("Error uploading photo: \(error.localizedDescription)")
+                isUploading = false
                 return
             }
 
             storageRef.downloadURL { url, error in
                 if let error = error {
                     print("Error getting download URL: \(error.localizedDescription)")
+                    isUploading = false
                     return
                 }
 
@@ -200,6 +215,7 @@ struct PostView: View {
         db.collection("users").document(uid).collection("photos").addDocument(data: photoData) { error in
             if let error = error {
                 print("Error saving photo metadata: \(error.localizedDescription)")
+                isUploading = false
             } else {
                 print("Photo metadata successfully saved")
                 navigateToHome = true
