@@ -36,7 +36,6 @@ struct PostView: View {
                                     .frame(height: 200) // Adjust height as needed
                                     .edgesIgnoringSafeArea(.top)
                                     .offset(y: -110)
-                                   // .zIndex(1) // Ensure blur view is below the timestamp
                             }
                             
                             // Display formatted timestamp
@@ -112,6 +111,18 @@ struct PostView: View {
                     }
                 })
                 .padding(.bottom, 20)
+            }
+            
+            // Add a black circle in the top left corner
+            VStack {
+                HStack {
+                    Circle()
+                        .fill(Color.black)
+                        .frame(width: 50, height: 50)
+                        .padding([.top, .leading], 20) // Adjust padding as needed
+                    Spacer()
+                }
+                Spacer()
             }
         }
         .background(Color.clear)
@@ -219,7 +230,6 @@ struct PostView: View {
                 }
             }
     }
-    
 }
 
 #Preview {
