@@ -385,6 +385,9 @@ struct Home: View {
                     }
                     return nil
                 }
+                // Sort the imageUrls array by timestamp in descending order
+                self.imageUrls.sort { $0.2.dateValue() > $1.2.dateValue() }
+                
                 if self.imageUrls.isEmpty {
                     print("No photos found.")
                 } else {
@@ -395,6 +398,7 @@ struct Home: View {
             }
         }
     }
+
 
     private func shortenCaption(_ caption: String) -> String {
         let words = caption.split(separator: " ")
