@@ -174,7 +174,7 @@ struct Home: View {
                         Rectangle()
                             .frame(width: 16, height: 3)
                             .cornerRadius(20)
-                            .foregroundColor(.black)
+                            .foregroundColor(Color.primary)
                     }
                 }
                 .padding(.trailing)
