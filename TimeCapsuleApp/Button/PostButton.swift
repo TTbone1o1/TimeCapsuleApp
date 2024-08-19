@@ -61,12 +61,14 @@ struct PostView: View {
                                         .padding(.horizontal, 24)
                                 }
                                 TextField("", text: $caption, onCommit: {
-                                    withAnimation {
-                                        moveToTop = true
-                                        // Update timestamp with formatted date
-                                        timestamp = formatDate(date: Date())
-                                        // Show blur view when return is pressed
-                                        showBlurView = true
+                                    if !caption.isEmpty {
+                                        withAnimation {
+                                            moveToTop = true
+                                            // Update timestamp with formatted date
+                                            timestamp = formatDate(date: Date())
+                                            // Show blur view when return is pressed and text is not empty
+                                            showBlurView = true
+                                        }
                                     }
                                 })
                                 .font(.system(size: 24, weight: .bold))
@@ -79,6 +81,7 @@ struct PostView: View {
                                 .zIndex(3)
                             }
                             .padding()
+
                             
                             Spacer()
                         }
