@@ -4,7 +4,6 @@ import FirebaseStorage
 import FirebaseAuth
 import FirebaseFirestore
 import AuthenticationServices
-import Firebase
 import UserNotifications
 
 struct PostView: View {
@@ -125,7 +124,11 @@ struct PostView: View {
                         .frame(width: 50, height: 50)
                         .padding([.top, .leading], 20) // Adjust padding as needed
                         .onTapGesture {
+                            // Reset navigation state and show camera controller
+                            navigateToHome = false
                             showCameraController = true // Toggle the CameraController view
+                            moveToTop = false // Reset the moveToTop state
+                            timestamp = "" // Clear the timestamp
                         }
                     Spacer()
                 }
@@ -133,7 +136,10 @@ struct PostView: View {
             }
         }
         .background(Color.clear)
-        .fullScreenCover(isPresented: $showCameraController) {
+        .fullScreenCover(isPresented: $showCameraController, onDismiss: {
+            // Reset the state to avoid navigation conflicts
+            showCameraController = false // Ensure this is reset
+        }) {
             CameraController() // Present CameraController
                 .edgesIgnoringSafeArea(.all)
         }
@@ -221,9 +227,10 @@ struct PostView: View {
                 isUploading = false
             } else {
                 print("Photo metadata successfully saved")
-                navigateToHome = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { // Add a delay
+                    navigateToHome = true
+                }
             }
-
             isUploading = false
         }
     }
