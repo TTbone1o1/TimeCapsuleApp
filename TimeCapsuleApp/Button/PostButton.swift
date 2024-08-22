@@ -63,14 +63,14 @@ struct PostView: View {
 
                                 TextEditor(text: $caption)
                                     .font(.system(size: 24, weight: .bold))
-                                    .foregroundColor(.white)
-                                    .frame(width: 300, height: 150) // Adjust the height as needed
+                                    .foregroundColor(.white) // Keep text color white
+                                    .frame(width: 300, height: 50) // Adjust the height as needed
                                     .multilineTextAlignment(.center)
                                     .padding(.horizontal, 24)
-                                    .background(Color.black) // Change background to black
+                                    //.background(Color.clear) // Ensure background is clear
                                     .cornerRadius(10)
-                                    .colorScheme(.dark) // Ensure text editor is using dark mode styling
-                                    .offset(y: moveToTop ? -55 : 0) // Move caption on top of blur when moving up
+                                    .scrollContentBackground(.hidden)
+                                    .offset(y: moveToTop ? -45 : 0) // Move caption on top of blur when moving up
                                     .zIndex(3)
                                     .onTapGesture {
                                         isEditing = true
@@ -78,6 +78,8 @@ struct PostView: View {
                                     .onDisappear {
                                         isEditing = false
                                     }
+
+
                             }
                             .padding()
                             Spacer()
@@ -148,6 +150,7 @@ struct PostView: View {
                 Spacer()
             }
         }
+        //This colored the background
         .background(Color.clear)
         .fullScreenCover(isPresented: $showCameraController, onDismiss: {
             // Reset the state to avoid navigation conflicts
