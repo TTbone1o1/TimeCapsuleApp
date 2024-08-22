@@ -279,7 +279,13 @@ struct Home: View {
                                         .gesture(
                                             LongPressGesture(minimumDuration: 0.5)
                                                 .onEnded { _ in
-                                                    highlightedImageUrl = imageUrl
+                                                    if highlightedImageUrl == imageUrl {
+                                                        // If the image is already highlighted, remove the highlight
+                                                        highlightedImageUrl = nil
+                                                    } else {
+                                                        // Otherwise, highlight the image
+                                                        highlightedImageUrl = imageUrl
+                                                    }
                                                 }
                                         )
                                 case .failure:
@@ -319,6 +325,7 @@ struct Home: View {
             .scrollIndicators(.hidden)
         }
     }
+
 
 
     
