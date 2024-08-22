@@ -16,6 +16,8 @@ struct Home: View {
     @State private var selectedImageTimestamp: Timestamp? = nil
     @State private var isCaptionVisible: Bool = false
     @State private var isImageLoaded: Bool = false // New state for tracking image load status
+    @State private var highlightedImageUrl: String? = nil
+
 
     var body: some View {
         GeometryReader { geometry in
@@ -243,39 +245,55 @@ struct Home: View {
                 VStack(spacing: 45) {
                     ForEach(imageUrls, id: \.0) { imageUrl, caption, timestamp in
                         ZStack(alignment: .bottom) {
-                            AsyncImage(url: URL(string: imageUrl)) { image in
-                                image
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .frame(width: 313, height: 421) // Fixed width
-                                    .cornerRadius(33)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 33)
-                                            .stroke(Color.clear, lineWidth: 0) // Overlay to maintain corner radius
-                                    )
-                                    .shadow(radius: 20, x: 0, y: 24)
-                                    .onTapGesture {
-                                        if selectedImageUrl == imageUrl {
-                                            // Deselect image if tapped again
-                                            selectedImageUrl = nil
-                                            selectedImageCaption = ""
-                                            selectedImageTimestamp = nil
-                                            isCaptionVisible = false
-                                            isImageLoaded = false // Reset for next image
-                                        } else {
-                                            // Select new image
-                                            selectedImageUrl = imageUrl
-                                            selectedImageCaption = caption
-                                            selectedImageTimestamp = timestamp
-                                            isCaptionVisible = true
+                            AsyncImage(url: URL(string: imageUrl)) { phase in
+                                switch phase {
+                                case .empty:
+                                    ProgressView()
+                                case .success(let image):
+                                    image
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(width: 313, height: 421)
+                                        .cornerRadius(33)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 33)
+                                                .stroke(highlightedImageUrl == imageUrl ? Color.blue : Color.clear, lineWidth: 4)
+                                        )
+                                        .shadow(radius: 20, x: 0, y: 24)
+                                        .onTapGesture {
+                                            if selectedImageUrl == imageUrl {
+                                                // Deselect image if tapped again
+                                                selectedImageUrl = nil
+                                                selectedImageCaption = ""
+                                                selectedImageTimestamp = nil
+                                                isCaptionVisible = false
+                                                isImageLoaded = false // Reset for next image
+                                            } else {
+                                                // Select new image
+                                                selectedImageUrl = imageUrl
+                                                selectedImageCaption = caption
+                                                selectedImageTimestamp = timestamp
+                                                isCaptionVisible = true
+                                            }
                                         }
-                                    }
-                            } placeholder: {
-                                ProgressView()
+                                        .gesture(
+                                            LongPressGesture(minimumDuration: 0.5)
+                                                .onEnded { _ in
+                                                    highlightedImageUrl = imageUrl
+                                                }
+                                        )
+                                case .failure:
+                                    Image(systemName: "xmark.circle")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: 100, height: 100)
+                                @unknown default:
+                                    EmptyView()
+                                }
                             }
                             .frame(maxWidth: .infinity)
                             .padding(.horizontal, (UIScreen.main.bounds.width - 313) / 2)
-                            
+
                             ZStack {
                                 VStack(alignment: .leading, spacing: 5) {
                                     Text(formatDate(timestamp.dateValue()))
@@ -301,6 +319,8 @@ struct Home: View {
             .scrollIndicators(.hidden)
         }
     }
+
+
     
     private func floatingFooter(safeArea: EdgeInsets, isVisible: Bool) -> some View {
         ZStack {
