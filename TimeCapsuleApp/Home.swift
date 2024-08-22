@@ -166,17 +166,15 @@ struct Home: View {
             
             Spacer()
             
-            Button(action: {
-                // Action for button
-            }) {
-                VStack(spacing: 2) {
-                    ForEach(0..<3) { _ in
-                        Rectangle()
-                            .frame(width: 16, height: 3)
-                            .cornerRadius(20)
-                            .foregroundColor(Color.primary)
-                    }
-                }
+            NavigationLink(destination: Setting().navigationBarBackButtonHidden(true)) {
+                            VStack(spacing: 2) {
+                                ForEach(0..<3) { _ in
+                                    Rectangle()
+                                        .frame(width: 16, height: 3)
+                                        .cornerRadius(20)
+                                        .foregroundColor(Color.primary)
+                                }
+                            }
                 .padding(.trailing)
             }
         }
