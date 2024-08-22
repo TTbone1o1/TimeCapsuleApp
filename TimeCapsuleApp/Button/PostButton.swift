@@ -15,7 +15,7 @@ struct PostView: View {
     @State private var moveToTop = false
     @State private var timestamp: String = "" // New state for timestamp
     @State private var showBlurView: Bool = false // New state for showing blur view
-    @State private var showCameraController = false // New state to present the CameraController
+    //@State private var showCameraController = false // New state to present the CameraController
     @State private var isEditing = false // New state to track if the TextEditor is being edited
     var selectedImage: UIImage?
 
@@ -134,31 +134,27 @@ struct PostView: View {
             // Add a black circle in the top left corner with a tap gesture to retake photo
             VStack {
                 HStack {
-                    Circle()
-                        .fill(Color.black)
-                        .frame(width: 50, height: 50)
-                        .padding([.top, .leading], 20) // Adjust padding as needed
-                        .onTapGesture {
-                            // Reset navigation state and show camera controller
-                            navigateToHome = false
-                            showCameraController = true // Toggle the CameraController view
-                            moveToTop = false // Reset the moveToTop state
-                            timestamp = "" // Clear the timestamp
-                        }
+                    NavigationLink(destination: CameraController().edgesIgnoringSafeArea(.all)) {
+                        Image(systemName: "arrow.triangle.2.circlepath.camera")
+                            .font(.system(size: 24)) // Adjust the size as needed
+                            .foregroundColor(.black) // Set the color to black
+                            .padding(20) // Adjust padding as needed
+                    }
                     Spacer()
                 }
                 Spacer()
             }
+
         }
         //This colored the background
         .background(Color.clear)
-        .fullScreenCover(isPresented: $showCameraController, onDismiss: {
-            // Reset the state to avoid navigation conflicts
-            showCameraController = false // Ensure this is reset
-        }) {
-            CameraController() // Present CameraController
-                .edgesIgnoringSafeArea(.all)
-        }
+//        .fullScreenCover(isPresented: $showCameraController, onDismiss: {
+//            // Reset the state to avoid navigation conflicts
+//            showCameraController = false // Ensure this is reset
+//        }) {
+//            CameraController() // Present CameraController
+//                .edgesIgnoringSafeArea(.all)
+//        }
     }
 
     // Helper function to format the date
