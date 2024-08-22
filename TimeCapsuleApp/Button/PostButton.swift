@@ -16,6 +16,7 @@ struct PostView: View {
     @State private var timestamp: String = "" // New state for timestamp
     @State private var showBlurView: Bool = false // New state for showing blur view
     @State private var showCameraController = false // New state to present the CameraController
+    @State private var isEditing = false // New state to track if the TextEditor is being edited
     var selectedImage: UIImage?
 
     var body: some View {
@@ -51,7 +52,7 @@ struct PostView: View {
                             }
                             
                             ZStack(alignment: .leading) {
-                                if caption.isEmpty {
+                                if caption.isEmpty && !isEditing {
                                     Text("Say something about this day...")
                                         .font(.system(size: 24, weight: .bold))
                                         .foregroundColor(.white)
@@ -59,33 +60,45 @@ struct PostView: View {
                                         .multilineTextAlignment(.center)
                                         .padding(.horizontal, 24)
                                 }
-                                TextField("", text: $caption, onCommit: {
-                                    if !caption.isEmpty {
-                                        withAnimation {
-                                            moveToTop = true
-                                            // Update timestamp with formatted date
-                                            timestamp = formatDate(date: Date())
-                                            // Show blur view when return is pressed and text is not empty
-                                            showBlurView = true
-                                        }
+
+                                TextEditor(text: $caption)
+                                    .font(.system(size: 24, weight: .bold))
+                                    .foregroundColor(.white)
+                                    .frame(width: 300, height: 150) // Adjust the height as needed
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal, 24)
+                                    .background(Color.black) // Change background to black
+                                    .cornerRadius(10)
+                                    .colorScheme(.dark) // Ensure text editor is using dark mode styling
+                                    .offset(y: moveToTop ? -55 : 0) // Move caption on top of blur when moving up
+                                    .zIndex(3)
+                                    .onTapGesture {
+                                        isEditing = true
                                     }
-                                })
-                                .font(.system(size: 24, weight: .bold))
-                                .foregroundColor(.white)
-                                .frame(width: 300)
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal, 24)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .offset(y: moveToTop ? -55 : 0) // Move caption on top of blur when moving up
-                                .zIndex(3)
+                                    .onDisappear {
+                                        isEditing = false
+                                    }
                             }
                             .padding()
-
-                            
                             Spacer()
                         }
                         .frame(width: geometry.size.width)
                     }
+                }
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                // Move text up when tapping outside the TextEditor
+                if isEditing {
+                    withAnimation {
+                        moveToTop = true
+                        // Update timestamp with formatted date
+                        timestamp = formatDate(date: Date())
+                        // Show blur view when text editor is dismissed and text is not empty
+                        showBlurView = true
+                    }
+                    isEditing = false // Stop editing when tapping outside
+                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                 }
             }
 
