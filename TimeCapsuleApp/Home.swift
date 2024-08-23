@@ -17,144 +17,149 @@ struct Home: View {
     @State private var isCaptionVisible: Bool = false
     @State private var isImageLoaded: Bool = false // New state for tracking image load status
     @State private var highlightedImageUrl: String? = nil
-
+    @State private var isSignedOut: Bool = false // New state for tracking sign-out status
 
     var body: some View {
-        GeometryReader { geometry in
-            let safeArea = geometry.safeAreaInsets
-            
-            NavigationView {
-                ZStack {
-                    VStack {
-                        header
-                        content
-                        Spacer()
-                    }
-                    .padding()
-                    .frame(maxHeight: .infinity)
-                    .onAppear(perform: onAppearLogic)
-                    .onDisappear {
-                        imagesAppeared = false
-                    }
-                    
-                    // Fullscreen image view, placed above other content
-                    if let selectedImageUrl = selectedImageUrl {
-                        ZStack {
-                            AsyncImage(url: URL(string: selectedImageUrl)) { phase in
-                                switch phase {
-                                case .empty:
-                                    // Do nothing during loading phase
-                                    EmptyView()
-                                case .success(let image):
-                                    image
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fill)
-                                        .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
-                                        .edgesIgnoringSafeArea(.all) // Cover the entire screen
-                                        .onAppear {
-                                            self.isImageLoaded = true
-                                        }
-                                        .onTapGesture {
-                                            self.selectedImageUrl = nil
-                                            self.selectedImageCaption = ""
-                                            self.selectedImageTimestamp = nil
-                                            self.isCaptionVisible = false
-                                            self.isImageLoaded = false // Reset for next image
-                                        }
-                                case .failure:
-                                    // Handle the failure case, maybe display a placeholder image or error
-                                    Image(systemName: "xmark.circle")
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .frame(width: 100, height: 100)
-                                @unknown default:
-                                    EmptyView()
-                                }
-                            }
-                            .zIndex(3) // Highest zIndex to ensure it is on top of everything
-                            .onAppear {
-                                withAnimation(.easeInOut(duration: 0.3)) {
-                                    self.isCaptionVisible = true
-                                }
-                            }
-
-                        }
-                    }
-
-                    // Transparent color for tapping to dismiss
-                    if selectedImageUrl != nil {
-                        Color.clear
-                            .edgesIgnoringSafeArea(.all)
-                            .onTapGesture {
-                                self.selectedImageUrl = nil
-                                self.selectedImageCaption = ""
-                                self.selectedImageTimestamp = nil
-                                self.isCaptionVisible = false
-                                self.isImageLoaded = false // Reset for next image
-                            }
-                            .zIndex(2) // Ensure this view is below the fullscreen image view but above other content
-                    }
-
-                    floatingFooter(safeArea: safeArea, isVisible: selectedImageUrl == nil) // Pass visibility state
-                        .zIndex(1) // Ensure this view is below the fullscreen image view and overlay
-                    
-                    // Caption view
-                    if selectedImageUrl != nil && isImageLoaded {
+        if isSignedOut {
+            // Navigate back to Timecap if the user is signed out
+            Timecap()
+        } else {
+            GeometryReader { geometry in
+                let safeArea = geometry.safeAreaInsets
+                
+                NavigationView {
+                    ZStack {
                         VStack {
+                            header
+                            content
                             Spacer()
-                            
+                        }
+                        .padding()
+                        .frame(maxHeight: .infinity)
+                        .onAppear(perform: onAppearLogic)
+                        .onDisappear {
+                            imagesAppeared = false
+                        }
+                        
+                        // Fullscreen image view, placed above other content
+                        if let selectedImageUrl = selectedImageUrl {
                             ZStack {
-                                HStack {
-                                    Spacer()
-                                    VStack(alignment: .center, spacing: 5) {
-                                        Text(formatDate(selectedImageTimestamp?.dateValue() ?? Date()))
-                                            .font(.system(size: 18))
-                                            .foregroundColor(.white)
-                                            .frame(width: 348, height: 30, alignment: .center)
-                                        
-                                        GeometryReader { geometry in
-                                            ScrollViewReader { scrollViewProxy in
-                                                ScrollView {
-                                                    VStack(alignment: .center, spacing: 5) {
-                                                        ForEach(selectedImageCaption.split(separator: "\n"), id: \.self) { line in
-                                                            Text(String(line))
-                                                                .font(.system(size: 24))
-                                                                .foregroundColor(.white)
-                                                                .frame(width: geometry.size.width, alignment: .center)
-                                                                .animation(.easeInOut(duration: 0.5)) // Adjust the duration for your desired effect
+                                AsyncImage(url: URL(string: selectedImageUrl)) { phase in
+                                    switch phase {
+                                    case .empty:
+                                        // Do nothing during loading phase
+                                        EmptyView()
+                                    case .success(let image):
+                                        image
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fill)
+                                            .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+                                            .edgesIgnoringSafeArea(.all) // Cover the entire screen
+                                            .onAppear {
+                                                self.isImageLoaded = true
+                                            }
+                                            .onTapGesture {
+                                                self.selectedImageUrl = nil
+                                                self.selectedImageCaption = ""
+                                                self.selectedImageTimestamp = nil
+                                                self.isCaptionVisible = false
+                                                self.isImageLoaded = false // Reset for next image
+                                            }
+                                    case .failure:
+                                        // Handle the failure case, maybe display a placeholder image or error
+                                        Image(systemName: "xmark.circle")
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                            .frame(width: 100, height: 100)
+                                    @unknown default:
+                                        EmptyView()
+                                    }
+                                }
+                                .zIndex(3) // Highest zIndex to ensure it is on top of everything
+                                .onAppear {
+                                    withAnimation(.easeInOut(duration: 0.3)) {
+                                        self.isCaptionVisible = true
+                                    }
+                                }
+
+                            }
+                        }
+
+                        // Transparent color for tapping to dismiss
+                        if selectedImageUrl != nil {
+                            Color.clear
+                                .edgesIgnoringSafeArea(.all)
+                                .onTapGesture {
+                                    self.selectedImageUrl = nil
+                                    self.selectedImageCaption = ""
+                                    self.selectedImageTimestamp = nil
+                                    self.isCaptionVisible = false
+                                    self.isImageLoaded = false // Reset for next image
+                                }
+                                .zIndex(2) // Ensure this view is below the fullscreen image view but above other content
+                        }
+
+                        floatingFooter(safeArea: safeArea, isVisible: selectedImageUrl == nil) // Pass visibility state
+                            .zIndex(1) // Ensure this view is below the fullscreen image view and overlay
+                        
+                        // Caption view
+                        if selectedImageUrl != nil && isImageLoaded {
+                            VStack {
+                                Spacer()
+                                
+                                ZStack {
+                                    HStack {
+                                        Spacer()
+                                        VStack(alignment: .center, spacing: 5) {
+                                            Text(formatDate(selectedImageTimestamp?.dateValue() ?? Date()))
+                                                .font(.system(size: 18))
+                                                .foregroundColor(.white)
+                                                .frame(width: 348, height: 30, alignment: .center)
+                                            
+                                            GeometryReader { geometry in
+                                                ScrollViewReader { scrollViewProxy in
+                                                    ScrollView {
+                                                        VStack(alignment: .center, spacing: 5) {
+                                                            ForEach(selectedImageCaption.split(separator: "\n"), id: \.self) { line in
+                                                                Text(String(line))
+                                                                    .font(.system(size: 24))
+                                                                    .foregroundColor(.white)
+                                                                    .frame(width: geometry.size.width, alignment: .center)
+                                                                    .animation(.easeInOut(duration: 0.5)) // Adjust the duration for your desired effect
+                                                            }
                                                         }
-                                                    }
-                                                    .onAppear {
-                                                        // Simulate line-by-line scrolling with delay
-                                                        let lines = selectedImageCaption.split(separator: "\n").count
-                                                        for index in 0..<lines {
-                                                            DispatchQueue.main.asyncAfter(deadline: .now() + (Double(index) * 1.0)) { // Adjust delay as needed
-                                                                withAnimation {
-                                                                    scrollViewProxy.scrollTo(selectedImageCaption.split(separator: "\n")[index], anchor: .top)
+                                                        .onAppear {
+                                                            // Simulate line-by-line scrolling with delay
+                                                            let lines = selectedImageCaption.split(separator: "\n").count
+                                                            for index in 0..<lines {
+                                                                DispatchQueue.main.asyncAfter(deadline: .now() + (Double(index) * 1.0)) { // Adjust delay as needed
+                                                                    withAnimation {
+                                                                        scrollViewProxy.scrollTo(selectedImageCaption.split(separator: "\n")[index], anchor: .top)
+                                                                    }
                                                                 }
                                                             }
                                                         }
                                                     }
                                                 }
                                             }
+                                            .frame(height: 70)
+                                            .cornerRadius(5)
+                                            .padding(.bottom, 16)
                                         }
-                                        .frame(height: 70)
-                                        .cornerRadius(5)
-                                        .padding(.bottom, 16)
+                                        .offset(y: 35)
+                                        .multilineTextAlignment(.center)
+                                        .padding(.bottom, 53)
+                                        .opacity(isCaptionVisible ? 1 : 0)
+                                        .animation(.easeInOut(duration: 0.3), value: isCaptionVisible)
+                                        Spacer()
                                     }
-                                    .offset(y: 35)
-                                    .multilineTextAlignment(.center)
-                                    .padding(.bottom, 53)
-                                    .opacity(isCaptionVisible ? 1 : 0)
-                                    .animation(.easeInOut(duration: 0.3), value: isCaptionVisible)
-                                    Spacer()
                                 }
                             }
+                            .zIndex(1) // Ensure this view is above other content
                         }
-                        .zIndex(1) // Ensure this view is above other content
                     }
+                    .edgesIgnoringSafeArea(.bottom)
                 }
-                .edgesIgnoringSafeArea(.bottom)
             }
         }
     }
@@ -168,15 +173,15 @@ struct Home: View {
             
             Spacer()
             
-            NavigationLink(destination: Setting().navigationBarBackButtonHidden(true)) {
-                            VStack(spacing: 2) {
-                                ForEach(0..<3) { _ in
-                                    Rectangle()
-                                        .frame(width: 16, height: 3)
-                                        .cornerRadius(20)
-                                        .foregroundColor(Color.primary)
-                                }
-                            }
+            NavigationLink(destination: Setting(isSignedOut: $isSignedOut).navigationBarBackButtonHidden(true)) {
+                VStack(spacing: 2) {
+                    ForEach(0..<3) { _ in
+                        Rectangle()
+                            .frame(width: 16, height: 3)
+                            .cornerRadius(20)
+                            .foregroundColor(Color.primary)
+                    }
+                }
                 .padding(.trailing)
             }
         }
@@ -325,9 +330,6 @@ struct Home: View {
             .scrollIndicators(.hidden)
         }
     }
-
-
-
     
     private func floatingFooter(safeArea: EdgeInsets, isVisible: Bool) -> some View {
         ZStack {
