@@ -11,13 +11,14 @@ struct Home: View {
     @State private var imageUrls: [(String, String, Timestamp)] = [] // Store (URL, Caption, Timestamp) tuples
     @State private var photoCount: Int = 0
     @State private var isShowingMessage = false
-    @State private var selectedImageUrl: String? = nil
-    @State private var selectedImageCaption: String = ""
-    @State private var selectedImageTimestamp: Timestamp? = nil
     @State private var isCaptionVisible: Bool = false
     @State private var isImageLoaded: Bool = false // New state for tracking image load status
     @State private var highlightedImageUrl: String? = nil
-    @State private var isSignedOut: Bool = false // New state for tracking sign-out status
+    @State private var tappedImageUrl: String? = nil // State to track the tapped image URL
+    @State private var scaleAmount: CGFloat = 1.0 // State to control the scaling
+    @State private var isSignedOut: Bool = false // State to track sign out status
+    @State var show = false
+    @Namespace var namespace
 
     var body: some View {
         if isSignedOut {
@@ -28,164 +29,55 @@ struct Home: View {
                 let safeArea = geometry.safeAreaInsets
                 
                 NavigationView {
-                    ZStack {
-                        VStack {
-                            header
-                            content
+                    VStack {
+                        // Header HStack remains fixed at the top
+                        HStack {
+                            Text(username.isEmpty ? "" : username)
+                                .font(.system(size: 18))
+                                .fontWeight(.bold)
+                                .padding()
+                            
                             Spacer()
-                        }
-                        .padding()
-                        .frame(maxHeight: .infinity)
-                        .onAppear(perform: onAppearLogic)
-                        .onDisappear {
-                            imagesAppeared = false
-                        }
-                        
-                        // Fullscreen image view, placed above other content
-                        if let selectedImageUrl = selectedImageUrl {
-                            ZStack {
-                                AsyncImage(url: URL(string: selectedImageUrl)) { phase in
-                                    switch phase {
-                                    case .empty:
-                                        // Do nothing during loading phase
-                                        EmptyView()
-                                    case .success(let image):
-                                        image
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fill)
-                                            .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
-                                            .edgesIgnoringSafeArea(.all) // Cover the entire screen
-                                            .onAppear {
-                                                self.isImageLoaded = true
-                                            }
-                                            .onTapGesture {
-                                                self.selectedImageUrl = nil
-                                                self.selectedImageCaption = ""
-                                                self.selectedImageTimestamp = nil
-                                                self.isCaptionVisible = false
-                                                self.isImageLoaded = false // Reset for next image
-                                            }
-                                    case .failure:
-                                        // Handle the failure case, maybe display a placeholder image or error
-                                        Image(systemName: "xmark.circle")
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                            .frame(width: 100, height: 100)
-                                    @unknown default:
-                                        EmptyView()
+                            
+                            NavigationLink(destination: Setting(isSignedOut: $isSignedOut).navigationBarBackButtonHidden(true)) {
+                                VStack(spacing: 2) {
+                                    ForEach(0..<3) { _ in
+                                        Rectangle()
+                                            .frame(width: 16, height: 3)
+                                            .cornerRadius(20)
+                                            .foregroundColor(Color.primary)
                                     }
                                 }
-                                .zIndex(3) // Highest zIndex to ensure it is on top of everything
-                                .onAppear {
-                                    withAnimation(.easeInOut(duration: 0.3)) {
-                                        self.isCaptionVisible = true
-                                    }
-                                }
-
+                                .padding(.trailing)
                             }
                         }
-
-                        // Transparent color for tapping to dismiss
-                        if selectedImageUrl != nil {
-                            Color.clear
-                                .edgesIgnoringSafeArea(.all)
-                                .onTapGesture {
-                                    self.selectedImageUrl = nil
-                                    self.selectedImageCaption = ""
-                                    self.selectedImageTimestamp = nil
-                                    self.isCaptionVisible = false
-                                    self.isImageLoaded = false // Reset for next image
-                                }
-                                .zIndex(2) // Ensure this view is below the fullscreen image view but above other content
-                        }
-
-                        floatingFooter(safeArea: safeArea, isVisible: selectedImageUrl == nil) // Pass visibility state
-                            .zIndex(1) // Ensure this view is below the fullscreen image view and overlay
+                        .background(Color.white) // Ensure background is set to avoid overlap issues
+                        .zIndex(2) // Keep it above other content
                         
-                        // Caption view
-                        if selectedImageUrl != nil && isImageLoaded {
+                        Spacer()
+                        
+                        ZStack {
                             VStack {
+                                content
                                 Spacer()
-                                
-                                ZStack {
-                                    HStack {
-                                        Spacer()
-                                        VStack(alignment: .center, spacing: 5) {
-                                            Text(formatDate(selectedImageTimestamp?.dateValue() ?? Date()))
-                                                .font(.system(size: 18))
-                                                .foregroundColor(.white)
-                                                .frame(width: 348, height: 30, alignment: .center)
-                                            
-                                            GeometryReader { geometry in
-                                                ScrollViewReader { scrollViewProxy in
-                                                    ScrollView {
-                                                        VStack(alignment: .center, spacing: 5) {
-                                                            ForEach(selectedImageCaption.split(separator: "\n"), id: \.self) { line in
-                                                                Text(String(line))
-                                                                    .font(.system(size: 24))
-                                                                    .foregroundColor(.white)
-                                                                    .frame(width: geometry.size.width, alignment: .center)
-                                                                    .animation(.easeInOut(duration: 0.5)) // Adjust the duration for your desired effect
-                                                            }
-                                                        }
-                                                        .onAppear {
-                                                            // Simulate line-by-line scrolling with delay
-                                                            let lines = selectedImageCaption.split(separator: "\n").count
-                                                            for index in 0..<lines {
-                                                                DispatchQueue.main.asyncAfter(deadline: .now() + (Double(index) * 1.0)) { // Adjust delay as needed
-                                                                    withAnimation {
-                                                                        scrollViewProxy.scrollTo(selectedImageCaption.split(separator: "\n")[index], anchor: .top)
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            .frame(height: 70)
-                                            .cornerRadius(5)
-                                            .padding(.bottom, 16)
-                                        }
-                                        .offset(y: 35)
-                                        .multilineTextAlignment(.center)
-                                        .padding(.bottom, 53)
-                                        .opacity(isCaptionVisible ? 1 : 0)
-                                        .animation(.easeInOut(duration: 0.3), value: isCaptionVisible)
-                                        Spacer()
-                                    }
-                                }
                             }
-                            .zIndex(1) // Ensure this view is above other content
+                            .padding()
+                            .frame(maxHeight: .infinity)
+                            .onAppear(perform: onAppearLogic)
+                            .onDisappear {
+                                imagesAppeared = false
+                            }
+
+                            floatingFooter(safeArea: safeArea, isVisible: true) // Pass visibility state
+                                .zIndex(1)
                         }
+                        .edgesIgnoringSafeArea(.bottom)
                     }
-                    .edgesIgnoringSafeArea(.bottom)
                 }
             }
         }
     }
-    
-    private var header: some View {
-        HStack {
-            Text(username.isEmpty ? "" : username)
-                .font(.system(size: 18))
-                .fontWeight(.bold)
-                .padding()
-            
-            Spacer()
-            
-            NavigationLink(destination: Setting(isSignedOut: $isSignedOut).navigationBarBackButtonHidden(true)) {
-                VStack(spacing: 2) {
-                    ForEach(0..<3) { _ in
-                        Rectangle()
-                            .frame(width: 16, height: 3)
-                            .cornerRadius(20)
-                            .foregroundColor(Color.primary)
-                    }
-                }
-                .padding(.trailing)
-            }
-        }
-    }
+
     
     private var content: some View {
         Group {
@@ -258,41 +150,24 @@ struct Home: View {
                                     image
                                         .resizable()
                                         .aspectRatio(contentMode: .fill)
-                                        .frame(width: 313, height: 421)
-                                        .cornerRadius(33)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 33)
-                                                .stroke(highlightedImageUrl == imageUrl ? Color.blue : Color.clear, lineWidth: 4)
-                                        )
+                                        .matchedGeometryEffect(id: imageUrl, in: namespace)
+                                        .frame(width: tappedImageUrl == imageUrl ? 413 : 313,
+                                               height: tappedImageUrl == imageUrl ? .infinity : 421)
+                                        .cornerRadius(tappedImageUrl == imageUrl ? 20 : 33)
                                         .shadow(radius: 20, x: 0, y: 24)
                                         .onTapGesture {
-                                            if selectedImageUrl == imageUrl {
-                                                // Deselect image if tapped again
-                                                selectedImageUrl = nil
-                                                selectedImageCaption = ""
-                                                selectedImageTimestamp = nil
-                                                isCaptionVisible = false
-                                                isImageLoaded = false // Reset for next image
+                                            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+                                                if tappedImageUrl == imageUrl {
+                                                // If the tapped image is already enlarged, reset
+                                                tappedImageUrl = nil
+                                                show = false
                                             } else {
-                                                // Select new image
-                                                selectedImageUrl = imageUrl
-                                                selectedImageCaption = caption
-                                                selectedImageTimestamp = timestamp
-                                                isCaptionVisible = true
+                                                // Enlarge the tapped image
+                                                tappedImageUrl = imageUrl
+                                                show = true
+                                            }
                                             }
                                         }
-                                        .gesture(
-                                            LongPressGesture(minimumDuration: 0.5)
-                                                .onEnded { _ in
-                                                    if highlightedImageUrl == imageUrl {
-                                                        // If the image is already highlighted, remove the highlight
-                                                        highlightedImageUrl = nil
-                                                    } else {
-                                                        // Otherwise, highlight the image
-                                                        highlightedImageUrl = imageUrl
-                                                    }
-                                                }
-                                        )
                                 case .failure:
                                     Image(systemName: "xmark.circle")
                                         .resizable()
@@ -305,21 +180,19 @@ struct Home: View {
                             .frame(maxWidth: .infinity)
                             .padding(.horizontal, (UIScreen.main.bounds.width - 313) / 2)
 
-                            ZStack {
-                                VStack(alignment: .leading, spacing: 5) {
-                                    Text(formatDate(timestamp.dateValue()))
-                                        .font(.system(size: 18))
-                                        .foregroundColor(.white)
-                                        .padding(.horizontal, 28)
-                                        .frame(width: 348, height: 30, alignment: .leading)
-                                    Text(shortenCaption(caption))
-                                        .font(.system(size: 24))
-                                        .padding(.horizontal, 28)
-                                        .frame(width: 348, height: 70, alignment: .leading)
-                                        .foregroundColor(.white)
-                                        .cornerRadius(5)
-                                        .padding(.bottom, 16)
-                                }
+                            VStack(alignment: .leading, spacing: 5) {
+                                Text(formatDate(timestamp.dateValue()))
+                                    .font(.system(size: 18))
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 28)
+                                    .frame(width: 348, height: 30, alignment: .leading)
+                                Text(shortenCaption(caption))
+                                    .font(.system(size: 24))
+                                    .padding(.horizontal, 28)
+                                    .frame(width: 348, height: 70, alignment: .leading)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(5)
+                                    .padding(.bottom, 16)
                             }
                         }
                     }
@@ -330,15 +203,15 @@ struct Home: View {
             .scrollIndicators(.hidden)
         }
     }
-    
+
     private func floatingFooter(safeArea: EdgeInsets, isVisible: Bool) -> some View {
         ZStack {
             TransparentBlurView(removeAllFilters: true)
                 .blur(radius: 10)
                 .frame(height: 100 + safeArea.bottom)
-                .zIndex(1) // Lower zIndex to be behind other views
+                .zIndex(1)
                 .offset(y: 35)
-                .opacity(isVisible ? 1 : 0) // Control visibility based on isVisible
+                .opacity(isVisible ? 1 : 0)
             
             HStack {
                 NavigationLink(destination: CameraController().edgesIgnoringSafeArea(.all)) {
@@ -364,11 +237,11 @@ struct Home: View {
                         .foregroundColor(photoCount >= 2 ? .white : .gray)
                 }
             }
-            .zIndex(1) // Same zIndex as the footer, ensuring the footer is always beneath
+            .zIndex(1)
             .padding(.bottom, -10)
         }
         .frame(maxHeight: .infinity, alignment: .bottom)
-        .animation(.easeInOut(duration: 0.3), value: isVisible) // Smooth transition for visibility change
+        .animation(.easeInOut(duration: 0.3), value: isVisible)
         .opacity(isVisible ? 1 : 0)
     }
 
@@ -407,12 +280,11 @@ struct Home: View {
                     if let url = data["photoURL"] as? String,
                        let caption = data["caption"] as? String,
                        let timestamp = data["timestamp"] as? Timestamp {
-                        print("Fetched image URL: \(url) with caption: \(caption) and timestamp: \(timestamp.dateValue())") // Debug log
+                        print("Fetched image URL: \(url) with caption: \(caption) and timestamp: \(timestamp.dateValue())")
                         return (url, caption, timestamp)
                     }
                     return nil
                 }
-                // Sort the imageUrls array by timestamp in descending order
                 self.imageUrls.sort { $0.2.dateValue() > $1.2.dateValue() }
                 
                 if self.imageUrls.isEmpty {
@@ -425,8 +297,7 @@ struct Home: View {
             }
         }
     }
-
-
+    
     private func shortenCaption(_ caption: String) -> String {
         let words = caption.split(separator: " ")
         let limitedWords = words.prefix(8)
@@ -436,17 +307,12 @@ struct Home: View {
     
     private func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "MMM d" // Format for "Aug 12"
+        formatter.dateFormat = "MMM d"
         return formatter.string(from: date)
     }
 
     private func triggerHaptic() {
         // Trigger haptic feedback (optional)
-    }
-
-    private func handleImageTap(imageUrl: String) {
-        print("Image tapped: \(imageUrl)")
-        // Add any other logic here
     }
 }
 
