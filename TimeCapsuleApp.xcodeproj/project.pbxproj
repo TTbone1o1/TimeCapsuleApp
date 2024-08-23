@@ -29,6 +29,7 @@
 		CDA2DF7F2C6167280005FB4E /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CDA2DF7E2C6167270005FB4E /* StoreKit.framework */; };
 		CDA2DF842C63CDDD0005FB4E /* HomeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA2DF832C63CDDD0005FB4E /* HomeButton.swift */; };
 		CDA2DF862C6416EE0005FB4E /* PostButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA2DF852C6416ED0005FB4E /* PostButton.swift */; };
+		CDA821512C77C7FD009DB3E5 /* Setting.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA821502C77C7FD009DB3E5 /* Setting.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -53,6 +54,7 @@
 		CDA2DF822C61B5430005FB4E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		CDA2DF832C63CDDD0005FB4E /* HomeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeButton.swift; sourceTree = "<group>"; };
 		CDA2DF852C6416ED0005FB4E /* PostButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostButton.swift; sourceTree = "<group>"; };
+		CDA821502C77C7FD009DB3E5 /* Setting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Setting.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -112,6 +114,7 @@
 				CD3671B52C5C3AC1002DA9F2 /* TimeCapsuleApp.swift */,
 				CD4B48E62C5D2BBC008DC1D2 /* Timecap.swift */,
 				CDA00CC92C6ADC73002C0B50 /* ImagePreview.swift */,
+				CDA821502C77C7FD009DB3E5 /* Setting.swift */,
 				CD1E8CAF2C5EE1CE00C01341 /* Home.swift */,
 				CDA00CC62C67FC83002C0B50 /* Button */,
 				CDA2DF7D2C611DEF0005FB4E /* Info */,
@@ -239,6 +242,7 @@
 				CDA00CC82C67FCB7002C0B50 /* MessageButton.swift in Sources */,
 				CDA2DF7A2C611DBE0005FB4E /* Photoinfo.swift in Sources */,
 				CDA00CCA2C6ADC74002C0B50 /* ImagePreview.swift in Sources */,
+				CDA821512C77C7FD009DB3E5 /* Setting.swift in Sources */,
 				CD4B48E72C5D2BBC008DC1D2 /* Timecap.swift in Sources */,
 				CDA2DF7C2C611DCF0005FB4E /* Writeinfo.swift in Sources */,
 				CD3671B62C5C3AC1002DA9F2 /* TimeCapsuleApp.swift in Sources */,
@@ -397,7 +401,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.9;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = abraham.TimeCapsuleApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -430,7 +434,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.9;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = abraham.TimeCapsuleApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
