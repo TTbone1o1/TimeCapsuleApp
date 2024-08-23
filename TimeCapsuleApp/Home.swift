@@ -136,73 +136,80 @@ struct Home: View {
     }
     
     private var imageGalleryView: some View {
-        ZStack {
-            // Main content (image gallery)
-            ScrollView {
-                VStack(spacing: 45) {
-                    ForEach(imageUrls, id: \.0) { imageUrl, caption, timestamp in
-                        ZStack(alignment: .bottom) {
-                            AsyncImage(url: URL(string: imageUrl)) { phase in
-                                switch phase {
-                                case .empty:
-                                    ProgressView()
-                                case .success(let image):
-                                    image
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fill)
-                                        .matchedGeometryEffect(id: imageUrl, in: namespace)
-                                        .frame(width: tappedImageUrl == imageUrl ? 413 : 313,
-                                               height: tappedImageUrl == imageUrl ? .infinity : 421)
-                                        .cornerRadius(tappedImageUrl == imageUrl ? 20 : 33)
-                                        .shadow(radius: 20, x: 0, y: 24)
-                                        .onTapGesture {
-                                            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
-                                                if tappedImageUrl == imageUrl {
-                                                // If the tapped image is already enlarged, reset
-                                                tappedImageUrl = nil
-                                                show = false
-                                            } else {
-                                                // Enlarge the tapped image
-                                                tappedImageUrl = imageUrl
-                                                show = true
+        ScrollViewReader { scrollProxy in
+            ZStack {
+                // Main content (image gallery)
+                ScrollView {
+                    VStack(spacing: 45) {
+                        ForEach(imageUrls, id: \.0) { imageUrl, caption, timestamp in
+                            ZStack(alignment: .bottom) {
+                                AsyncImage(url: URL(string: imageUrl)) { phase in
+                                    switch phase {
+                                    case .empty:
+                                        ProgressView()
+                                    case .success(let image):
+                                        image
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fill)
+                                            .matchedGeometryEffect(id: imageUrl, in: namespace)
+                                            .frame(width: tappedImageUrl == imageUrl ? 413 : 313,
+                                                   height: tappedImageUrl == imageUrl ? .infinity : 421)
+                                            .cornerRadius(tappedImageUrl == imageUrl ? 20 : 33)
+                                            .shadow(radius: 20, x: 0, y: 24)
+                                            .onTapGesture {
+                                                withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+                                                    if tappedImageUrl == imageUrl {
+                                                        // If the tapped image is already enlarged, reset
+                                                        tappedImageUrl = nil
+                                                        show = false
+                                                    } else {
+                                                        // Enlarge the tapped image and scroll to it
+                                                        tappedImageUrl = imageUrl
+                                                        show = true
+                                                        withAnimation {
+                                                            scrollProxy.scrollTo(imageUrl, anchor: .center)
+                                                        }
+                                                    }
+                                                }
                                             }
-                                            }
-                                        }
-                                case .failure:
-                                    Image(systemName: "xmark.circle")
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .frame(width: 100, height: 100)
-                                @unknown default:
-                                    EmptyView()
+                                    case .failure:
+                                        Image(systemName: "xmark.circle")
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                            .frame(width: 100, height: 100)
+                                    @unknown default:
+                                        EmptyView()
+                                    }
                                 }
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding(.horizontal, (UIScreen.main.bounds.width - 313) / 2)
+                                .frame(maxWidth: .infinity)
+                                .id(imageUrl) // Assign the image URL as the ID
 
-                            VStack(alignment: .leading, spacing: 5) {
-                                Text(formatDate(timestamp.dateValue()))
-                                    .font(.system(size: 18))
-                                    .foregroundColor(.white)
-                                    .padding(.horizontal, 28)
-                                    .frame(width: 348, height: 30, alignment: .leading)
-                                Text(shortenCaption(caption))
-                                    .font(.system(size: 24))
-                                    .padding(.horizontal, 28)
-                                    .frame(width: 348, height: 70, alignment: .leading)
-                                    .foregroundColor(.white)
-                                    .cornerRadius(5)
-                                    .padding(.bottom, 16)
+                                VStack(alignment: .leading, spacing: 5) {
+                                    Text(formatDate(timestamp.dateValue()))
+                                        .font(.system(size: 18))
+                                        .foregroundColor(.white)
+                                        .padding(.horizontal, 28)
+                                        .frame(width: 348, height: 30, alignment: .leading)
+                                    Text(shortenCaption(caption))
+                                        .font(.system(size: 24))
+                                        .padding(.horizontal, 28)
+                                        .frame(width: 348, height: 70, alignment: .leading)
+                                        .foregroundColor(.white)
+                                        .cornerRadius(5)
+                                        .padding(.bottom, 16)
+                                }
                             }
                         }
                     }
+                    .padding(.vertical, 20)
                 }
-                .padding(.vertical, 20)
+                .ignoresSafeArea(edges: [.leading, .trailing])
+                .scrollIndicators(.hidden)
             }
-            .ignoresSafeArea(edges: [.leading, .trailing])
-            .scrollIndicators(.hidden)
         }
     }
+
+
 
     private func floatingFooter(safeArea: EdgeInsets, isVisible: Bool) -> some View {
         ZStack {
