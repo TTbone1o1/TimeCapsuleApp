@@ -18,6 +18,8 @@ struct Home: View {
     @State private var scaleAmount: CGFloat = 1.0 // State to control the scaling
     @State private var isSignedOut: Bool = false // State to track sign out status
     @State var show = false
+    @State private var isScrollDisabled: Bool = false
+    
     @Namespace var namespace
 
     var body: some View {
@@ -35,32 +37,35 @@ struct Home: View {
                     VStack {
                         Spacer().frame(height: 20) // Add space to adjust position
 
-                        HStack {
-                            Text(username.isEmpty ? "" : username)
-                                .font(.system(size: 18))
-                                .fontWeight(.bold)
-                                .padding(.leading)
-                                .foregroundColor(.white) // Set text color to white
+                        if tappedImageUrl == nil {
+                            HStack {
+                                Text(username.isEmpty ? "" : username)
+                                    .font(.system(size: 18))
+                                    .fontWeight(.bold)
+                                    .padding(.leading)
+                                    .foregroundColor(Color.primary)
 
-                            Spacer()
+                                Spacer()
 
-                            NavigationLink(destination: Setting(isSignedOut: $isSignedOut).navigationBarBackButtonHidden(true)) {
-                                VStack(spacing: 2) {
-                                    ForEach(0..<3) { _ in
-                                        Rectangle()
-                                            .frame(width: 16, height: 3)
-                                            .cornerRadius(20)
-                                            .foregroundColor(.white) // Set button color to white
+                                NavigationLink(destination: Setting(isSignedOut: $isSignedOut).navigationBarBackButtonHidden(true)) {
+                                    VStack(spacing: 2) {
+                                        ForEach(0..<3) { _ in
+                                            Rectangle()
+                                                .frame(width: 16, height: 3)
+                                                .cornerRadius(20)
+                                                .foregroundColor(Color.primary)
+                                        }
                                     }
+                                    .padding(.trailing)
                                 }
-                                .padding(.trailing)
                             }
+                            .padding(.top, geometry.safeAreaInsets.top)
+                            .transition(.opacity) // Add a transition for smooth appearance/disappearance
                         }
-                        .padding(.top, geometry.safeAreaInsets.top) // Ensure padding accounts for safe area
 
                         Spacer()
                     }
-                    .zIndex(2) // Keep it above the content
+                    .zIndex(2)
 
                     // Footer with buttons
                     floatingFooter(safeArea: geometry.safeAreaInsets, isVisible: tappedImageUrl == nil)
@@ -96,9 +101,11 @@ struct Home: View {
                                                 if tappedImageUrl == imageUrl {
                                                     tappedImageUrl = nil
                                                     show = false
+                                                    isScrollDisabled = false  // Re-enable scrolling
                                                 } else {
                                                     tappedImageUrl = imageUrl
                                                     show = true
+                                                    isScrollDisabled = true   // Disable scrolling
                                                     withAnimation {
                                                         scrollProxy.scrollTo(imageUrl, anchor: .center)
                                                     }
@@ -134,8 +141,9 @@ struct Home: View {
                         }
                     }
                 }
-                .padding(.vertical, 20)
+                .padding(.vertical, 130)
             }
+            .scrollDisabled(isScrollDisabled)
             .ignoresSafeArea(edges: [.leading, .trailing])
             .scrollIndicators(.hidden)
         }
