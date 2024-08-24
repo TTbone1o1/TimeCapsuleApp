@@ -151,12 +151,12 @@ struct Home: View {
 
     private func floatingFooter(safeArea: EdgeInsets, isVisible: Bool) -> some View {
         ZStack {
-            TransparentBlurView(removeAllFilters: true)
-                .blur(radius: 10)
-                .frame(height: 100 + safeArea.bottom)
-                .zIndex(1)
-                .offset(y: 35)
-                .opacity(isVisible ? 1 : 0)
+//            TransparentBlurView(removeAllFilters: true)
+//                .blur(radius: 80)
+//                .frame(height: 100 + safeArea.bottom)
+//                .zIndex(1)
+//                .offset(y: 35)
+//                .opacity(isVisible ? 1 : 0)
 
             HStack {
                 NavigationLink(destination: CameraController().edgesIgnoringSafeArea(.all)) {
@@ -183,7 +183,7 @@ struct Home: View {
                 }
             }
             .zIndex(1)
-            .padding(.bottom, -10)
+            .padding(.bottom, 50)
         }
         .frame(maxHeight: .infinity, alignment: .bottom)
         .animation(.easeInOut(duration: 0.3), value: isVisible)
