@@ -53,6 +53,8 @@ struct Home: View {
                         }
                         .background(Color.white) // Ensure background is set to avoid overlap issues
                         .zIndex(2) // Keep it above other content
+                        .opacity(tappedImageUrl == nil ? 1 : 0) // Hide when an image is tapped
+                        .animation(.easeInOut(duration: 0.3), value: tappedImageUrl)
                         
                         Spacer()
                         
@@ -78,7 +80,6 @@ struct Home: View {
         }
     }
 
-    
     private var content: some View {
         Group {
             if imageUrls.isEmpty {
@@ -209,8 +210,6 @@ struct Home: View {
         }
     }
 
-
-
     private func floatingFooter(safeArea: EdgeInsets, isVisible: Bool) -> some View {
         ZStack {
             TransparentBlurView(removeAllFilters: true)
@@ -218,7 +217,7 @@ struct Home: View {
                 .frame(height: 100 + safeArea.bottom)
                 .zIndex(1)
                 .offset(y: 35)
-                .opacity(isVisible ? 1 : 0)
+                .opacity(isVisible && tappedImageUrl == nil ? 1 : 0) // Hide when an image is tapped
             
             HStack {
                 NavigationLink(destination: CameraController().edgesIgnoringSafeArea(.all)) {
@@ -248,8 +247,8 @@ struct Home: View {
             .padding(.bottom, -10)
         }
         .frame(maxHeight: .infinity, alignment: .bottom)
-        .animation(.easeInOut(duration: 0.3), value: isVisible)
-        .opacity(isVisible ? 1 : 0)
+        .animation(.easeInOut(duration: 0.3), value: isVisible && tappedImageUrl == nil)
+        .opacity(isVisible && tappedImageUrl == nil ? 1 : 0) // Hide when an image is tapped
     }
 
     private func onAppearLogic() {
