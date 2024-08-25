@@ -47,7 +47,7 @@ struct Home: View {
 
                                 Spacer()
 
-                                NavigationLink(destination: Setting(isSignedOut: $isSignedOut).navigationBarBackButtonHidden(true)) {
+                                NavigationLink(destination: Setting(isSignedOut: $isSignedOut)) {
                                     VStack(spacing: 2) {
                                         ForEach(0..<3) { _ in
                                             Rectangle()
@@ -225,7 +225,7 @@ struct Home: View {
                     if let url = data["photoURL"] as? String,
                        let caption = data["caption"] as? String,
                        let timestamp = data["timestamp"] as? Timestamp {
-                        print("Fetched image URL: \(url) with caption: \(caption) and timestamp: \(timestamp.dateValue())")
+                        //print("Fetched image URL: \(url) with caption: \(caption) and timestamp: \(timestamp.dateValue())")
                         return (url, caption, timestamp)
                     }
                     return nil
@@ -235,7 +235,7 @@ struct Home: View {
                 if self.imageUrls.isEmpty {
                     print("No photos found.")
                 } else {
-                    print("Photos found: \(self.imageUrls)")
+                    //print("Photos found: \(self.imageUrls)")
                 }
             } else {
                 print("Error fetching image URLs: \(error?.localizedDescription ?? "Unknown error")")
