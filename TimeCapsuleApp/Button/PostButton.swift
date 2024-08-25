@@ -62,6 +62,7 @@ struct PostView: View {
                                 }
 
                                 TextEditor(text: $caption)
+                                    .submitLabel(.done)
                                     .font(.system(size: 24, weight: .bold))
                                     .foregroundColor(.white) // Keep text color white
                                     .frame(width: 300, height: 50) // Adjust the height as needed
