@@ -39,7 +39,7 @@ struct Setting: View {
                     .overlay(
                         Text("Sign Out")
                             .foregroundColor(.white)
-                            .font(.system(size: 16, weight: .semibold))
+                            .font(.system(size: 16, weight: .bold, design: .rounded))
                     )
                     .onTapGesture {
                         signOut()

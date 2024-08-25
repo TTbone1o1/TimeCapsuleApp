@@ -11,7 +11,7 @@ struct Photoinfo: View {
                     .frame(height: 100) // Pushes the content down by 100 points from the top
 
                 Text("Take one photo daily")
-                    .font(.system(size: 24))
+                    .font(.system(size: 24, weight: .bold, design: .rounded))
                     .fontWeight(.bold)
                 Spacer()
 

@@ -127,7 +127,7 @@ struct Home: View {
                             VStack(alignment: .leading, spacing: 5) {
                                 // Conditional padding for timestamp based on whether there's a caption
                                 Text(formatDate(timestamp.dateValue()))
-                                    .font(.system(size: 18))
+                                    .font(.system(size: 18, weight: .bold, design: .rounded))
                                     .foregroundColor(.white)
                                     .padding(.horizontal, 28)
                                     .padding(.top, shortenCaption(caption).isEmpty ? 80 : 1) // keep it 80 for now late ask Q
@@ -135,7 +135,7 @@ struct Home: View {
                                 
                                 // Caption displayed below the timestamp
                                 Text(shortenCaption(caption))
-                                    .font(.system(size: 24))
+                                    .font(.system(size: 24, weight: .bold, design: .rounded))
                                     .padding(.horizontal, 28)
                                     .frame(width: 348, height: 30, alignment: .leading)
                                     .foregroundColor(.white)

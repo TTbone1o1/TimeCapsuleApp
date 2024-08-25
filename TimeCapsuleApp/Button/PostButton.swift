@@ -54,7 +54,7 @@ struct PostView: View {
                             ZStack(alignment: .leading) {
                                 if caption.isEmpty && !isEditing {
                                     Text("Say something about this day...")
-                                        .font(.system(size: 24, weight: .bold))
+                                        .font(.system(size: 24, weight: .bold, design: .rounded))
                                         .foregroundColor(.white)
                                         .frame(width: 300)
                                         .multilineTextAlignment(.center)
@@ -119,7 +119,7 @@ struct PostView: View {
                         HStack {
                             Text("Post")
                                 .foregroundColor(.white)
-                                .font(.system(size: 16, weight: .semibold))
+                                .font(.system(size: 16, weight: .bold, design: .rounded))
                         }
                     }
                 })

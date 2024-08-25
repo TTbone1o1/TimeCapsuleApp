@@ -24,11 +24,9 @@ struct Timecap: View {
             NavigationView {
                 VStack {
                     Text("TimeCap")
-                        .font(.system(size: 39))
-                        .fontWeight(.semibold)
-
+                        .font(.system(size: 39, weight: .bold, design: .rounded))
                     Text("only one photo a day.")
-                        .font(.system(size: 22))
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
                         .foregroundColor(.gray)
 
                     HStack {

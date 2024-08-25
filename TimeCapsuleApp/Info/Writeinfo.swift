@@ -11,11 +11,11 @@ struct Writeinfo: View {
                     .frame(height: 100) // Pushes the content down by 100 points from the top
                 
                 Text("Write about that day")
-                    .font(.system(size: 24))
+                    .font(.system(size: 24, weight: .bold, design: .rounded))
                     .fontWeight(.bold)
                 
                 Text("40 words only!")
-                    .font(.system(size: 18))
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
                     .fontWeight(.medium)
                     .foregroundColor(.gray)
                 
@@ -73,7 +73,7 @@ struct Writeinfo: View {
                         HStack {
                             Text("Continue")
                                 .foregroundColor(.white)
-                                .font(.system(size: 16, weight: .semibold))
+                                .font(.system(size: 16, weight: .bold, design: .rounded))
                         }
                     }
                 }
