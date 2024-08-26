@@ -21,6 +21,7 @@ struct Setting: View {
                             .imageScale(.large)
                         Text("Back")
                             .foregroundColor(.black)
+                            .font(.system(size: 16, weight: .bold, design: .rounded))
                     }
                     .padding(.leading, 16)
                     .padding(.top, 16)
