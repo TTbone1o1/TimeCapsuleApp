@@ -1,97 +1,66 @@
+import UIKit
 import UserNotifications
-import Firebase
-import FirebaseFirestore
 
-class Notification {
-    static let shared = Notification()
-    private let db = Firestore.firestore()
-
+class NotificationManager {
+    
+    // Singleton instance for easy access
+    static let shared = NotificationManager()
+    
+    // Private initializer to enforce singleton pattern
     private init() {}
 
-    func scheduleNotification(for userId: String) {
-        // Remove existing notifications for this userId first
-        cancelNotifications(for: userId)
-        
-        // Get the current date and time
-        let now = Date()
-        
-        // Define the time you want the notification to trigger (e.g., 12:00 PM)
-        var dateComponents = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: now)
-        dateComponents.hour = 12
-        dateComponents.minute = 0
-        dateComponents.second = 0
-
-        // If the current time is already past 12 PM, schedule for tomorrow
-        if now >= Calendar.current.date(from: dateComponents)! {
-            dateComponents.day! += 1
+    // Method to check and request notification permissions
+    func checkForPermission(completion: @escaping (Bool) -> Void) {
+        let notificationCenter = UNUserNotificationCenter.current()
+        notificationCenter.getNotificationSettings { settings in
+            switch settings.authorizationStatus {
+            case .authorized:
+                completion(true)
+            case .denied:
+                completion(false)
+            case .notDetermined:
+                notificationCenter.requestAuthorization(options: [.alert, .sound]) { didAllow, error in
+                    completion(didAllow)
+                }
+            default:
+                completion(false)
+            }
         }
+    }
 
+    // Method to schedule the notification
+    func dispatchNotification() {
+        let identifier = "my-morning-notification"
+        let title = "Time to take a picture!"
+        let body = "You haven't posted your daily photo yet. Share what you've been up to today!"
+        let hour = 16
+        let minute = 0
+        let isDaily = true
+        
+        let notificationCenter = UNUserNotificationCenter.current()
+        
         let content = UNMutableNotificationContent()
-        content.title = "Time to Post!"
-        content.body = "Hey, it's time to talk about what you did today."
+        content.title = title
+        content.body = body
         content.sound = .default
-
-        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
-        let request = UNNotificationRequest(identifier: "timeToPostNotification_\(userId)", content: content, trigger: trigger)
-
-        UNUserNotificationCenter.current().add(request) { error in
+        
+        let calendar = Calendar.current
+        var dateComponents = DateComponents(calendar: calendar, timeZone: TimeZone.current)
+        dateComponents.hour = hour
+        dateComponents.minute = minute
+        
+        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: isDaily)
+        let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+        
+        // Remove any previous notifications with the same identifier
+        notificationCenter.removePendingNotificationRequests(withIdentifiers: [identifier])
+        
+        // Add the new notification request
+        notificationCenter.add(request) { error in
             if let error = error {
                 print("Error scheduling notification: \(error.localizedDescription)")
             } else {
-                print("Notification scheduled successfully for user \(userId) at 12:00 PM.")
-            }
-        }
-    }
-
-    func cancelNotifications(for userId: String) {
-        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["timeToPostNotification_\(userId)"])
-        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: ["timeToPostNotification_\(userId)"])
-        print("Notifications canceled for user \(userId).")
-    }
-
-    func checkAndScheduleNotifications(for userId: String) {
-        let userRef = db.collection("users").document(userId)
-        let today = Calendar.current.startOfDay(for: Date())
-
-        userRef.getDocument { document, error in
-            if let document = document, document.exists {
-                if let lastPostDate = document.data()?["lastPostDate"] as? Timestamp {
-                    let lastPostDate = lastPostDate.dateValue()
-                    // Check if the last post date is the same as today
-                    if Calendar.current.isDate(lastPostDate, inSameDayAs: today) {
-                        // User has posted today, cancel notifications
-                        self.cancelNotifications(for: userId)
-                    } else {
-                        // User has not posted today, schedule notifications
-                        self.scheduleNotification(for: userId)
-                    }
-                } else {
-                    // User has not posted yet, schedule notifications
-                    self.scheduleNotification(for: userId)
-                }
-            } else {
-                // Document does not exist or error fetching document
-                print("Error fetching user document: \(error?.localizedDescription ?? "Unknown error")")
-            }
-        }
-    }
-    
-    func clearAllNotifications() {
-        UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
-        UNUserNotificationCenter.current().removeAllDeliveredNotifications()
-        print("All notifications cleared.")
-    }
-
-
-    func updatePostDate(for userId: String) {
-        let userRef = db.collection("users").document(userId)
-        userRef.updateData([
-            "lastPostDate": Timestamp(date: Date())
-        ]) { error in
-            if let error = error {
-                print("Error updating post date: \(error.localizedDescription)")
-            } else {
-                print("Post date updated successfully for user \(userId).")
+                print("Notification scheduled successfully.")
             }
         }
     }
