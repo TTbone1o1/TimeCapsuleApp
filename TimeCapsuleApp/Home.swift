@@ -20,6 +20,9 @@ struct Home: View {
     @State var show = false
     @State private var isScrollDisabled: Bool = false
     
+    @State private var dragOffset: CGFloat = 0.0 // State for drag offset
+    @State private var showCameraController = false // State to track if CameraController is showing
+    
     @Namespace var namespace
 
     var body: some View {
@@ -29,51 +32,97 @@ struct Home: View {
         } else {
             GeometryReader { geometry in
                 ZStack {
-                    // Main content
-                    imageGalleryView
-                        .zIndex(1) // Lower zIndex to place it below the header
+                    cameraControllerView
+                        .offset(x: dragOffset) // Adjusting offset for cameraControllerView
 
-                    // Header HStack remains fixed at the top, overlaid on images
-                    VStack {
-                        Spacer().frame(height: 20) // Add space to adjust position
-
-                        if tappedImageUrl == nil {
-                            HStack {
-                                Text(username.isEmpty ? "" : username)
-                                    .font(.system(size: 18))
-                                    .fontWeight(.bold)
-                                    .padding(.leading)
-                                    .foregroundColor(Color.primary)
-
-                                Spacer()
-
-                                NavigationLink(destination: Setting(isSignedOut: $isSignedOut)) {
-                                    VStack(spacing: 2) {
-                                        ForEach(0..<3) { _ in
-                                            Rectangle()
-                                                .frame(width: 16, height: 3)
-                                                .cornerRadius(20)
-                                                .foregroundColor(Color.primary)
+                    mainContentView(geometry: geometry)
+                        .offset(x: dragOffset + UIScreen.main.bounds.width) // Adjusting offset for mainContentView
+                        .gesture(
+                            DragGesture()
+                                .onChanged { value in
+                                    if value.translation.width > 0 {
+                                        // Dragging right to reveal CameraController
+                                        dragOffset = value.translation.width - UIScreen.main.bounds.width
+                                    } else {
+                                        // Dragging left to hide CameraController
+                                        dragOffset = value.translation.width
+                                    }
+                                }
+                                .onEnded { value in
+                                    withAnimation(.interactiveSpring(response: 0.5, dampingFraction: 0.8, blendDuration: 0.5)) {
+                                        if value.translation.width > 100 {
+                                            // Complete transition to CameraController
+                                            dragOffset = 0
+                                            showCameraController = true
+                                        } else if value.translation.width < -100 {
+                                            // Complete transition back to Home content
+                                            dragOffset = -UIScreen.main.bounds.width
+                                            showCameraController = false
+                                        } else {
+                                            // Snap back to the appropriate position based on the current view
+                                            dragOffset = showCameraController ? 0 : -UIScreen.main.bounds.width
                                         }
                                     }
-                                    .padding(.trailing)
                                 }
-                            }
-                            .padding(.top, geometry.safeAreaInsets.top)
-                            .transition(.opacity) // Add a transition for smooth appearance/disappearance
-                        }
-
-                        Spacer()
-                    }
-                    .zIndex(2)
-
-                    // Footer with buttons
-                    floatingFooter(safeArea: geometry.safeAreaInsets, isVisible: tappedImageUrl == nil)
-                        .zIndex(3) // Ensure footer is on top of the content
+                        )
                 }
                 .edgesIgnoringSafeArea(.all)
-                .onAppear(perform: onAppearLogic)
+                .onAppear {
+                    dragOffset = -UIScreen.main.bounds.width // Start with CameraController off-screen
+                    onAppearLogic()
+                }
             }
+        }
+    }
+
+    private var cameraControllerView: some View {
+        CameraController()
+            .edgesIgnoringSafeArea(.all)
+    }
+
+    private func mainContentView(geometry: GeometryProxy) -> some View {
+        ZStack {
+            // Main content with the existing image gallery, header, and footer
+            imageGalleryView
+                .zIndex(1)
+            
+            // Header HStack remains fixed at the top, overlaid on images
+            VStack {
+                Spacer().frame(height: 20) // Add space to adjust position
+
+                if tappedImageUrl == nil {
+                    HStack {
+                        Text(username.isEmpty ? "" : username)
+                            .font(.system(size: 18))
+                            .fontWeight(.bold)
+                            .padding(.leading)
+                            .foregroundColor(Color.primary)
+
+                        Spacer()
+
+                        NavigationLink(destination: Setting(isSignedOut: $isSignedOut)) {
+                            VStack(spacing: 2) {
+                                ForEach(0..<3) { _ in
+                                    Rectangle()
+                                        .frame(width: 16, height: 3)
+                                        .cornerRadius(20)
+                                        .foregroundColor(Color.primary)
+                                }
+                            }
+                            .padding(.trailing)
+                        }
+                    }
+                    .padding(.top, geometry.safeAreaInsets.top)
+                    .transition(.opacity) // Add a transition for smooth appearance/disappearance
+                }
+
+                Spacer()
+            }
+            .zIndex(2)
+
+            // Footer with buttons
+            floatingFooter(safeArea: geometry.safeAreaInsets, isVisible: tappedImageUrl == nil)
+                .zIndex(3) // Ensure footer is on top of the content
         }
     }
 
@@ -155,13 +204,6 @@ struct Home: View {
 
     private func floatingFooter(safeArea: EdgeInsets, isVisible: Bool) -> some View {
         ZStack {
-//            TransparentBlurView(removeAllFilters: true)
-//                .blur(radius: 80)
-//                .frame(height: 100 + safeArea.bottom)
-//                .zIndex(1)
-//                .offset(y: 35)
-//                .opacity(isVisible ? 1 : 0)
-
             HStack {
                 NavigationLink(destination: CameraController().edgesIgnoringSafeArea(.all)) {
                     ZStack {
@@ -229,7 +271,6 @@ struct Home: View {
                     if let url = data["photoURL"] as? String,
                        let caption = data["caption"] as? String,
                        let timestamp = data["timestamp"] as? Timestamp {
-                        //print("Fetched image URL: \(url) with caption: \(caption) and timestamp: \(timestamp.dateValue())")
                         return (url, caption, timestamp)
                     }
                     return nil
