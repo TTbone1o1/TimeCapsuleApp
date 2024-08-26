@@ -68,21 +68,21 @@ struct Home: View {
                         .gesture(
                             DragGesture()
                                 .onChanged { value in
-                                    if value.translation.width > 0 {
-                                        // Dragging right to reveal CameraController
+                                    if value.translation.width > 0 && !showCameraController {
+                                        // Only allow right swipe when CameraController is not shown
                                         dragOffset = value.translation.width - UIScreen.main.bounds.width
-                                    } else {
-                                        // Dragging left to hide CameraController
+                                    } else if value.translation.width < 0 && showCameraController {
+                                        // Only allow left swipe when CameraController is shown
                                         dragOffset = value.translation.width
                                     }
                                 }
                                 .onEnded { value in
                                     withAnimation(.interactiveSpring(response: 0.5, dampingFraction: 0.8, blendDuration: 0.5)) {
-                                        if value.translation.width > 100 {
+                                        if value.translation.width > 100 && !showCameraController {
                                             // Complete transition to CameraController
                                             dragOffset = 0
                                             showCameraController = true
-                                        } else if value.translation.width < -100 {
+                                        } else if value.translation.width < -100 && showCameraController {
                                             // Complete transition back to Home content
                                             dragOffset = -UIScreen.main.bounds.width
                                             showCameraController = false
@@ -93,6 +93,7 @@ struct Home: View {
                                     }
                                 }
                         )
+
                 }
                 .edgesIgnoringSafeArea(.all)
                 .onAppear {
@@ -121,7 +122,7 @@ struct Home: View {
                 if tappedImageUrl == nil {
                     HStack {
                         Text(username.isEmpty ? "" : username)
-                            .font(.system(size: 18))
+                            .font(.system(size: 18, weight: .bold, design: .rounded))
                             .fontWeight(.bold)
                             .padding(.leading)
                             .foregroundColor(Color.primary)
