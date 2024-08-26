@@ -47,13 +47,13 @@ struct CameraController: View {
                 .edgesIgnoringSafeArea(.all)
             
             // HomeButton is below MessageButton
-            VStack {
-                if !navigateToHome {
-                    Spacer()
-                    HomeButton()
-                        .padding(.bottom, 30) // Adjust as needed
-                }
-            }
+//            VStack {
+//                if !navigateToHome {
+//                    Spacer()
+//                    HomeButton()
+//                        .padding(.bottom, 30) // Adjust as needed
+//                }
+//            }
 
             // MessageButton is on top of HomeButton
             if isShowingMessage {
