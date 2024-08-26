@@ -33,10 +33,38 @@ struct Home: View {
             GeometryReader { geometry in
                 ZStack {
                     cameraControllerView
-                        .offset(x: dragOffset) // Adjusting offset for cameraControllerView
+                        .offset(x: dragOffset)
+                        .gesture(
+                            DragGesture()
+                                .onChanged { value in
+                                    if value.translation.width < 0 {
+                                        // Dragging left to reveal MainContentView
+                                        dragOffset = value.translation.width
+                                    } else if showCameraController && value.translation.width > 0 {
+                                        // Dragging right but CameraController is already shown
+                                        dragOffset = value.translation.width - UIScreen.main.bounds.width
+                                    }
+                                }
+                                .onEnded { value in
+                                    withAnimation(.interactiveSpring(response: 0.5, dampingFraction: 0.8, blendDuration: 0.5)) {
+                                        if value.translation.width < -100 {
+                                            // Complete transition back to MainContentView
+                                            dragOffset = -UIScreen.main.bounds.width
+                                            showCameraController = false
+                                        } else if value.translation.width > 100 {
+                                            // Snap back to CameraController
+                                            dragOffset = 0
+                                            showCameraController = true
+                                        } else {
+                                            // Snap back to the appropriate position based on the current view
+                                            dragOffset = showCameraController ? 0 : -UIScreen.main.bounds.width
+                                        }
+                                    }
+                                }
+                        )
 
                     mainContentView(geometry: geometry)
-                        .offset(x: dragOffset + UIScreen.main.bounds.width) // Adjusting offset for mainContentView
+                        .offset(x: dragOffset + UIScreen.main.bounds.width)
                         .gesture(
                             DragGesture()
                                 .onChanged { value in
