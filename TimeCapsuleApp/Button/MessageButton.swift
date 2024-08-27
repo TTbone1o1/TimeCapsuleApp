@@ -42,7 +42,7 @@ struct MessageButton: View {
             .frame(height: 40)
             .frame(maxWidth: /*@START_MENU_TOKEN@*/.infinity/*@END_MENU_TOKEN@*/)
             .background(Color.white.opacity(0.00001))
-            .gesture(dragGesture)
+            //.gesture(dragGesture)
             
             ZStack{
                 VStack(){
@@ -100,22 +100,22 @@ struct MessageButton: View {
                 .foregroundColor(/*@START_MENU_TOKEN@*/.white/*@END_MENU_TOKEN@*/))
     }
     
-    @State private var prevDragTranslation = CGSizeZero
-    var dragGesture: some Gesture{
-        DragGesture(minimumDistance: 0, coordinateSpace: .global)
-            .onChanged { val in
-                let dragAmount = val.translation.height - prevDragTranslation.height
-                if curHeight > maxHeight || curHeight < minHeight {
-                    curHeight -= dragAmount / 6
-                } else {
-                    curHeight -= dragAmount
-                }
-                prevDragTranslation = val.translation
-            }
-            .onEnded { val in
-                prevDragTranslation = .zero
-        }
-    }
+//    @State private var prevDragTranslation = CGSizeZero
+//    var dragGesture: some Gesture{
+//        DragGesture(minimumDistance: 0, coordinateSpace: .global)
+//            .onChanged { val in
+//                let dragAmount = val.translation.height - prevDragTranslation.height
+//                if curHeight > maxHeight || curHeight < minHeight {
+//                    curHeight -= dragAmount / 6
+//                } else {
+//                    curHeight -= dragAmount
+//                }
+//                prevDragTranslation = val.translation
+//            }
+//            .onEnded { val in
+//                prevDragTranslation = .zero
+//        }
+//    }
 }
 
 struct MessageButton_Previews: PreviewProvider{
