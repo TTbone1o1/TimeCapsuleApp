@@ -5,6 +5,7 @@ struct Profile: View {
     @State private var displayedMonth = Calendar.current.component(.month, from: Date())
     @State private var displayedYear = Calendar.current.component(.year, from: Date())
     @State private var isShowingSetting = false
+    @Environment(\.presentationMode) var presentationMode
 
     var body: some View {
         ZStack {
@@ -39,6 +40,22 @@ struct Profile: View {
                 Spacer() // Optional: This will center the circle vertically if more space is available
             }
             .edgesIgnoringSafeArea(.top) // Ignore the safe area to ensure spacing from the very top of the screen
+            .gesture(
+                DragGesture()
+                    .onChanged { value in
+                        print("Gesture in progress: \(value.translation.width)")
+                    }
+                    .onEnded { value in
+                        print("Gesture ended: \(value.translation.width)")
+                        if value.translation.width > 100 {
+                            self.presentationMode.wrappedValue.dismiss()
+                        }
+                    }
+            )
+            .onTapGesture {
+                // Dismiss view when tapped anywhere on the screen
+                self.presentationMode.wrappedValue.dismiss()
+            }
 
             if isShowingSetting {
                 Setting(isSignedOut: .constant(false), isShowing: $isShowingSetting)
