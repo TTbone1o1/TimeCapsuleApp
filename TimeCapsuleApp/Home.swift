@@ -93,6 +93,10 @@ struct Home: View {
                                     }
                                 }
                         )
+                    
+                    // Footer with buttons - Always visible
+                    floatingFooter(safeArea: geometry.safeAreaInsets, isVisible: tappedImageUrl == nil)
+                        .zIndex(3) // Ensure footer is on top of the content
 
                 }
                 .edgesIgnoringSafeArea(.all)
@@ -129,7 +133,7 @@ struct Home: View {
 
                         Spacer()
 
-                        NavigationLink(destination: Setting(isSignedOut: $isSignedOut)) {
+                        NavigationLink(destination: Setting(isSignedOut: $isSignedOut, isShowing: $isShowingMessage)) {
                             VStack(spacing: 2) {
                                 ForEach(0..<3) { _ in
                                     Rectangle()
@@ -148,10 +152,6 @@ struct Home: View {
                 Spacer()
             }
             .zIndex(2)
-
-            // Footer with buttons
-            floatingFooter(safeArea: geometry.safeAreaInsets, isVisible: tappedImageUrl == nil)
-                .zIndex(3) // Ensure footer is on top of the content
         }
     }
 
@@ -237,33 +237,38 @@ struct Home: View {
                 NavigationLink(destination: CameraController().edgesIgnoringSafeArea(.all)) {
                     ZStack {
                         Circle()
-                            .stroke(photoCount >= 2 ? Color.white : Color.gray, lineWidth: 3)
+                            .stroke(dragOffset > -UIScreen.main.bounds.width / 2 ? Color.white : Color.gray, lineWidth: 3)
                             .frame(width: 24, height: 24)
 
                         Circle()
                             .frame(width: 13, height: 13)
-                            .foregroundColor(photoCount >= 2 ? .white : .gray)
+                            .foregroundColor(dragOffset > -UIScreen.main.bounds.width / 2 ? .white : .gray)
                     }
-                    .opacity(photoCount >= 2 ? 0.4 : 0.2)
-
+                    .opacity(dragOffset > -UIScreen.main.bounds.width / 2 ? 1.0 : 0.4)
+                    
                     Spacer()
                         .frame(width: 72)
                 }
+                
                 Button(action: {
                     // Action for button
                 }) {
                     Image("Notebook")
                         .renderingMode(.template)
-                        .foregroundColor(photoCount >= 2 ? .white : .gray)
+                        .foregroundColor(dragOffset > -UIScreen.main.bounds.width / 2 ? .gray : .white)
+                        .opacity(dragOffset > -UIScreen.main.bounds.width / 2 ? 0.4 : 1.0)
                 }
             }
             .zIndex(1)
             .padding(.bottom, 50)
+            .padding(.horizontal) // Added padding to ensure spacing from screen edges
         }
-        .frame(maxHeight: .infinity, alignment: .bottom)
-        .animation(.easeInOut(duration: 0.3), value: isVisible)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom) // Ensure it stays at the bottom
+        .ignoresSafeArea(.all, edges: .bottom) // Ignore safe area to stick to the screen edge
+        .animation(.easeInOut(duration: 0.3), value: dragOffset) // Animate changes based on dragOffset
         .opacity(isVisible ? 1 : 0)
     }
+
 
     private func onAppearLogic() {
         fetchUsername()
