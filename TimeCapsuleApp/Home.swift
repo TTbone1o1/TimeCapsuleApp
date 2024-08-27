@@ -133,7 +133,7 @@ struct Home: View {
 
                         Spacer()
 
-                        NavigationLink(destination: Setting(isSignedOut: $isSignedOut, isShowing: $isShowingMessage)) {
+                        NavigationLink(destination: Profile().navigationBarBackButtonHidden(true)) {
                             VStack(spacing: 2) {
                                 ForEach(0..<3) { _ in
                                     Rectangle()
