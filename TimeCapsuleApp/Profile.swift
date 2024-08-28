@@ -16,6 +16,7 @@ struct Profile: View {
     @State private var selectedImage: UIImage? = nil
     @State private var showingImagePicker = false
     @State private var isLoading = true // State to track loading status
+    @State private var username: String = "" // State variable for username
 
     private var userID: String {
         return Auth.auth().currentUser?.uid ?? ""
@@ -59,7 +60,8 @@ struct Profile: View {
 
                         Spacer()
                             .frame(height: 20)
-                        Text("Abraham May")
+                        
+                        Text(username.isEmpty ? "Loading..." : username)
                             .font(.system(size: 32, weight: .bold, design: .rounded))
                             .fontWeight(.bold)
                             .padding(.leading)
@@ -110,6 +112,7 @@ struct Profile: View {
             }
             .onAppear {
                 loadProfileImage()
+                fetchUsername() // Fetch the username when the view appears
             }
             .sheet(isPresented: $showingImagePicker) {
                 ImagePicker(image: $selectedImage) {
@@ -189,7 +192,27 @@ struct Profile: View {
             }
         }
     }
+    
+    private func fetchUsername() {
+        guard let user = Auth.auth().currentUser else { return }
+        let db = Firestore.firestore()
+        let usernameDocRef = db.collection("users").document(user.uid).collection("username").document("info")
+        usernameDocRef.getDocument { document, error in
+            if let document = document, document.exists {
+                let fetchedUsername = document.data()?["username"] as? String
+                DispatchQueue.main.async {
+                    self.username = fetchedUsername ?? "No Username"
+                }
+            } else {
+                print("Username not found in Firestore")
+                DispatchQueue.main.async {
+                    self.username = "No Username"
+                }
+            }
+        }
+    }
 }
+
 
 struct CalendarView: View {
     @Binding var currentDate: Date
