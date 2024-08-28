@@ -206,6 +206,9 @@ struct CalendarView: View {
     }()
 
     var body: some View {
+        
+        Spacer()
+        
         VStack {
             HStack {
                 Button(action: {
