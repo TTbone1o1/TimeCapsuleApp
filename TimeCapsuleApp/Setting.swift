@@ -5,10 +5,7 @@ struct Setting: View {
     @Environment(\.presentationMode) var presentationMode
     @Binding var isShowing: Bool
     @Binding var isSignedOut: Bool
-    @State private var curHeight: CGFloat = 400
-
-    let minHeight: CGFloat = 400
-    let maxHeight: CGFloat = 700
+    var onChangeProfilePicture: (() -> Void)?
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -18,12 +15,13 @@ struct Setting: View {
                 .onTapGesture {
                     isShowing = false
                 }
+            
             mainView
-            .transition(.move(edge: .bottom))
+                .transition(.move(edge: .bottom))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         .ignoresSafeArea()
-        .animation(.easeInOut)
+        .animation(.easeInOut, value: isShowing)
     }
 
     var mainView: some View {
@@ -36,54 +34,45 @@ struct Setting: View {
             }
             .frame(height: 40)
             .frame(maxWidth: .infinity)
-            .background(Color.white.opacity(0.00001))
 
-            ZStack {
-                VStack {
-                    Spacer()
+            VStack {
+                Spacer()
 
-                    ZStack {
-                        Rectangle()
-                            .frame(width: 291, height: 62)
-                            .cornerRadius(40)
-                            .foregroundColor(.black)
-                            .shadow(radius: 24, x: 0, y: 14)
-                            .overlay(
-                                Text("Change profile picture")
-                                    .foregroundColor(.white)
-                                    .font(.system(size: 16, weight: .bold, design: .rounded))
-                            )
-                            .onTapGesture {
-                                // Add action for changing profile picture here
-                            }
-                    }
-
-                    Spacer()
-                        .frame(height: 20)
-
-                    Button(action: {
-                        signOut()
-                    }) {
-                        Text("Log out")
-                            .foregroundColor(.gray)
-                            .font(.system(size: 16, weight: .bold, design: .rounded))
-                            .padding()
-                    }
+                ZStack {
+                    Rectangle()
+                        .frame(width: 291, height: 62)
+                        .cornerRadius(40)
+                        .foregroundColor(.black)
+                        .shadow(radius: 24, x: 0, y: 14)
+                        .overlay(
+                            Text("Change profile picture")
+                                .foregroundColor(.white)
+                                .font(.system(size: 16, weight: .bold, design: .rounded))
+                        )
+                        .onTapGesture {
+                            onChangeProfilePicture?()
+                        }
                 }
-                .padding(.horizontal, 30)
+
+                Spacer()
+                    .frame(height: 20)
+
+                Button(action: signOut) {
+                    Text("Log out")
+                        .foregroundColor(.gray)
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .padding()
+                }
             }
-            .frame(maxHeight: .infinity)
+            .padding(.horizontal, 30)
             .padding(.bottom, 55)
         }
         .frame(height: 261)
         .frame(maxWidth: .infinity)
         .background(
-            ZStack {
-                RoundedRectangle(cornerRadius: 30)
-                Rectangle()
-                    .frame(height: curHeight / 2)
-            }
-            .foregroundColor(.white))
+            RoundedRectangle(cornerRadius: 30)
+                .foregroundColor(.white)
+        )
     }
 
     private func signOut() {
@@ -102,7 +91,7 @@ struct Setting_Previews: PreviewProvider {
     @State static var isSignedOut = false
     
     static var previews: some View {
-        Setting(isShowing: $isShowing, isSignedOut: $isSignedOut)
+        Setting(isShowing: $isShowing, isSignedOut: $isSignedOut, onChangeProfilePicture: {})
             .previewLayout(.sizeThatFits)
             .padding()
     }
