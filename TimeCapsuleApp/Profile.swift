@@ -94,7 +94,7 @@ struct Profile: View {
                                 .cornerRadius(isImageExpanded ? 33 : 33)
                                 .transition(.scale)
                                 .onTapGesture {
-                                    withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+                                    withAnimation(.spring(response: 0.4, dampingFraction: 0.7, blendDuration: 0.4)) {
                                         isImageExpanded.toggle()
                                     }
 
@@ -116,7 +116,7 @@ struct Profile: View {
                     }
                     .frame(maxWidth: isImageExpanded ? UIScreen.main.bounds.width : 0,
                            maxHeight: isImageExpanded ? UIScreen.main.bounds.height : 0)
-                    .animation(.easeInOut(duration: 0.5))
+                    .animation(.spring(response: 0.6, dampingFraction: 0.6, blendDuration: 0.6))
                 }
                 .zIndex(2)
             }
