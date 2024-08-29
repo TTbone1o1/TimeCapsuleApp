@@ -15,110 +15,90 @@ struct Profile: View {
     @State private var navigateToTimeCap = false
     @State private var selectedImage: UIImage? = nil
     @State private var showingImagePicker = false
-    @State private var isLoading = true // State to track loading status
-    @State private var username: String = "" // State variable for username
+    @State private var isLoading = true
+    @State private var username: String = ""
 
     private var userID: String {
         return Auth.auth().currentUser?.uid ?? ""
     }
 
     var body: some View {
-        NavigationView {
-            ZStack {
-                GeometryReader { geometry in
-                    VStack {
-                        Spacer()
-                            .frame(height: 128)
+        ZStack {
+            GeometryReader { geometry in
+                VStack {
+                    Spacer()
+                        .frame(height: 128)
 
-                        ZStack {
-                            // Outer circle with stroke
+                    ZStack {
+                        Circle()
+                            .stroke(Color(.systemGray6), lineWidth: 6)
+                            .frame(width: 148, height: 148)
+
+                        if isLoading {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle())
+                                .frame(width: 125, height: 125)
+                        } else if let image = selectedImage {
+                            Image(uiImage: image)
+                                .resizable()
+                                .clipShape(Circle())
+                                .frame(width: 125, height: 125)
+                        } else {
                             Circle()
-                                .stroke(Color(.systemGray6), lineWidth: 6)
-                                .frame(width: 148, height: 148)
-
-                            // Inner circle with either image or placeholder
-                            if isLoading {
-                                ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle())
-                                    .frame(width: 125, height: 125)
-                            } else if let image = selectedImage {
-                                Image(uiImage: image)
-                                    .resizable()
-                                    .clipShape(Circle())
-                                    .frame(width: 125, height: 125)
-                            } else {
-                                Circle()
-                                    .foregroundColor(.black)
-                                    .frame(width: 125, height: 125)
-                            }
+                                .foregroundColor(.black)
+                                .frame(width: 125, height: 125)
                         }
-                        .onTapGesture {
-                            withAnimation {
-                                isShowingSetting.toggle()
-                            }
-                        }
-
-                        Spacer()
-                            .frame(height: 20)
-                        
-                        Text(username.isEmpty ? "Loading..." : username)
-                            .font(.system(size: 32, weight: .bold, design: .rounded))
-                            .fontWeight(.bold)
-                            .padding(.leading)
-                            .foregroundColor(Color.primary)
-
-                        CalendarView(currentDate: $currentDate, selectedDate: $selectedDate, displayedMonth: $displayedMonth, displayedYear: $displayedYear)
-
-                        Spacer()
                     }
-                    .edgesIgnoringSafeArea(.top)
-                    .gesture(
-                        DragGesture()
-                            .onChanged { value in
-                                print("Gesture in progress: \(value.translation.width)")
-                            }
-                            .onEnded { value in
-                                print("Gesture ended: \(value.translation.width)")
-                                if value.translation.width > 100 {
-                                    self.presentationMode.wrappedValue.dismiss()
-                                }
-                            }
-                    )
                     .onTapGesture {
-                        self.presentationMode.wrappedValue.dismiss()
+                        withAnimation {
+                            isShowingSetting.toggle()
+                        }
                     }
-                    .background(Color.clear)
-                }
 
-                if isShowingSetting {
-                    Setting(isShowing: $isShowingSetting, isSignedOut: $isSignedOut, onChangeProfilePicture: {
-                        self.showingImagePicker = true
-                    })
-                    .transition(.move(edge: .bottom))
-                    .animation(.easeInOut)
+                    Spacer()
+                        .frame(height: 20)
+                    
+                    Text(username.isEmpty ? "Loading..." : username)
+                        .font(.system(size: 32, weight: .bold, design: .rounded))
+                        .fontWeight(.bold)
+                        .padding(.leading)
+                        .foregroundColor(Color.primary)
+
+                    CalendarView(currentDate: $currentDate, selectedDate: $selectedDate, displayedMonth: $displayedMonth, displayedYear: $displayedYear)
+
+                    Spacer()
+                }
+                .edgesIgnoringSafeArea(.top)
+            }
+
+            if isShowingSetting {
+                Setting(isShowing: $isShowingSetting, isSignedOut: $isSignedOut, onChangeProfilePicture: {
+                    self.showingImagePicker = true
+                })
+                .transition(.move(edge: .bottom))
+                .animation(.easeInOut)
+                .zIndex(1)
+            }
+
+            if navigateToTimeCap {
+                Timecap()
+                    .transition(.opacity)
                     .zIndex(1)
-                }
-
-                if navigateToTimeCap {
-                    Timecap()
-                        .transition(.opacity)
-                        .zIndex(1)
-                }
             }
-            .onChange(of: isSignedOut) { signedOut in
-                if signedOut {
-                    navigateToTimeCap = true
-                }
+        }
+        .onChange(of: isSignedOut) { signedOut in
+            if signedOut {
+                navigateToTimeCap = true
             }
-            .onAppear {
-                loadProfileImage()
-                fetchUsername() // Fetch the username when the view appears
-            }
-            .sheet(isPresented: $showingImagePicker) {
-                ImagePicker(image: $selectedImage) {
-                    self.showingImagePicker = false
-                    uploadProfileImage()
-                }
+        }
+        .onAppear {
+            loadProfileImage()
+            fetchUsername() // Fetch the username when the view appears
+        }
+        .sheet(isPresented: $showingImagePicker) {
+            ImagePicker(image: $selectedImage) {
+                self.showingImagePicker = false
+                uploadProfileImage()
             }
         }
     }
