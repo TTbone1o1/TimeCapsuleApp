@@ -20,7 +20,6 @@ struct Home: View {
     @State var show = false
     @State private var isScrollDisabled: Bool = false
     
-    @State private var dragOffset: CGFloat = 0.0 // State for drag offset
     @State private var showCameraController = false // State to track if CameraController is showing
     
     @Namespace var namespace
@@ -32,85 +31,28 @@ struct Home: View {
         } else {
             GeometryReader { geometry in
                 ZStack {
-                    cameraControllerView
-                        .offset(x: dragOffset)
-                        .gesture(
-                            DragGesture()
-                                .onChanged { value in
-                                    if value.translation.width < 0 {
-                                        // Dragging left to reveal MainContentView
-                                        dragOffset = value.translation.width
-                                    } else if showCameraController && value.translation.width > 0 {
-                                        // Dragging right but CameraController is already shown
-                                        dragOffset = value.translation.width - UIScreen.main.bounds.width
-                                    }
-                                }
-                                .onEnded { value in
-                                    withAnimation(.interactiveSpring(response: 0.5, dampingFraction: 0.8, blendDuration: 0.5)) {
-                                        if value.translation.width < -100 {
-                                            // Complete transition back to MainContentView
-                                            dragOffset = -UIScreen.main.bounds.width
-                                            showCameraController = false
-                                        } else if value.translation.width > 100 {
-                                            // Snap back to CameraController
-                                            dragOffset = 0
-                                            showCameraController = true
-                                        } else {
-                                            // Snap back to the appropriate position based on the current view
-                                            dragOffset = showCameraController ? 0 : -UIScreen.main.bounds.width
-                                        }
-                                    }
-                                }
-                        )
-
+                    // CameraController view - directly visible without swipe gesture
+                    if showCameraController {
+                        CameraController()
+                            .edgesIgnoringSafeArea(.all)
+                            .transition(.move(edge: .trailing))
+                            .zIndex(1) // Ensure CameraController is on top
+                    }
+                    
+                    // Main content view
                     mainContentView(geometry: geometry)
-                        .offset(x: dragOffset + UIScreen.main.bounds.width)
-                        .gesture(
-                            DragGesture()
-                                .onChanged { value in
-                                    if value.translation.width > 0 && !showCameraController {
-                                        // Only allow right swipe when CameraController is not shown
-                                        dragOffset = value.translation.width - UIScreen.main.bounds.width
-                                    } else if value.translation.width < 0 && showCameraController {
-                                        // Only allow left swipe when CameraController is shown
-                                        dragOffset = value.translation.width
-                                    }
-                                }
-                                .onEnded { value in
-                                    withAnimation(.interactiveSpring(response: 0.5, dampingFraction: 0.8, blendDuration: 0.5)) {
-                                        if value.translation.width > 100 && !showCameraController {
-                                            // Complete transition to CameraController
-                                            dragOffset = 0
-                                            showCameraController = true
-                                        } else if value.translation.width < -100 && showCameraController {
-                                            // Complete transition back to Home content
-                                            dragOffset = -UIScreen.main.bounds.width
-                                            showCameraController = false
-                                        } else {
-                                            // Snap back to the appropriate position based on the current view
-                                            dragOffset = showCameraController ? 0 : -UIScreen.main.bounds.width
-                                        }
-                                    }
-                                }
-                        )
+                        .zIndex(0) // Ensure main content is below CameraController
                     
                     // Footer with buttons - Always visible
-                    floatingFooter(safeArea: geometry.safeAreaInsets, isVisible: tappedImageUrl == nil)
-                        .zIndex(3) // Ensure footer is on top of the content
-
+//                    floatingFooter(safeArea: geometry.safeAreaInsets, isVisible: tappedImageUrl == nil)
+//                        .zIndex(2) // Ensure footer is on top of the content
                 }
                 .edgesIgnoringSafeArea(.all)
                 .onAppear {
-                    dragOffset = -UIScreen.main.bounds.width // Start with CameraController off-screen
                     onAppearLogic()
                 }
             }
         }
-    }
-
-    private var cameraControllerView: some View {
-        CameraController()
-            .edgesIgnoringSafeArea(.all)
     }
 
     private func mainContentView(geometry: GeometryProxy) -> some View {
@@ -231,44 +173,43 @@ struct Home: View {
         }
     }
 
-    private func floatingFooter(safeArea: EdgeInsets, isVisible: Bool) -> some View {
-        ZStack {
-            HStack {
-                NavigationLink(destination: CameraController().edgesIgnoringSafeArea(.all)) {
-                    ZStack {
-                        Circle()
-                            .stroke(dragOffset > -UIScreen.main.bounds.width / 2 ? Color.white : Color.gray, lineWidth: 3)
-                            .frame(width: 24, height: 24)
-
-                        Circle()
-                            .frame(width: 13, height: 13)
-                            .foregroundColor(dragOffset > -UIScreen.main.bounds.width / 2 ? .white : .gray)
-                    }
-                    .opacity(dragOffset > -UIScreen.main.bounds.width / 2 ? 1.0 : 0.4)
-                    
-                    Spacer()
-                        .frame(width: 72)
-                }
-                
-                Button(action: {
-                    // Action for button
-                }) {
-                    Image("Notebook")
-                        .renderingMode(.template)
-                        .foregroundColor(dragOffset > -UIScreen.main.bounds.width / 2 ? .gray : .white)
-                        .opacity(dragOffset > -UIScreen.main.bounds.width / 2 ? 0.4 : 1.0)
-                }
-            }
-            .zIndex(1)
-            .padding(.bottom, 50)
-            .padding(.horizontal) // Added padding to ensure spacing from screen edges
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom) // Ensure it stays at the bottom
-        .ignoresSafeArea(.all, edges: .bottom) // Ignore safe area to stick to the screen edge
-        .animation(.easeInOut(duration: 0.3), value: dragOffset) // Animate changes based on dragOffset
-        .opacity(isVisible ? 1 : 0)
-    }
-
+//    private func floatingFooter(safeArea: EdgeInsets, isVisible: Bool) -> some View {
+//        ZStack {
+//            HStack {
+//                NavigationLink(destination: CameraController().edgesIgnoringSafeArea(.all)) {
+//                    ZStack {
+//                        Circle()
+//                            .stroke(dragOffset > -UIScreen.main.bounds.width / 2 ? Color.white : Color.gray, lineWidth: 3)
+//                            .frame(width: 24, height: 24)
+//
+//                        Circle()
+//                            .frame(width: 13, height: 13)
+//                            .foregroundColor(dragOffset > -UIScreen.main.bounds.width / 2 ? .white : .gray)
+//                    }
+//                    .opacity(dragOffset > -UIScreen.main.bounds.width / 2 ? 1.0 : 0.4)
+//                    
+//                    Spacer()
+//                        .frame(width: 72)
+//                }
+//                
+//                Button(action: {
+//                    // Action for button
+//                }) {
+//                    Image("Notebook")
+//                        .renderingMode(.template)
+//                        .foregroundColor(dragOffset > -UIScreen.main.bounds.width / 2 ? .gray : .white)
+//                        .opacity(dragOffset > -UIScreen.main.bounds.width / 2 ? 0.4 : 1.0)
+//                }
+//            }
+//            .zIndex(1)
+//            .padding(.bottom, 50)
+//            .padding(.horizontal) // Added padding to ensure spacing from screen edges
+//        }
+//        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom) // Ensure it stays at the bottom
+//        .ignoresSafeArea(.all, edges: .bottom) // Ignore safe area to stick to the screen edge
+//        .animation(.easeInOut(duration: 0.3), value: dragOffset) // Animate changes based on dragOffset
+//        .opacity(isVisible ? 1 : 0)
+//    }
 
     private func onAppearLogic() {
         fetchUsername()
