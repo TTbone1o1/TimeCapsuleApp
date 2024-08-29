@@ -17,6 +17,13 @@ struct Profile: View {
     @State private var showingImagePicker = false
     @State private var isLoading = true
     @State private var username: String = ""
+    @State private var photos: [(String, String, Timestamp)] = [] // Store (URL, Caption, Timestamp) tuples
+    @State private var photosForSelectedDate: [(String, String, Timestamp)] = [] // Filtered photos for the selected date
+    
+    @State private var isImageExpanded = false
+    @State private var tappedImageUrl: String? = nil // To track the tapped image URL
+    
+    @Namespace private var namespace
 
     private var userID: String {
         return Auth.auth().currentUser?.uid ?? ""
@@ -64,11 +71,54 @@ struct Profile: View {
                         .padding(.leading)
                         .foregroundColor(Color.primary)
 
-                    CalendarView(currentDate: $currentDate, selectedDate: $selectedDate, displayedMonth: $displayedMonth, displayedYear: $displayedYear)
+                    CalendarView(currentDate: $currentDate, selectedDate: $selectedDate, displayedMonth: $displayedMonth, displayedYear: $displayedYear, photosForSelectedDate: $photosForSelectedDate, tappedImageUrl: $tappedImageUrl, filterPhotos: filterPhotosForSelectedDate)
 
                     Spacer()
                 }
                 .edgesIgnoringSafeArea(.top)
+            }
+
+            if let tappedImageUrl = tappedImageUrl {
+                ZStack {
+                    AsyncImage(url: URL(string: tappedImageUrl)) { phase in
+                        switch phase {
+                        case .empty:
+                            ProgressView()
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .matchedGeometryEffect(id: tappedImageUrl, in: namespace)
+                                .frame(width: isImageExpanded ? UIScreen.main.bounds.width : 0,
+                                       height: isImageExpanded ? UIScreen.main.bounds.height : 0)
+                                .cornerRadius(isImageExpanded ? 33 : 33)
+                                .transition(.scale)
+                                .onTapGesture {
+                                    withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+                                        isImageExpanded.toggle()
+                                    }
+
+                                    // Delay the dismissal of the image to allow the scale-down animation
+                                    if !isImageExpanded {
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                            self.tappedImageUrl = nil
+                                        }
+                                    }
+                                }
+                        case .failure:
+                            Image(systemName: "xmark.circle")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 100, height: 100)
+                        @unknown default:
+                            EmptyView()
+                        }
+                    }
+                    .frame(maxWidth: isImageExpanded ? UIScreen.main.bounds.width : 0,
+                           maxHeight: isImageExpanded ? UIScreen.main.bounds.height : 0)
+                    .animation(.easeInOut(duration: 0.5))
+                }
+                .zIndex(2)
             }
 
             if isShowingSetting {
@@ -93,7 +143,8 @@ struct Profile: View {
         }
         .onAppear {
             loadProfileImage()
-            fetchUsername() // Fetch the username when the view appears
+            fetchUsername()
+            fetchAllPhotos()
         }
         .sheet(isPresented: $showingImagePicker) {
             ImagePicker(image: $selectedImage) {
@@ -191,14 +242,65 @@ struct Profile: View {
             }
         }
     }
-}
 
+    private func fetchAllPhotos() {
+        guard let user = Auth.auth().currentUser else { return }
+        let db = Firestore.firestore()
+        let photosCollectionRef = db.collection("users").document(user.uid).collection("photos")
+
+        photosCollectionRef.getDocuments { snapshot, error in
+            if let snapshot = snapshot {
+                self.photos = snapshot.documents.compactMap { document in
+                    let data = document.data()
+                    if let url = data["photoURL"] as? String,
+                       let caption = data["caption"] as? String,
+                       let timestamp = data["timestamp"] as? Timestamp {
+                        return (url, caption, timestamp)
+                    }
+                    return nil
+                }
+            } else {
+                print("Error fetching image URLs: \(error?.localizedDescription ?? "Unknown error")")
+            }
+        }
+    }
+
+    private func filterPhotosForSelectedDate(selectedDate: Date) {
+        let calendar = Calendar.current
+        photosForSelectedDate = photos.filter { photo in
+            let photoDate = photo.2.dateValue() // Convert timestamp to Date
+            return calendar.isDate(photoDate, inSameDayAs: selectedDate)
+        }
+        
+        // Automatically expand the first image when a date is selected
+        if let firstPhoto = photosForSelectedDate.first {
+            tappedImageUrl = firstPhoto.0
+            isImageExpanded = true
+        }
+    }
+
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d"
+        return formatter.string(from: date)
+    }
+
+    private func shortenCaption(_ caption: String) -> String {
+        let words = caption.split(separator: " ")
+        let limitedWords = words.prefix(8)
+        let shortCaption = limitedWords.joined(separator: " ")
+        return shortCaption
+    }
+}
 
 struct CalendarView: View {
     @Binding var currentDate: Date
     @Binding var selectedDate: Date
     @Binding var displayedMonth: Int
     @Binding var displayedYear: Int
+    @Binding var photosForSelectedDate: [(String, String, Timestamp)]
+    @Binding var tappedImageUrl: String?
+    var filterPhotos: (Date) -> Void
 
     let calendar = Calendar.current
     let dateFormatter = DateFormatter()
@@ -266,49 +368,49 @@ struct CalendarView: View {
         return dateFormatter.monthSymbols[month - 1]
     }
 
-                private func changeMonth(by value: Int) {
-                    if let newDate = calendar.date(byAdding: .month, value: value, to: firstOfMonth()) {
-                        displayedMonth = calendar.component(.month, from: newDate)
-                        displayedYear = calendar.component(.year, from: newDate)
-                        
-                        // We don't need to update currentDate or selectedDate anymore
-                        // as we only want to highlight the current day in the current month
-                    }
-                }
+    private func changeMonth(by value: Int) {
+        if let newDate = calendar.date(byAdding: .month, value: value, to: firstOfMonth()) {
+            displayedMonth = calendar.component(.month, from: newDate)
+            displayedYear = calendar.component(.year, from: newDate)
+        }
+    }
 
-                private func isCurrentMonth() -> Bool {
-                    let today = Date()
-                    return calendar.component(.month, from: today) == displayedMonth &&
-                           calendar.component(.year, from: today) == displayedYear
-                }
+    private func isCurrentMonth() -> Bool {
+        let today = Date()
+        return calendar.component(.month, from: today) == displayedMonth &&
+               calendar.component(.year, from: today) == displayedYear
+    }
 
-                private func colorForDay(_ day: Int) -> Color {
-                    let today = Date()
-                    let currentDay = calendar.component(.day, from: today)
-                    
-                    if isCurrentMonth() && day == currentDay {
-                        return .black
-                    } else if calendar.component(.day, from: selectedDate) == day &&
-                              calendar.component(.month, from: selectedDate) == displayedMonth &&
-                              calendar.component(.year, from: selectedDate) == displayedYear {
-                        return .blue
-                    } else {
-                        return .gray
-                    }
-                }
+    private func colorForDay(_ day: Int) -> Color {
+        let today = Date()
+        let currentDay = calendar.component(.day, from: today)
+        
+        if isCurrentMonth() && day == currentDay {
+            return .black
+        } else if calendar.component(.day, from: selectedDate) == day &&
+                  calendar.component(.month, from: selectedDate) == displayedMonth &&
+                  calendar.component(.year, from: selectedDate) == displayedYear {
+            return .blue
+        } else {
+            return .gray
+        }
+    }
 
-                private func selectDay(_ day: Int) {
-                    let dateComponents = DateComponents(year: displayedYear, month: displayedMonth, day: day)
-                    if let date = calendar.date(from: dateComponents) {
-                        selectedDate = date
-                    }
-                }
+    private func selectDay(_ day: Int) {
+        let dateComponents = DateComponents(year: displayedYear, month: displayedMonth, day: day)
+        if let date = calendar.date(from: dateComponents) {
+            selectedDate = date
+            
+            // Filter photos based on the selected date
+            filterPhotos(selectedDate)
+        }
+    }
     
-            private var formattedYear: String {
-                    return yearFormatter.string(from: NSNumber(value: displayedYear)) ?? "\(displayedYear)"
-                }
-            }
+    private var formattedYear: String {
+        return yearFormatter.string(from: NSNumber(value: displayedYear)) ?? "\(displayedYear)"
+    }
+}
 
-            #Preview {
-                Profile()
-            }
+#Preview {
+    Profile()
+}
