@@ -45,15 +45,21 @@ struct Profile: View {
                             ProgressView()
                                 .progressViewStyle(CircularProgressViewStyle())
                                 .frame(width: 125, height: 125)
+                                .scaleEffect(isShowingSetting ? 1.1 : 1.0)
+                                .animation(.interpolatingSpring(stiffness: 170, damping: 5).repeatCount(1, autoreverses: true), value: isShowingSetting)
                         } else if let image = selectedImage {
                             Image(uiImage: image)
                                 .resizable()
                                 .clipShape(Circle())
                                 .frame(width: 125, height: 125)
+                                .scaleEffect(isShowingSetting ? 1.1 : 1.0)
+                                .animation(.interpolatingSpring(stiffness: 170, damping: 5).repeatCount(1, autoreverses: true), value: isShowingSetting)
                         } else {
                             Circle()
                                 .foregroundColor(.black)
                                 .frame(width: 125, height: 125)
+                                .scaleEffect(isShowingSetting ? 1.1 : 1.0)
+                                .animation(.interpolatingSpring(stiffness: 170, damping: 5).repeatCount(1, autoreverses: true), value: isShowingSetting)
                         }
                     }
                     .onTapGesture {
@@ -61,6 +67,7 @@ struct Profile: View {
                             isShowingSetting.toggle()
                         }
                     }
+
 
                     Spacer()
                         .frame(height: 20)
