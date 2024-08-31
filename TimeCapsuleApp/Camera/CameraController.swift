@@ -39,31 +39,56 @@ struct CameraView: UIViewControllerRepresentable {
 struct CameraController: View {
     @State private var navigateToHome = false
     @State private var isShowingMessage = false
+    @State private var navigateToProfile = false // State to track navigation to Profile
 
     var body: some View {
-        ZStack {
-            // CameraView is at the bottom
-            CameraView(navigateToHome: $navigateToHome, cameraDelegate: Coordinator(self))
-                .edgesIgnoringSafeArea(.all)
-            
-            // HomeButton is below MessageButton
-//            VStack {
-//                if !navigateToHome {
-//                    Spacer()
-//                    HomeButton()
-//                        .padding(.bottom, 30) // Adjust as needed
-//                }
-//            }
+        NavigationView {
+            ZStack {
+                // CameraView is at the bottom
+                CameraView(navigateToHome: $navigateToHome, cameraDelegate: Coordinator(self))
+                    .edgesIgnoringSafeArea(.all)
+                
+                // Transparent overlay that captures gestures
+                Color.clear
+                    .contentShape(Rectangle()) // Ensures the gesture is recognized on the entire view
+                    .gesture(
+                        DragGesture()
+                            .onEnded { value in
+                                if value.translation.width < -100 {
+                                    withAnimation {
+                                        navigateToProfile = true
+                                    }
+                                } else if value.translation.width > 100 {
+                                    withAnimation {
+                                        navigateToHome = true
+                                    }
+                                }
+                            }
+                    )
+                
+                // Navigation to Profile view
+                if navigateToProfile {
+                    Profile()
+                        .background(Color.white)
+                        .transition(.move(edge: .trailing)) // Slide in from the left
+                        .navigationBarBackButtonHidden(true)
+                }
+                
+                // Navigation to Home view with smooth transition
+                if navigateToHome {
+                    Home()
+                        .background(Color.white)
+                        .transition(.move(edge: .leading)) // Slide in from the left
+                        .navigationBarBackButtonHidden(true)
+                }
 
-            // MessageButton is on top of HomeButton
-            if isShowingMessage {
-                MessageButton(isShowing: $isShowingMessage)
-                    .transition(.move(edge: .bottom))
+                // MessageButton is on top of HomeButton
+                if isShowingMessage {
+                    MessageButton(isShowing: $isShowingMessage)
+                        .transition(.move(edge: .bottom))
+                }
             }
-        }
-        .navigationBarHidden(true) // Hide the navigation bar if somehow it's still shown
-        .onAppear {
-            // Optionally show the message button when the view appears
+            .navigationBarHidden(true)
         }
     }
     
