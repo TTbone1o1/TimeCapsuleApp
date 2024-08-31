@@ -42,10 +42,6 @@ struct Home: View {
                     // Main content view
                     mainContentView(geometry: geometry)
                         .zIndex(0) // Ensure main content is below CameraController
-                    
-                    // Footer with buttons - Always visible
-//                    floatingFooter(safeArea: geometry.safeAreaInsets, isVisible: tappedImageUrl == nil)
-//                        .zIndex(2) // Ensure footer is on top of the content
                 }
                 .edgesIgnoringSafeArea(.all)
                 .onAppear {
@@ -59,6 +55,16 @@ struct Home: View {
         ZStack {
             // Main content with the existing image gallery, header, and footer
             imageGalleryView
+                .gesture(
+                    DragGesture()
+                        .onEnded { value in
+                            if value.translation.width < -100 {
+                                withAnimation {
+                                    showCameraController = true
+                                }
+                            }
+                        }
+                )
                 .zIndex(1)
             
             // Header HStack remains fixed at the top, overlaid on images
@@ -172,44 +178,6 @@ struct Home: View {
             .scrollIndicators(.hidden)
         }
     }
-
-//    private func floatingFooter(safeArea: EdgeInsets, isVisible: Bool) -> some View {
-//        ZStack {
-//            HStack {
-//                NavigationLink(destination: CameraController().edgesIgnoringSafeArea(.all)) {
-//                    ZStack {
-//                        Circle()
-//                            .stroke(dragOffset > -UIScreen.main.bounds.width / 2 ? Color.white : Color.gray, lineWidth: 3)
-//                            .frame(width: 24, height: 24)
-//
-//                        Circle()
-//                            .frame(width: 13, height: 13)
-//                            .foregroundColor(dragOffset > -UIScreen.main.bounds.width / 2 ? .white : .gray)
-//                    }
-//                    .opacity(dragOffset > -UIScreen.main.bounds.width / 2 ? 1.0 : 0.4)
-//                    
-//                    Spacer()
-//                        .frame(width: 72)
-//                }
-//                
-//                Button(action: {
-//                    // Action for button
-//                }) {
-//                    Image("Notebook")
-//                        .renderingMode(.template)
-//                        .foregroundColor(dragOffset > -UIScreen.main.bounds.width / 2 ? .gray : .white)
-//                        .opacity(dragOffset > -UIScreen.main.bounds.width / 2 ? 0.4 : 1.0)
-//                }
-//            }
-//            .zIndex(1)
-//            .padding(.bottom, 50)
-//            .padding(.horizontal) // Added padding to ensure spacing from screen edges
-//        }
-//        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom) // Ensure it stays at the bottom
-//        .ignoresSafeArea(.all, edges: .bottom) // Ignore safe area to stick to the screen edge
-//        .animation(.easeInOut(duration: 0.3), value: dragOffset) // Animate changes based on dragOffset
-//        .opacity(isVisible ? 1 : 0)
-//    }
 
     private func onAppearLogic() {
         fetchUsername()
