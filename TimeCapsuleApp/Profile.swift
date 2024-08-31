@@ -22,7 +22,8 @@ struct Profile: View {
     
     @State private var isImageExpanded = false
     @State private var tappedImageUrl: String? = nil // To track the tapped image URL
-    
+    @State private var navigateToCamera = false // State to navigate back to Camera
+
     @Namespace private var namespace
 
     private var userID: String {
@@ -83,6 +84,16 @@ struct Profile: View {
                     Spacer()
                 }
                 .edgesIgnoringSafeArea(.top)
+                .gesture(
+                    DragGesture()
+                        .onEnded { value in
+                            if value.translation.width > 100 {
+                                withAnimation {
+                                    navigateToCamera = true
+                                }
+                            }
+                        }
+                )
             }
 
             if let tappedImageUrl = tappedImageUrl {
@@ -140,6 +151,13 @@ struct Profile: View {
             if navigateToTimeCap {
                 Timecap()
                     .transition(.opacity)
+                    .zIndex(1)
+            }
+
+            if navigateToCamera {
+                CameraController()
+                    .transition(.move(edge: .leading)) // Slide in from the left
+                    .navigationBarBackButtonHidden(true)
                     .zIndex(1)
             }
         }
