@@ -93,6 +93,7 @@ struct CameraView: UIViewControllerRepresentable {
 struct CameraController: View {
     @State private var isShowingMessage = false
     @State private var navigateToProfile = false
+    @State private var navigateToHome = false
 
     var body: some View {
         NavigationView {
@@ -107,8 +108,14 @@ struct CameraController: View {
                         DragGesture()
                             .onEnded { value in
                                 if value.translation.width < -100 {
+                                    // Swipe left to right: navigate to Profile
                                     withAnimation {
                                         navigateToProfile = true
+                                    }
+                                } else if value.translation.width > 100 {
+                                    // Swipe right to left: navigate to Home
+                                    withAnimation {
+                                        navigateToHome = true
                                     }
                                 }
                             }
@@ -119,6 +126,14 @@ struct CameraController: View {
                     Profile()
                         .background(Color.white)
                         .transition(.move(edge: .trailing))
+                        .navigationBarBackButtonHidden(true)
+                }
+                
+                // Navigation to Home view
+                if navigateToHome {
+                    Home()
+                        .background(Color.white)
+                        .transition(.move(edge: .leading))
                         .navigationBarBackButtonHidden(true)
                 }
 
@@ -132,6 +147,7 @@ struct CameraController: View {
         }
     }
 }
+
 
 struct CameraController_Previews: PreviewProvider {
     static var previews: some View {
