@@ -20,8 +20,6 @@ struct Home: View {
     @State var show = false
     @State private var isScrollDisabled: Bool = false
     
-    @State private var showCameraController = false // State to track if CameraController is showing
-    
     @Namespace var namespace
 
     var body: some View {
@@ -31,17 +29,8 @@ struct Home: View {
         } else {
             GeometryReader { geometry in
                 ZStack {
-                    // CameraController view - directly visible without swipe gesture
-                    if showCameraController {
-                        CameraController()
-                            .edgesIgnoringSafeArea(.all)
-                            .transition(.move(edge: .trailing))
-                            .zIndex(1) // Ensure CameraController is on top
-                    }
-                    
                     // Main content view
                     mainContentView(geometry: geometry)
-                        .zIndex(0) // Ensure main content is below CameraController
                 }
                 .edgesIgnoringSafeArea(.all)
                 .onAppear {
@@ -55,18 +44,8 @@ struct Home: View {
         ZStack {
             // Main content with the existing image gallery, header, and footer
             imageGalleryView
-                .gesture(
-                    DragGesture()
-                        .onEnded { value in
-                            if value.translation.width < -100 {
-                                withAnimation {
-                                    showCameraController = true
-                                }
-                            }
-                        }
-                )
-                .zIndex(1)
-            
+                .zIndex(1) // Ensure image gallery is below header
+
             // Header HStack remains fixed at the top, overlaid on images
             VStack {
                 Spacer().frame(height: 20) // Add space to adjust position
@@ -98,8 +77,46 @@ struct Home: View {
                 }
 
                 Spacer()
+
+                // Add the circles at the bottom of the view
+                ZStack {
+                    Spacer()
+                    
+                    VStack(spacing: 20) {
+                        ZStack {
+                            // The stroked circle with the gray-filled circle inside
+                            Circle()
+                                .stroke(Color.gray, lineWidth: 3)
+                                .frame(width: 52, height: 52)
+                            
+                            Circle()
+                                .fill(Color.gray)
+                                .frame(width: 37, height: 37)
+                            
+                            // HStack to position images on either side of the circle
+                            HStack {
+                                Image("Home")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 34, height: 34) // Adjust the size as needed
+                                
+                                Spacer() // This spacer ensures the images are positioned on the left and right sides
+                                
+                                Image("Profile")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 34, height: 34) // Adjust the size as needed
+                            }
+                            .frame(width: 290) // Adjust this width if needed to ensure the proper positioning
+                        }
+                    }
+                }
+                .padding(.horizontal, 60)
+                .padding(.bottom, 40) // Adjust the padding as needed
+
+
             }
-            .zIndex(2)
+            .zIndex(2) // Ensure header is on top
         }
     }
 
