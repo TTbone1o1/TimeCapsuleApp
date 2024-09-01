@@ -5,12 +5,11 @@ import FirebaseFirestore
 import FirebaseStorage
 
 struct CameraView: UIViewControllerRepresentable {
-    @Binding var navigateToHome: Bool
-    var cameraDelegate: CameraDelegate?
+    @Binding var isShowingMessage: Bool
 
     func makeUIViewController(context: Context) -> Camera {
         let camera = Camera()
-        camera.delegate = cameraDelegate
+        camera.delegate = context.coordinator
         return camera
     }
 
@@ -30,70 +29,36 @@ struct CameraView: UIViewControllerRepresentable {
         }
 
         func didTakePhoto() {
-            // Notify CameraController when a photo is taken
-            parent.navigateToHome = true
-        }
-    }
-}
-
-struct CameraController: View {
-    @State private var navigateToHome = false
-    @State private var isShowingMessage = false
-    @State private var navigateToProfile = false // State to track navigation to Profile
-
-    var body: some View {
-        NavigationView {
-            ZStack {
-                // CameraView is at the bottom
-                CameraView(navigateToHome: $navigateToHome, cameraDelegate: Coordinator(self))
-                    .edgesIgnoringSafeArea(.all)
-                
-                // Transparent overlay that captures gestures
-                Color.clear
-                    .contentShape(Rectangle()) // Ensures the gesture is recognized on the entire view
-                    .gesture(
-                        DragGesture()
-                            .onEnded { value in
-                                if value.translation.width < -100 {
-                                    withAnimation {
-                                        navigateToProfile = true
-                                    }
-                                } else if value.translation.width > 100 {
-                                    withAnimation {
-                                        navigateToHome = true
-                                    }
-                                }
+            print("Photo taken, checking if posted today...")
+            
+            // First handle the photo-taking process, then check the condition
+            parent.savePhoto { success in
+                if success {
+                    // Now check if the user has posted today
+                    self.parent.checkIfPostedToday { hasPostedToday in
+                        DispatchQueue.main.async {
+                            if hasPostedToday {
+                                print("User has posted today. Showing message button.")
+                                self.parent.isShowingMessage = true
+                            } else {
+                                print("User has not posted today. Photo taken successfully.")
+                                // No need to navigate or do anything else; the user stays on the camera screen
                             }
-                    )
-                
-                // Navigation to Profile view
-                if navigateToProfile {
-                    Profile()
-                        .background(Color.white)
-                        .transition(.move(edge: .trailing)) // Slide in from the left
-                        .navigationBarBackButtonHidden(true)
-                }
-                
-                // Navigation to Home view with smooth transition
-                if navigateToHome {
-                    Home()
-                        .background(Color.white)
-                        .transition(.move(edge: .leading)) // Slide in from the left
-                        .navigationBarBackButtonHidden(true)
-                }
-
-                // MessageButton is on top of HomeButton
-                if isShowingMessage {
-                    MessageButton(isShowing: $isShowingMessage)
-                        .transition(.move(edge: .bottom))
+                        }
+                    }
+                } else {
+                    print("Photo save failed.")
                 }
             }
-            .navigationBarHidden(true)
         }
     }
     
     private func checkIfPostedToday(completion: @escaping (Bool) -> Void) {
-        guard let user = Auth.auth().currentUser else { return }
+        guard let user = Auth.auth().currentUser else {
+            print("No user is currently authenticated.")
+            completion(false)
+            return
+        }
         let db = Firestore.firestore()
         let photosCollectionRef = db.collection("users").document(user.uid).collection("photos")
         
@@ -103,36 +68,67 @@ struct CameraController: View {
         
         query.getDocuments { snapshot, error in
             if let snapshot = snapshot {
-                completion(!snapshot.isEmpty)
+                let hasPosted = !snapshot.isEmpty
+                print("Has the user posted today? \(hasPosted)")
+                completion(hasPosted)
             } else {
                 print("Error checking if posted today: \(error?.localizedDescription ?? "Unknown error")")
                 completion(false)
             }
         }
     }
-    
-    class Coordinator: NSObject, CameraDelegate {
-        var parent: CameraController
 
-        init(_ parent: CameraController) {
-            self.parent = parent
+    private func savePhoto(completion: @escaping (Bool) -> Void) {
+        // Implement the photo saving logic here.
+        // Call completion(true) when the photo is successfully saved.
+        // Call completion(false) if saving the photo fails.
+        
+        // For demonstration, we'll assume the save is successful.
+        DispatchQueue.global().asyncAfter(deadline: .now() + 1) {
+            completion(true)
         }
+    }
+}
 
-        func didTakePhoto() {
-            // Check if the user has posted today
-            parent.checkIfPostedToday { hasPostedToday in
-                if hasPostedToday {
-                    // Show the message button if the user has posted today
-                    DispatchQueue.main.async {
-                        self.parent.isShowingMessage = true
-                    }
-                } else {
-                    // Handle the case where the user has not posted today
-                    DispatchQueue.main.async {
-                        self.parent.navigateToHome = true
-                    }
+struct CameraController: View {
+    @State private var isShowingMessage = false
+    @State private var navigateToProfile = false
+
+    var body: some View {
+        NavigationView {
+            ZStack {
+                CameraView(isShowingMessage: $isShowingMessage)
+                    .edgesIgnoringSafeArea(.all)
+                
+                // Transparent overlay that captures gestures
+                Color.clear
+                    .contentShape(Rectangle())
+                    .gesture(
+                        DragGesture()
+                            .onEnded { value in
+                                if value.translation.width < -100 {
+                                    withAnimation {
+                                        navigateToProfile = true
+                                    }
+                                }
+                            }
+                    )
+                
+                // Navigation to Profile view
+                if navigateToProfile {
+                    Profile()
+                        .background(Color.white)
+                        .transition(.move(edge: .trailing))
+                        .navigationBarBackButtonHidden(true)
+                }
+
+                // MessageButton is on top of other UI elements
+                if isShowingMessage {
+                    MessageButton(isShowing: $isShowingMessage)
+                        .transition(.move(edge: .bottom))
                 }
             }
+            .navigationBarHidden(true)
         }
     }
 }
