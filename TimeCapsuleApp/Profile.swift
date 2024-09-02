@@ -22,7 +22,6 @@ struct Profile: View {
     
     @State private var isImageExpanded = false
     @State private var tappedImageUrl: String? = nil // To track the tapped image URL
-    @State private var navigateToCamera = false // State to navigate back to Camera
 
     @Namespace private var namespace
 
@@ -69,7 +68,6 @@ struct Profile: View {
                         }
                     }
 
-
                     Spacer()
                         .frame(height: 20)
                     
@@ -84,16 +82,6 @@ struct Profile: View {
                     Spacer()
                 }
                 .edgesIgnoringSafeArea(.top)
-                .gesture(
-                    DragGesture()
-                        .onEnded { value in
-                            if value.translation.width > 100 {
-                                withAnimation {
-                                    navigateToCamera = true
-                                }
-                            }
-                        }
-                )
             }
 
             if let tappedImageUrl = tappedImageUrl {
@@ -154,12 +142,6 @@ struct Profile: View {
                     .zIndex(1)
             }
 
-            if navigateToCamera {
-                CameraController()
-                    .transition(.move(edge: .leading)) // Slide in from the left
-                    .navigationBarBackButtonHidden(true)
-                    .zIndex(1)
-            }
         }
         .onChange(of: isSignedOut) { signedOut in
             if signedOut {
@@ -167,8 +149,7 @@ struct Profile: View {
             }
         }
         .onAppear {
-            loadProfileImage()
-            fetchUsername()
+            fetchProfileData()
             fetchAllPhotos()
         }
         .sheet(isPresented: $showingImagePicker) {
@@ -177,6 +158,13 @@ struct Profile: View {
                 uploadProfileImage()
             }
         }
+    }
+
+    private func fetchProfileData() {
+        if selectedImage == nil {
+            loadProfileImage()
+        }
+        fetchUsername()
     }
 
     private func uploadProfileImage() {
@@ -434,8 +422,4 @@ struct CalendarView: View {
     private var formattedYear: String {
         return yearFormatter.string(from: NSNumber(value: displayedYear)) ?? "\(displayedYear)"
     }
-}
-
-#Preview {
-    Profile()
 }
