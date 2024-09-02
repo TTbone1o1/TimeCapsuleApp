@@ -26,6 +26,9 @@ struct Home: View {
     @State private var homeIconColor: Color = .black // Start with Home icon as black
     @State private var profileIconColor: Color = .gray // Start with Profile icon as gray
     @State private var showCameraController = false
+    
+    @State private var isImageExpanded = false
+
 
     @Namespace var namespace
 
@@ -70,7 +73,7 @@ struct Home: View {
                             )
                         
                         if showProfileView || dragOffset < 0 {
-                            Profile()
+                            Profile(isImageExpanded: $isImageExpanded)
                                 .zIndex(2) // Ensure the Profile view stays on top
                                 .offset(x: UIScreen.main.bounds.width + dragOffset)
                                 .gesture(
@@ -99,64 +102,67 @@ struct Home: View {
                         }
                         
                         // Fixed VStack stays on the screen at all times
-                        VStack(spacing: 20) {
-                            Spacer()
-                            ZStack {
-                                // The stroked circle with the gray-filled circle inside
-                                Button(action: {
-                                    withAnimation {
-                                        showCameraController.toggle()
+                        if !show && !isImageExpanded{
+                            VStack(spacing: 20) {
+                                Spacer()
+                                ZStack {
+                                    // The stroked circle with the gray-filled circle inside
+                                    Button(action: {
+                                        withAnimation {
+                                            showCameraController.toggle()
+                                        }
+                                    }) {
+                                        ZStack {
+                                            Circle()
+                                                .stroke(Color.gray, lineWidth: 3)
+                                                .frame(width: 52, height: 52)
+                                            
+                                            Circle()
+                                                .fill(Color.gray)
+                                                .frame(width: 37, height: 37)
+                                        }
                                     }
-                                }) {
-                                    ZStack {
-                                        Circle()
-                                            .stroke(Color.gray, lineWidth: 3)
-                                            .frame(width: 52, height: 52)
+                                    
+                                    // HStack to position images on either side of the circle
+                                    HStack {
+                                        Image(systemName: "house.fill")
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                            .frame(width: 34, height: 34)
+                                            .foregroundColor(homeIconColor) // Apply color state to the Home icon
+                                            .onTapGesture {
+                                                // Handle Home icon tap
+                                                withAnimation {
+                                                    dragOffset = 0
+                                                    showProfileView = false
+                                                    updateIconColors() // Update colors
+                                                }
+                                            }
                                         
-                                        Circle()
-                                            .fill(Color.gray)
-                                            .frame(width: 37, height: 37)
+                                        Spacer() // This spacer ensures the images are positioned on the left and right sides
+                                        
+                                        Image(systemName: "person.fill")
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                            .frame(width: 34, height: 34)
+                                            .foregroundColor(profileIconColor) // Apply color state to the Profile icon
+                                            .onTapGesture {
+                                                // Handle Profile icon tap
+                                                withAnimation {
+                                                    dragOffset = -UIScreen.main.bounds.width
+                                                    showProfileView = true
+                                                    updateIconColors() // Update colors
+                                                }
+                                            }
                                     }
+                                    .frame(width: 290) // Adjust this width if needed to ensure the proper positioning
                                 }
-                                
-                                // HStack to position images on either side of the circle
-                                HStack {
-                                    Image(systemName: "house.fill")
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .frame(width: 34, height: 34)
-                                        .foregroundColor(homeIconColor) // Apply color state to the Home icon
-                                        .onTapGesture {
-                                            // Handle Home icon tap
-                                            withAnimation {
-                                                dragOffset = 0
-                                                showProfileView = false
-                                                updateIconColors() // Update colors
-                                            }
-                                        }
-                                    
-                                    Spacer() // This spacer ensures the images are positioned on the left and right sides
-                                    
-                                    Image(systemName: "person.fill")
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .frame(width: 34, height: 34)
-                                        .foregroundColor(profileIconColor) // Apply color state to the Profile icon
-                                        .onTapGesture {
-                                            // Handle Profile icon tap
-                                            withAnimation {
-                                                dragOffset = -UIScreen.main.bounds.width
-                                                showProfileView = true
-                                                updateIconColors() // Update colors
-                                            }
-                                        }
-                                }
-                                .frame(width: 290) // Adjust this width if needed to ensure the proper positioning
                             }
+                            .padding(.horizontal, 60)
+                            .padding(.bottom, 40) // Adjust the padding as needed
+                            .zIndex(3) // Ensure this VStack is always on top of everything
                         }
-                        .padding(.horizontal, 60)
-                        .padding(.bottom, 40) // Adjust the padding as needed
-                        .zIndex(3) // Ensure this VStack is always on top of everything
+
 
                         // Custom CameraController presentation
                         if showCameraController {
@@ -197,17 +203,6 @@ struct Home: View {
 
                         Spacer()
 
-                        NavigationLink(destination: Profile().navigationBarBackButtonHidden(true)) {
-                            VStack(spacing: 2) {
-                                ForEach(0..<3) { _ in
-                                    Rectangle()
-                                        .frame(width: 16, height: 3)
-                                        .cornerRadius(20)
-                                        .foregroundColor(Color.primary)
-                                }
-                            }
-                            .padding(.trailing)
-                        }
                     }
                     .padding(.top, geometry.safeAreaInsets.top)
                     .transition(.opacity) // Add a transition for smooth appearance/disappearance
