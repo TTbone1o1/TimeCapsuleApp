@@ -6,6 +6,7 @@ import FirebaseStorage
 
 struct CameraView: UIViewControllerRepresentable {
     @Binding var isShowingMessage: Bool
+    @Binding var isPresented: Bool // Add this binding to control presentation
 
     func makeUIViewController(context: Context) -> Camera {
         let camera = Camera()
@@ -37,12 +38,13 @@ struct CameraView: UIViewControllerRepresentable {
                     // Now check if the user has posted today
                     self.parent.checkIfPostedToday { hasPostedToday in
                         DispatchQueue.main.async {
-                            if (hasPostedToday) {
+                            if hasPostedToday {
                                 print("User has posted today. Showing message button.")
                                 self.parent.isShowingMessage = true
                             } else {
                                 print("User has not posted today. Photo taken successfully.")
-                                // No need to navigate or do anything else; the user stays on the camera screen
+                                // You could dismiss here if needed
+                                self.parent.isPresented = false
                             }
                         }
                     }
@@ -91,27 +93,42 @@ struct CameraView: UIViewControllerRepresentable {
 }
 
 struct CameraController: View {
+    @Binding var isPresented: Bool // Binding to control dismissal
     @State private var isShowingMessage = false
 
     var body: some View {
         NavigationView {
             ZStack {
-                CameraView(isShowingMessage: $isShowingMessage)
-                    .edgesIgnoringSafeArea(.all)
+                CameraView(isShowingMessage: $isShowingMessage, isPresented: $isPresented) // Pass the binding
 
                 // MessageButton is on top of other UI elements
                 if isShowingMessage {
                     MessageButton(isShowing: $isShowingMessage)
                         .transition(.move(edge: .bottom))
                 }
+                
+                // Add a dismiss button (if desired)
+                Button(action: {
+                    withAnimation {
+                        isPresented = false // Dismiss the CameraController
+                    }
+                }) {
+                    Image(systemName: "arrowshape.backward.fill")
+                        .resizable()
+                        .frame(width: 40, height: 40)
+                        .foregroundColor(.white)
+                        .padding()
+                }
+                .position(x: 40, y: 80)
             }
             .navigationBarHidden(true)
+            .edgesIgnoringSafeArea(.all)
         }
     }
 }
 
 struct CameraController_Previews: PreviewProvider {
     static var previews: some View {
-        CameraController()
+        CameraController(isPresented: .constant(true)) // Pass a constant binding for preview
     }
 }
