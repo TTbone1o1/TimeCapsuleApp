@@ -22,6 +22,9 @@ struct Home: View {
     
     @State private var dragOffset: CGFloat = 0 // State to track drag offset
     @State private var showProfileView: Bool = false // State to show the profile view
+    
+    @State private var homeIconColor: Color = .black // Start with Home icon as black
+    @State private var profileIconColor: Color = .gray // Start with Profile icon as gray
 
     @Namespace var namespace
 
@@ -59,9 +62,11 @@ struct Home: View {
                                             // Snap back to the appropriate position based on current view
                                             dragOffset = showProfileView ? -UIScreen.main.bounds.width : 0
                                         }
+                                        updateIconColors() // Ensure icon colors are updated based on the current view
                                     }
                                 }
                         )
+
                     
                     if showProfileView || dragOffset < 0 {
                         Profile()
@@ -81,6 +86,7 @@ struct Home: View {
                                                 // Complete transition back to HomeView
                                                 dragOffset = 0
                                                 showProfileView = false
+                                                updateIconColors() // Ensure icon colors are updated based on the current view
                                             } else {
                                                 // Snap back to ProfileView
                                                 dragOffset = -UIScreen.main.bounds.width
@@ -107,17 +113,35 @@ struct Home: View {
                             
                             // HStack to position images on either side of the circle
                             HStack {
-                                Image("Home")
+                                Image(systemName: "house.fill")
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
-                                    .frame(width: 34, height: 34) // Adjust the size as needed
+                                    .frame(width: 34, height: 34)
+                                    .foregroundColor(homeIconColor) // Apply color state to the Home icon
+                                    .onTapGesture {
+                                        // Handle Home icon tap
+                                        withAnimation {
+                                            dragOffset = 0
+                                            showProfileView = false
+                                            updateIconColors() // Update colors
+                                        }
+                                    }
                                 
                                 Spacer() // This spacer ensures the images are positioned on the left and right sides
                                 
-                                Image("Profile")
+                                Image(systemName: "person.fill")
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
-                                    .frame(width: 34, height: 34) // Adjust the size as needed
+                                    .frame(width: 34, height: 34)
+                                    .foregroundColor(profileIconColor) // Apply color state to the Profile icon
+                                    .onTapGesture {
+                                        // Handle Profile icon tap
+                                        withAnimation {
+                                            dragOffset = -UIScreen.main.bounds.width
+                                            showProfileView = true
+                                            updateIconColors() // Update colors
+                                        }
+                                    }
                             }
                             .frame(width: 290) // Adjust this width if needed to ensure the proper positioning
                         }
@@ -125,11 +149,13 @@ struct Home: View {
                     .padding(.horizontal, 60)
                     .padding(.bottom, 40) // Adjust the padding as needed
                     .zIndex(3) // Ensure this VStack is always on top of everything
+
                 }
                 .edgesIgnoringSafeArea(.all)
                 .onAppear {
                     dragOffset = showProfileView ? -UIScreen.main.bounds.width : 0
                     onAppearLogic()
+                    updateIconColors() // Set initial icon colors
                 }
             }
         }
@@ -250,6 +276,16 @@ struct Home: View {
             .scrollDisabled(isScrollDisabled)
             .ignoresSafeArea(edges: [.leading, .trailing])
             .scrollIndicators(.hidden)
+        }
+    }
+
+    private func updateIconColors() {
+        if showProfileView {
+            homeIconColor = .gray
+            profileIconColor = .black
+        } else {
+            homeIconColor = .black
+            profileIconColor = .gray
         }
     }
 
