@@ -20,6 +20,9 @@ struct Home: View {
     @State var show = false
     @State private var isScrollDisabled: Bool = false
     
+    @State private var dragOffset: CGFloat = 0 // State to track drag offset
+    @State private var showProfileView: Bool = false // State to show the profile view
+
     @Namespace var namespace
 
     var body: some View {
@@ -29,11 +32,103 @@ struct Home: View {
         } else {
             GeometryReader { geometry in
                 ZStack {
-                    // Main content view
                     mainContentView(geometry: geometry)
+                        .offset(x: dragOffset)
+                        .gesture(
+                            DragGesture()
+                                .onChanged { value in
+                                    if !showProfileView && value.translation.width < 0 {
+                                        // Dragging left to reveal ProfileView
+                                        dragOffset = value.translation.width
+                                    } else if showProfileView && value.translation.width > 0 {
+                                        // Dragging right to reveal HomeView
+                                        dragOffset = value.translation.width - UIScreen.main.bounds.width
+                                    }
+                                }
+                                .onEnded { value in
+                                    withAnimation {
+                                        if value.translation.width < -100 {
+                                            // Complete transition to ProfileView
+                                            dragOffset = -UIScreen.main.bounds.width
+                                            showProfileView = true
+                                        } else if value.translation.width > 100 {
+                                            // Complete transition back to HomeView
+                                            dragOffset = 0
+                                            showProfileView = false
+                                        } else {
+                                            // Snap back to the appropriate position based on current view
+                                            dragOffset = showProfileView ? -UIScreen.main.bounds.width : 0
+                                        }
+                                    }
+                                }
+                        )
+                    
+                    if showProfileView || dragOffset < 0 {
+                        Profile()
+                            .zIndex(2) // Ensure the Profile view stays on top
+                            .offset(x: UIScreen.main.bounds.width + dragOffset)
+                            .gesture(
+                                DragGesture()
+                                    .onChanged { value in
+                                        if showProfileView && value.translation.width > 0 {
+                                            // Allow dragging right to reveal HomeView
+                                            dragOffset = value.translation.width - UIScreen.main.bounds.width
+                                        }
+                                    }
+                                    .onEnded { value in
+                                        withAnimation{
+                                            if value.translation.width > 100 {
+                                                // Complete transition back to HomeView
+                                                dragOffset = 0
+                                                showProfileView = false
+                                            } else {
+                                                // Snap back to ProfileView
+                                                dragOffset = -UIScreen.main.bounds.width
+                                            }
+                                        }
+                                    }
+                            )
+                            .transition(.identity) // Ensure no transition effects are applied
+                    }
+                    
+                    
+                    // Fixed VStack stays on the screen at all times
+                    VStack(spacing: 20) {
+                        Spacer()
+                        ZStack {
+                            // The stroked circle with the gray-filled circle inside
+                            Circle()
+                                .stroke(Color.gray, lineWidth: 3)
+                                .frame(width: 52, height: 52)
+                            
+                            Circle()
+                                .fill(Color.gray)
+                                .frame(width: 37, height: 37)
+                            
+                            // HStack to position images on either side of the circle
+                            HStack {
+                                Image("Home")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 34, height: 34) // Adjust the size as needed
+                                
+                                Spacer() // This spacer ensures the images are positioned on the left and right sides
+                                
+                                Image("Profile")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 34, height: 34) // Adjust the size as needed
+                            }
+                            .frame(width: 290) // Adjust this width if needed to ensure the proper positioning
+                        }
+                    }
+                    .padding(.horizontal, 60)
+                    .padding(.bottom, 40) // Adjust the padding as needed
+                    .zIndex(3) // Ensure this VStack is always on top of everything
                 }
                 .edgesIgnoringSafeArea(.all)
                 .onAppear {
+                    dragOffset = showProfileView ? -UIScreen.main.bounds.width : 0
                     onAppearLogic()
                 }
             }
@@ -77,44 +172,6 @@ struct Home: View {
                 }
 
                 Spacer()
-
-                // Add the circles at the bottom of the view
-                ZStack {
-                    Spacer()
-                    
-                    VStack(spacing: 20) {
-                        ZStack {
-                            // The stroked circle with the gray-filled circle inside
-                            Circle()
-                                .stroke(Color.gray, lineWidth: 3)
-                                .frame(width: 52, height: 52)
-                            
-                            Circle()
-                                .fill(Color.gray)
-                                .frame(width: 37, height: 37)
-                            
-                            // HStack to position images on either side of the circle
-                            HStack {
-                                Image("Home")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 34, height: 34) // Adjust the size as needed
-                                
-                                Spacer() // This spacer ensures the images are positioned on the left and right sides
-                                
-                                Image("Profile")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 34, height: 34) // Adjust the size as needed
-                            }
-                            .frame(width: 290) // Adjust this width if needed to ensure the proper positioning
-                        }
-                    }
-                }
-                .padding(.horizontal, 60)
-                .padding(.bottom, 40) // Adjust the padding as needed
-
-
             }
             .zIndex(2) // Ensure header is on top
         }
@@ -173,7 +230,7 @@ struct Home: View {
                                     .font(.system(size: 18, weight: .bold, design: .rounded))
                                     .foregroundColor(.white)
                                     .padding(.horizontal, 28)
-                                    .padding(.top, shortenCaption(caption).isEmpty ? 80 : 1) // keep it 80 for now late ask Q
+                                    .padding(.top, shortenCaption(caption).isEmpty ? 80 : 1)
                                     .frame(width: 348, height: 30, alignment: .leading)
                                 
                                 // Caption displayed below the timestamp
