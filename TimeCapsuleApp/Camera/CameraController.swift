@@ -115,7 +115,7 @@ struct CameraController: View {
                 }) {
                     Image(systemName: "arrowshape.backward.fill")
                         .resizable()
-                        .frame(width: 40, height: 40)
+                        .frame(width: 20, height: 20)
                         .foregroundColor(.white)
                         .padding()
                 }
