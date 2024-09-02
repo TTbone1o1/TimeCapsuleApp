@@ -160,7 +160,7 @@ struct Timecap: View {
                     .isDetailLink(false) // Prevent unintended navigation behavior
 
                     // Hidden NavigationLink to Home
-                    NavigationLink(destination: CameraController().navigationBarBackButtonHidden(true), isActive: $navigateToHome) {
+                    NavigationLink(destination: Home().navigationBarBackButtonHidden(true), isActive: $navigateToHome) {
                         EmptyView()
                     }
                     .isDetailLink(false) // Prevent unintended navigation behavior
