@@ -37,7 +37,7 @@ struct CameraView: UIViewControllerRepresentable {
                     // Now check if the user has posted today
                     self.parent.checkIfPostedToday { hasPostedToday in
                         DispatchQueue.main.async {
-                            if hasPostedToday {
+                            if (hasPostedToday) {
                                 print("User has posted today. Showing message button.")
                                 self.parent.isShowingMessage = true
                             } else {
@@ -92,50 +92,12 @@ struct CameraView: UIViewControllerRepresentable {
 
 struct CameraController: View {
     @State private var isShowingMessage = false
-    @State private var navigateToProfile = false
-    @State private var navigateToHome = false
 
     var body: some View {
         NavigationView {
             ZStack {
                 CameraView(isShowingMessage: $isShowingMessage)
                     .edgesIgnoringSafeArea(.all)
-                
-                // Transparent overlay that captures gestures
-                Color.clear
-                    .contentShape(Rectangle())
-                    .gesture(
-                        DragGesture()
-                            .onEnded { value in
-                                if value.translation.width < -100 {
-                                    // Swipe left to right: navigate to Profile
-                                    withAnimation {
-                                        navigateToProfile = true
-                                    }
-                                } else if value.translation.width > 100 {
-                                    // Swipe right to left: navigate to Home
-                                    withAnimation {
-                                        navigateToHome = true
-                                    }
-                                }
-                            }
-                    )
-                
-                // Navigation to Profile view
-                if navigateToProfile {
-                    Profile()
-                        .background(Color.white)
-                        .transition(.move(edge: .trailing))
-                        .navigationBarBackButtonHidden(true)
-                }
-                
-                // Navigation to Home view
-                if navigateToHome {
-                    Home()
-                        .background(Color.white)
-                        .transition(.move(edge: .leading))
-                        .navigationBarBackButtonHidden(true)
-                }
 
                 // MessageButton is on top of other UI elements
                 if isShowingMessage {
@@ -147,7 +109,6 @@ struct CameraController: View {
         }
     }
 }
-
 
 struct CameraController_Previews: PreviewProvider {
     static var previews: some View {
