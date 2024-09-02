@@ -5,6 +5,7 @@ import FirebaseFirestore
 import FirebaseAuth
 
 struct Profile: View {
+    @Binding var isImageExpanded: Bool // Binding to control the state from Home
     @State private var currentDate = Date()
     @State private var selectedDate = Date()
     @State private var displayedMonth = Calendar.current.component(.month, from: Date())
@@ -20,7 +21,7 @@ struct Profile: View {
     @State private var photos: [(String, String, Timestamp)] = [] // Store (URL, Caption, Timestamp) tuples
     @State private var photosForSelectedDate: [(String, String, Timestamp)] = [] // Filtered photos for the selected date
     
-    @State private var isImageExpanded = false
+    //@State private var isImageExpanded = false
     @State private var tappedImageUrl: String? = nil // To track the tapped image URL
 
     @Namespace private var namespace
