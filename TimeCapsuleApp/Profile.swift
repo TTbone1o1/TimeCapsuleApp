@@ -78,7 +78,16 @@ struct Profile: View {
                         .padding(.leading)
                         .foregroundColor(Color.primary)
 
-                    CalendarView(currentDate: $currentDate, selectedDate: $selectedDate, displayedMonth: $displayedMonth, displayedYear: $displayedYear, photosForSelectedDate: $photosForSelectedDate, tappedImageUrl: $tappedImageUrl, filterPhotos: filterPhotosForSelectedDate)
+                    CalendarView(
+                        currentDate: $currentDate,
+                        selectedDate: $selectedDate,
+                        displayedMonth: $displayedMonth,
+                        displayedYear: $displayedYear,
+                        photosForSelectedDate: $photosForSelectedDate,
+                        tappedImageUrl: $tappedImageUrl,
+                        filterPhotos: filterPhotosForSelectedDate,
+                        photos: photos // Pass the photos array here
+                    )
 
                     Spacer()
                 }
@@ -315,7 +324,8 @@ struct CalendarView: View {
     @Binding var photosForSelectedDate: [(String, String, Timestamp)]
     @Binding var tappedImageUrl: String?
     var filterPhotos: (Date) -> Void
-
+    
+    let photos: [(String, String, Timestamp)] // Add this to hold all the photos
     let calendar = Calendar.current
     let dateFormatter = DateFormatter()
     let yearFormatter: NumberFormatter = {
@@ -399,7 +409,9 @@ struct CalendarView: View {
         let today = Date()
         let currentDay = calendar.component(.day, from: today)
         
-        if isCurrentMonth() && day == currentDay {
+        if hasPhotoForDay(day) {
+            return .black
+        } else if isCurrentMonth() && day == currentDay {
             return .black
         } else if calendar.component(.day, from: selectedDate) == day &&
                   calendar.component(.month, from: selectedDate) == displayedMonth &&
@@ -408,6 +420,14 @@ struct CalendarView: View {
         } else {
             return .gray
         }
+    }
+
+    private func hasPhotoForDay(_ day: Int) -> Bool {
+        let dateComponents = DateComponents(year: displayedYear, month: displayedMonth, day: day)
+        if let date = calendar.date(from: dateComponents) {
+            return photos.contains { calendar.isDate($0.2.dateValue(), inSameDayAs: date) }
+        }
+        return false
     }
 
     private func selectDay(_ day: Int) {
@@ -424,3 +444,4 @@ struct CalendarView: View {
         return yearFormatter.string(from: NSNumber(value: displayedYear)) ?? "\(displayedYear)"
     }
 }
+
