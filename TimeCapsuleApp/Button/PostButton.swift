@@ -17,6 +17,7 @@ struct PostView: View {
     @State private var showBlurView: Bool = false // New state for showing blur view
     //@State private var showCameraController = false // New state to present the CameraController
     @State private var isEditing = false // New state to track if the TextEditor is being edited
+    @State private var showCameraController = false
     var selectedImage: UIImage?
 
     var body: some View {
@@ -135,7 +136,7 @@ struct PostView: View {
             // Add a black circle in the top left corner with a tap gesture to retake photo
             VStack {
                 HStack {
-                    NavigationLink(destination: CameraController().edgesIgnoringSafeArea(.all)) {
+                    NavigationLink(destination: CameraController(isPresented: $showCameraController).edgesIgnoringSafeArea(.all)) {
                         Image(systemName: "arrow.triangle.2.circlepath.camera")
                             .font(.system(size: 24)) // Adjust the size as needed
                             .foregroundColor(.black) // Set the color to black
