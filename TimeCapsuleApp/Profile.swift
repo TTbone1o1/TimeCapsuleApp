@@ -46,28 +46,32 @@ struct Profile: View {
                             ProgressView()
                                 .progressViewStyle(CircularProgressViewStyle())
                                 .frame(width: 125, height: 125)
-                                .scaleEffect(isShowingSetting ? 1.1 : 1.0)
-                                .animation(.interpolatingSpring(stiffness: 170, damping: 5).repeatCount(1, autoreverses: true), value: isShowingSetting)
+                                .scaleEffect(isShowingSetting ? 0.8 : 1.0)
+                                .animation(.interpolatingSpring(stiffness: 130, damping: 5), value: isShowingSetting)
                         } else if let image = selectedImage {
                             Image(uiImage: image)
                                 .resizable()
                                 .clipShape(Circle())
                                 .frame(width: 125, height: 125)
-                                .scaleEffect(isShowingSetting ? 1.1 : 1.0)
-                                .animation(.interpolatingSpring(stiffness: 170, damping: 5).repeatCount(1, autoreverses: true), value: isShowingSetting)
+                                .scaleEffect(isShowingSetting ? 0.8 : 1.0)
+                                .animation(.interpolatingSpring(stiffness: 130, damping: 5), value: isShowingSetting)
                         } else {
                             Circle()
                                 .foregroundColor(.black)
                                 .frame(width: 125, height: 125)
-                                .scaleEffect(isShowingSetting ? 1.1 : 1.0)
-                                .animation(.interpolatingSpring(stiffness: 170, damping: 5).repeatCount(1, autoreverses: true), value: isShowingSetting)
+                                .scaleEffect(isShowingSetting ? 0.8 : 1.0)
+                                .animation(.interpolatingSpring(stiffness: 130, damping: 5), value: isShowingSetting)
                         }
-                    }
-                    .onTapGesture {
-                        withAnimation {
-                            isShowingSetting.toggle()
                         }
-                    }
+                    .gesture(
+                        LongPressGesture(minimumDuration: 0.5)
+                            .onEnded { _ in
+                                withAnimation {
+                                    isShowingSetting.toggle() // Toggle the state when the long press ends
+                                }
+                            }
+                    )
+
 
                     Spacer()
                         .frame(height: 20)
