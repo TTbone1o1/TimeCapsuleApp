@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct MessageButton: View {
+    @State private var showCameraController = false
     
     @Binding var isShowing : Bool
     @State private var curHeight: CGFloat = 400
@@ -118,8 +119,8 @@ struct MessageButton: View {
 //    }
 }
 
-struct MessageButton_Previews: PreviewProvider{
-    static var previews: some View {
-        CameraController()
-    }
-}
+//struct MessageButton_Previews: PreviewProvider{
+//    static var previews: some View {
+//        CameraController(isPresented: $showCameraController)
+//    }
+//}
