@@ -136,7 +136,7 @@ struct PostView: View {
             // Add a black circle in the top left corner with a tap gesture to retake photo
             VStack {
                 HStack {
-                    NavigationLink(destination: CameraController(isPresented: $showCameraController).edgesIgnoringSafeArea(.all)) {
+                    NavigationLink(destination: CameraController(isPresented: $showCameraController).navigationBarBackButtonHidden(true).edgesIgnoringSafeArea(.all)) {
                         Image(systemName: "arrow.triangle.2.circlepath.camera")
                             .font(.system(size: 24)) // Adjust the size as needed
                             .foregroundColor(.black) // Set the color to black
