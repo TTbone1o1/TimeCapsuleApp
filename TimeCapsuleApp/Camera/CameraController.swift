@@ -7,6 +7,7 @@ import FirebaseStorage
 struct CameraView: UIViewControllerRepresentable {
     @Binding var isShowingMessage: Bool
     @Binding var isPresented: Bool
+    @Binding var isPhotoTaken: Bool // Add this binding to control the back button visibility
 
     func makeUIViewController(context: Context) -> Camera {
         let camera = Camera()
@@ -32,10 +33,15 @@ struct CameraView: UIViewControllerRepresentable {
         func didTakePhoto() {
             print("Photo taken, checking if posted today...")
             
-            // First handle the photo-taking process, then check the condition
+            // Set the state to indicate that a photo has been taken
+            DispatchQueue.main.async {
+                self.parent.isPhotoTaken = true
+            }
+            
+            // Handle the photo-taking process
             parent.savePhoto { success in
                 if success {
-                    // Now check if the user has posted today
+                    // Check if the user has posted today
                     self.parent.checkIfPostedToday { hasPostedToday in
                         DispatchQueue.main.async {
                             if hasPostedToday {
@@ -54,7 +60,7 @@ struct CameraView: UIViewControllerRepresentable {
             }
         }
     }
-    
+
     private func checkIfPostedToday(completion: @escaping (Bool) -> Void) {
         guard let user = Auth.auth().currentUser else {
             print("No user is currently authenticated.")
@@ -95,29 +101,33 @@ struct CameraView: UIViewControllerRepresentable {
 struct CameraController: View {
     @Binding var isPresented: Bool
     @State private var isShowingMessage = false
+    @State private var isPhotoTaken = false // Add a state variable to track if the photo is taken
 
     var body: some View {
         NavigationView {
             ZStack {
-                CameraView(isShowingMessage: $isShowingMessage, isPresented: $isPresented)
-
+                CameraView(isShowingMessage: $isShowingMessage, isPresented: $isPresented, isPhotoTaken: $isPhotoTaken) // Pass the binding
+                
                 if isShowingMessage {
                     MessageButton(isShowing: $isShowingMessage)
                         .transition(.move(edge: .bottom))
                 }
-                
-                Button(action: {
-                    withAnimation {
-                        isPresented = false
+
+                // Conditionally show the back button
+                if !isPhotoTaken {
+                    Button(action: {
+                        withAnimation {
+                            isPresented = false
+                        }
+                    }) {
+                        Image(systemName: "arrowshape.backward.fill")
+                            .resizable()
+                            .frame(width: 20, height: 20)
+                            .foregroundColor(.white)
+                            .padding()
                     }
-                }) {
-                    Image(systemName: "arrowshape.backward.fill")
-                        .resizable()
-                        .frame(width: 20, height: 20)
-                        .foregroundColor(.white)
-                        .padding()
+                    .position(x: 40, y: 80)
                 }
-                .position(x: 40, y: 80)
             }
             .navigationBarHidden(true)
             .edgesIgnoringSafeArea(.all)
