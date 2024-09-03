@@ -4,6 +4,17 @@ import FirebaseAuth
 import FirebaseFirestore
 import FirebaseStorage
 
+// Image extension to apply a tint color
+extension Image {
+    func withTintColor(_ color: Color) -> some View {
+        self
+            .renderingMode(.template)
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .foregroundColor(color)
+    }
+}
+
 struct Home: View {
     @State private var username: String = ""
     @State private var imagesAppeared = false
@@ -24,7 +35,7 @@ struct Home: View {
     @State private var showProfileView: Bool = false
     
     @State private var homeIconColor: Color = .black
-    @State private var profileIconColor: Color = .gray
+    @State private var profileIconColor: Color = Color(.systemGray3)
     @State private var showCameraController = false
     
     @State private var isImageExpanded = false
@@ -108,21 +119,19 @@ struct Home: View {
                                     }) {
                                         ZStack {
                                             Circle()
-                                                .stroke(Color.gray, lineWidth: 3)
+                                                .stroke(Color(.systemGray3), lineWidth: 3)
                                                 .frame(width: 52, height: 52)
                                             
                                             Circle()
-                                                .fill(Color.gray)
+                                                .fill(Color(.systemGray3))
                                                 .frame(width: 37, height: 37)
                                         }
                                     }
                                     
                                     HStack {
-                                        Image(systemName: "house.fill")
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
+                                        Image("Home")
+                                            .withTintColor(homeIconColor) // Using the custom extension
                                             .frame(width: 34, height: 34)
-                                            .foregroundColor(homeIconColor)
                                             .onTapGesture {
                                                 withAnimation {
                                                     dragOffset = 0
@@ -133,11 +142,9 @@ struct Home: View {
                                         
                                         Spacer()
                                         
-                                        Image(systemName: "person.fill")
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
+                                        Image("Profile")
+                                            .withTintColor(profileIconColor) // Using the custom extension
                                             .frame(width: 34, height: 34)
-                                            .foregroundColor(profileIconColor)
                                             .onTapGesture {
                                                 withAnimation {
                                                     dragOffset = -UIScreen.main.bounds.width
@@ -277,11 +284,11 @@ struct Home: View {
 
     private func updateIconColors() {
         if showProfileView {
-            homeIconColor = .gray
+            homeIconColor = Color(.systemGray3)
             profileIconColor = .black
         } else {
             homeIconColor = .black
-            profileIconColor = .gray
+            profileIconColor = Color(.systemGray3)
         }
     }
 
