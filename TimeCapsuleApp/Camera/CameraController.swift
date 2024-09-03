@@ -6,7 +6,7 @@ import FirebaseStorage
 
 struct CameraView: UIViewControllerRepresentable {
     @Binding var isShowingMessage: Bool
-    @Binding var isPresented: Bool // Add this binding to control presentation
+    @Binding var isPresented: Bool
 
     func makeUIViewController(context: Context) -> Camera {
         let camera = Camera()
@@ -43,8 +43,8 @@ struct CameraView: UIViewControllerRepresentable {
                                 self.parent.isShowingMessage = true
                             } else {
                                 print("User has not posted today. Photo taken successfully.")
-                                // You could dismiss here if needed
-                                self.parent.isPresented = false
+                                // Remove this line to prevent automatic dismissal
+                                // self.parent.isPresented = false
                             }
                         }
                     }
@@ -93,24 +93,22 @@ struct CameraView: UIViewControllerRepresentable {
 }
 
 struct CameraController: View {
-    @Binding var isPresented: Bool // Binding to control dismissal
+    @Binding var isPresented: Bool
     @State private var isShowingMessage = false
 
     var body: some View {
         NavigationView {
             ZStack {
-                CameraView(isShowingMessage: $isShowingMessage, isPresented: $isPresented) // Pass the binding
+                CameraView(isShowingMessage: $isShowingMessage, isPresented: $isPresented)
 
-                // MessageButton is on top of other UI elements
                 if isShowingMessage {
                     MessageButton(isShowing: $isShowingMessage)
                         .transition(.move(edge: .bottom))
                 }
                 
-                // Add a dismiss button (if desired)
                 Button(action: {
                     withAnimation {
-                        isPresented = false // Dismiss the CameraController
+                        isPresented = false
                     }
                 }) {
                     Image(systemName: "arrowshape.backward.fill")
@@ -129,6 +127,6 @@ struct CameraController: View {
 
 struct CameraController_Previews: PreviewProvider {
     static var previews: some View {
-        CameraController(isPresented: .constant(true)) // Pass a constant binding for preview
+        CameraController(isPresented: .constant(true))
     }
 }
