@@ -115,13 +115,13 @@ struct Profile: View {
                                 .cornerRadius(isImageExpanded ? 33 : 33)
                                 .transition(.scale)
                                 .onTapGesture {
-                                    withAnimation(.spring(response: 0.4, dampingFraction: 0.7, blendDuration: 0.4)) {
+                                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8, blendDuration: 0.4)) {
                                         isImageExpanded.toggle()
                                     }
 
                                     // Delay the dismissal of the image to allow the scale-down animation
                                     if !isImageExpanded {
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                                             self.tappedImageUrl = nil
                                             withAnimation {
                                                 areButtonsVisible = true // Show buttons again
@@ -140,7 +140,7 @@ struct Profile: View {
                     }
                     .frame(maxWidth: isImageExpanded ? UIScreen.main.bounds.width : 0,
                            maxHeight: isImageExpanded ? UIScreen.main.bounds.height : 0)
-                    .animation(.spring(response: 0.6, dampingFraction: 0.6, blendDuration: 0.6))
+                    .animation(.spring(response: 0.6, dampingFraction: 0.5, blendDuration: 0.6))
                 }
                 .zIndex(2)
             }
