@@ -6,13 +6,13 @@ import FirebaseAuth
 
 struct Profile: View {
     @Binding var isImageExpanded: Bool
-    @Binding var areButtonsVisible: Bool // Binding to control the visibility of buttons from Home
-
+    @Binding var areButtonsVisible: Bool // This will now only control visibility outside of settings
+    @Binding var isShowingSetting: Bool
+    
     @State private var currentDate = Date()
     @State private var selectedDate = Date()
     @State private var displayedMonth = Calendar.current.component(.month, from: Date())
     @State private var displayedYear = Calendar.current.component(.year, from: Date())
-    @State private var isShowingSetting = false
     @State private var isSignedOut = false
     @Environment(\.presentationMode) var presentationMode
     @State private var navigateToTimeCap = false
@@ -34,8 +34,7 @@ struct Profile: View {
         ZStack {
             GeometryReader { geometry in
                 VStack {
-                    Spacer()
-                        .frame(height: 128)
+                    Spacer().frame(height: 128)
 
                     ZStack {
                         Circle()
@@ -69,13 +68,12 @@ struct Profile: View {
                             .onEnded { _ in
                                 withAnimation {
                                     isShowingSetting = true
-                                    areButtonsVisible = false // Hide buttons when showing settings
+                                    //areButtonsVisible = false // Hide buttons in Home
                                 }
                             }
                     )
 
-                    Spacer()
-                        .frame(height: 20)
+                    Spacer().frame(height: 20)
 
                     Text(username.isEmpty ? "Loading..." : username)
                         .font(.system(size: 32, weight: .bold, design: .rounded))
@@ -125,7 +123,7 @@ struct Profile: View {
                                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                                             self.tappedImageUrl = nil
                                             withAnimation {
-                                                areButtonsVisible = true // Show buttons again
+                                                areButtonsVisible = true // Show buttons in Home again
                                             }
                                         }
                                     }
@@ -150,7 +148,7 @@ struct Profile: View {
                 Setting(isShowing: $isShowingSetting, isSignedOut: $isSignedOut, onChangeProfilePicture: {
                     self.showingImagePicker = true
                 })
-                .transition(.move(edge: .bottom))
+                .transition(.opacity.combined(with: .scale(scale: 0.9)))
                 .animation(.easeInOut)
                 .zIndex(1)
             }
@@ -165,13 +163,8 @@ struct Profile: View {
         .onChange(of: isShowingSetting) { isShowing in
             withAnimation {
                 if !isShowing {
-                    areButtonsVisible = true // Show buttons when settings are hidden
+                    areButtonsVisible = true // Show buttons in Home again
                 }
-            }
-        }
-        .onChange(of: isSignedOut) { signedOut in
-            if signedOut {
-                navigateToTimeCap = true
             }
         }
         .onAppear {
@@ -185,6 +178,7 @@ struct Profile: View {
             }
         }
     }
+
 
     private func fetchProfileData() {
         if selectedImage == nil {
