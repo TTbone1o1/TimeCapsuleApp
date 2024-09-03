@@ -92,7 +92,8 @@ struct Profile: View {
                         filterPhotos: filterPhotosForSelectedDate,
                         photos: photos // Pass the photos array here
                     )
-
+                    .offset(y: -80)
+                    
                     Spacer()
                 }
                 .edgesIgnoringSafeArea(.top)
@@ -341,6 +342,9 @@ struct CalendarView: View {
     @Binding var tappedImageUrl: String?
     var filterPhotos: (Date) -> Void
     
+    @State private var isLeftButtonPressed = false
+    @State private var isRightButtonPressed = false
+    
     let photos: [(String, String, Timestamp)] // Add this to hold all the photos
     let calendar = Calendar.current
     let dateFormatter = DateFormatter()
@@ -356,28 +360,42 @@ struct CalendarView: View {
         
         VStack {
             HStack {
-                Button(action: {
-                    changeMonth(by: -1)
-                }) {
-                    Image(systemName: "lessthan")
-                        .foregroundColor(.black)
-                }
+                       Button(action: {
+                           changeMonth(by: -1)
+                           isLeftButtonPressed = true
+                           DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                               isLeftButtonPressed = false
+                           }
+                       }) {
+                           Image(systemName: "chevron.left")
+                               .foregroundColor(isLeftButtonPressed ? .black : .gray)
+                               .font(.system(size: 25))
+                               .padding(.leading, 20)
+                               .fontWeight(.bold)
+                       }
 
-                Spacer()
+                       Spacer()
 
-                Text("\(monthName(for: displayedMonth)) \(formattedYear)")
-                    .font(.system(size: 24, weight: .bold, design: .rounded))
-                    .foregroundColor(.black)
+                       Text("\(monthName(for: displayedMonth)) \(formattedYear)")
+                           .font(.system(size: 24, weight: .bold, design: .rounded))
+                           .foregroundColor(.black)
 
-                Spacer()
+                       Spacer()
 
-                Button(action: {
-                    changeMonth(by: 1)
-                }) {
-                    Image(systemName: "greaterthan")
-                        .foregroundColor(.black)
-                }
-            }
+                       Button(action: {
+                           changeMonth(by: 1)
+                           isRightButtonPressed = true
+                           DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                               isRightButtonPressed = false
+                           }
+                       }) {
+                           Image(systemName: "chevron.right")
+                               .foregroundColor(isRightButtonPressed ? .black : .gray)
+                               .font(.system(size: 25))
+                               .padding(.trailing, 20)
+                               .fontWeight(.bold)
+                       }
+                   }
             .padding(.horizontal)
 
             let daysInMonth = calendar.range(of: .day, in: .month, for: firstOfMonth())!.count
@@ -460,4 +478,3 @@ struct CalendarView: View {
         return yearFormatter.string(from: NSNumber(value: displayedYear)) ?? "\(displayedYear)"
     }
 }
-
