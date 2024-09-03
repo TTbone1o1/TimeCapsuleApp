@@ -30,6 +30,7 @@ struct Home: View {
     @State private var isImageExpanded = false
     @State private var areButtonsVisible = true
     @State private var isSettingsOpen = false  // State for settings
+    @State private var isShowingSetting = false
 
     @Namespace var namespace
 
@@ -69,7 +70,8 @@ struct Home: View {
                         
                         if showProfileView || dragOffset < 0 {
                             Profile(isImageExpanded: $isImageExpanded,
-                                    areButtonsVisible: $areButtonsVisible)
+                                    areButtonsVisible: $areButtonsVisible
+                            ,isShowingSetting: $isShowingSetting)
                                 .zIndex(2)
                                 .offset(x: UIScreen.main.bounds.width + dragOffset)
                                 .gesture(
@@ -95,7 +97,7 @@ struct Home: View {
                         }
                         
                         // Fixed VStack stays on the screen at all times
-                        if !show && !isImageExpanded && !isSettingsOpen {
+                        if !show && !isImageExpanded && !isSettingsOpen && !isShowingSetting {
                             VStack(spacing: 20) {
                                 Spacer()
                                 ZStack {
@@ -151,6 +153,7 @@ struct Home: View {
                             .padding(.bottom, 40)
                             .zIndex(3)
                         }
+
 
                         if showCameraController {
                             CameraController(isPresented: $showCameraController)
