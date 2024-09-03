@@ -7,7 +7,7 @@ import FirebaseStorage
 struct CameraView: UIViewControllerRepresentable {
     @Binding var isShowingMessage: Bool
     @Binding var isPresented: Bool
-    @Binding var isPhotoTaken: Bool // Add this binding to control the back button visibility
+    @Binding var isPhotoTaken: Bool
 
     func makeUIViewController(context: Context) -> Camera {
         let camera = Camera()
@@ -33,6 +33,11 @@ struct CameraView: UIViewControllerRepresentable {
         func didTakePhoto() {
             print("Photo taken, checking if posted today...")
             
+            // Show the message button immediately when the photo is taken
+            DispatchQueue.main.async {
+                self.parent.isShowingMessage = true
+            }
+            
             // Set the state to indicate that a photo has been taken
             DispatchQueue.main.async {
                 self.parent.isPhotoTaken = true
@@ -49,7 +54,7 @@ struct CameraView: UIViewControllerRepresentable {
                                 self.parent.isShowingMessage = true
                             } else {
                                 print("User has not posted today. Photo taken successfully.")
-                                // Remove this line to prevent automatic dismissal
+                                // Optionally remove this line to prevent automatic dismissal
                                 // self.parent.isPresented = false
                             }
                         }
@@ -101,19 +106,19 @@ struct CameraView: UIViewControllerRepresentable {
 struct CameraController: View {
     @Binding var isPresented: Bool
     @State private var isShowingMessage = false
-    @State private var isPhotoTaken = false // Add a state variable to track if the photo is taken
+    @State private var isPhotoTaken = false
 
     var body: some View {
         NavigationView {
             ZStack {
-                CameraView(isShowingMessage: $isShowingMessage, isPresented: $isPresented, isPhotoTaken: $isPhotoTaken) // Pass the binding
-                
+                CameraView(isShowingMessage: $isShowingMessage, isPresented: $isPresented, isPhotoTaken: $isPhotoTaken)
+
                 if isShowingMessage {
                     MessageButton(isShowing: $isShowingMessage)
-                        .transition(.move(edge: .bottom))
+                        .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                        .animation(.linear(duration: 0.1)) // Reduced duration for quicker appearance
                 }
 
-                // Conditionally show the back button
                 if !isPhotoTaken {
                     Button(action: {
                         withAnimation {
