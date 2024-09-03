@@ -42,6 +42,7 @@ struct Home: View {
     @State private var areButtonsVisible = true
     @State private var isSettingsOpen = false  // State for settings
     @State private var isShowingSetting = false
+    @State private var isFullCaptionVisible: Bool = false // State for showing full caption
 
     @Namespace var namespace
 
@@ -233,10 +234,12 @@ struct Home: View {
                                                     tappedImageUrl = nil
                                                     show = false
                                                     isScrollDisabled = false
+                                                    isFullCaptionVisible = false // Hide full caption
                                                 } else {
                                                     tappedImageUrl = imageUrl
                                                     show = true
                                                     isScrollDisabled = true
+                                                    isFullCaptionVisible = true // Show full caption
                                                     withAnimation {
                                                         scrollProxy.scrollTo(imageUrl, anchor: .center)
                                                     }
@@ -255,18 +258,18 @@ struct Home: View {
                             .frame(maxWidth: .infinity)
                             .id(imageUrl)
 
-                            VStack(alignment: .leading, spacing: 5) {
+                            VStack(alignment: .center, spacing: 5) {
                                 Text(formatDate(timestamp.dateValue()))
                                     .font(.system(size: 18, weight: .bold, design: .rounded))
                                     .foregroundColor(.white)
                                     .padding(.horizontal, 28)
                                     .padding(.top, shortenCaption(caption).isEmpty ? 80 : 1)
-                                    .frame(width: 348, height: 30, alignment: .center)
+                                    .frame(maxWidth: .infinity, alignment: .center)
                                 
                                 Text(shortenCaption(caption))
                                     .font(.system(size: 24, weight: .bold, design: .rounded))
                                     .padding(.horizontal, 28)
-                                    .frame(width: 348, height: 30, alignment: .center)
+                                    .frame(maxWidth: .infinity, alignment: .center)
                                     .foregroundColor(.white)
                                     .cornerRadius(5)
                                     .padding(.bottom, 26)
@@ -350,10 +353,14 @@ struct Home: View {
     }
 
     private func shortenCaption(_ caption: String) -> String {
-        let words = caption.split(separator: " ")
-        let limitedWords = words.prefix(8)
-        let shortCaption = limitedWords.joined(separator: " ")
-        return shortCaption
+        if isFullCaptionVisible {
+            return caption
+        } else {
+            let words = caption.split(separator: " ")
+            let limitedWords = words.prefix(4) // Show only the first 4 words
+            let shortCaption = limitedWords.joined(separator: " ")
+            return shortCaption + (words.count > 4 ? "..." : "")
+        }
     }
 
     private func formatDate(_ date: Date) -> String {
