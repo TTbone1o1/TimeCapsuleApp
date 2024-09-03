@@ -51,6 +51,7 @@ struct Profile: View {
                         } else if let image = selectedImage {
                             Image(uiImage: image)
                                 .resizable()
+                                .scaledToFill()
                                 .clipShape(Circle())
                                 .frame(width: 125, height: 125)
                                 .scaleEffect(isShowingSetting ? 0.8 : 1.0)
