@@ -12,29 +12,29 @@ struct Home: View {
     @State private var photoCount: Int = 0
     @State private var isShowingMessage = false
     @State private var isCaptionVisible: Bool = false
-    @State private var isImageLoaded: Bool = false // New state for tracking image load status
+    @State private var isImageLoaded: Bool = false
     @State private var highlightedImageUrl: String? = nil
-    @State private var tappedImageUrl: String? = nil // State to track the tapped image URL
-    @State private var scaleAmount: CGFloat = 1.0 // State to control the scaling
-    @State private var isSignedOut: Bool = false // State to track sign out status
+    @State private var tappedImageUrl: String? = nil
+    @State private var scaleAmount: CGFloat = 1.0
+    @State private var isSignedOut: Bool = false
     @State var show = false
     @State private var isScrollDisabled: Bool = false
     
-    @State private var dragOffset: CGFloat = 0 // State to track drag offset
-    @State private var showProfileView: Bool = false // State to show the profile view
+    @State private var dragOffset: CGFloat = 0
+    @State private var showProfileView: Bool = false
     
-    @State private var homeIconColor: Color = .black // Start with Home icon as black
-    @State private var profileIconColor: Color = .gray // Start with Profile icon as gray
+    @State private var homeIconColor: Color = .black
+    @State private var profileIconColor: Color = .gray
     @State private var showCameraController = false
     
     @State private var isImageExpanded = false
-
+    @State private var areButtonsVisible = true
+    @State private var isSettingsOpen = false  // State for settings
 
     @Namespace var namespace
 
     var body: some View {
         if isSignedOut {
-            // Navigate back to Timecap if the user is signed out
             Timecap()
         } else {
             NavigationView {
@@ -46,67 +46,59 @@ struct Home: View {
                                 DragGesture()
                                     .onChanged { value in
                                         if !showProfileView && value.translation.width < 0 {
-                                            // Dragging left to reveal ProfileView
                                             dragOffset = value.translation.width
                                         } else if showProfileView && value.translation.width > 0 {
-                                            // Dragging right to reveal HomeView
                                             dragOffset = value.translation.width - UIScreen.main.bounds.width
                                         }
                                     }
                                     .onEnded { value in
                                         withAnimation {
                                             if value.translation.width < -100 {
-                                                // Complete transition to ProfileView
                                                 dragOffset = -UIScreen.main.bounds.width
                                                 showProfileView = true
                                             } else if value.translation.width > 100 {
-                                                // Complete transition back to HomeView
                                                 dragOffset = 0
                                                 showProfileView = false
                                             } else {
-                                                // Snap back to the appropriate position based on current view
                                                 dragOffset = showProfileView ? -UIScreen.main.bounds.width : 0
                                             }
-                                            updateIconColors() // Ensure icon colors are updated based on the current view
+                                            updateIconColors()
                                         }
                                     }
                             )
                         
                         if showProfileView || dragOffset < 0 {
-                            Profile(isImageExpanded: $isImageExpanded)
-                                .zIndex(2) // Ensure the Profile view stays on top
+                            Profile(isImageExpanded: $isImageExpanded,
+                                    areButtonsVisible: $areButtonsVisible)
+                                .zIndex(2)
                                 .offset(x: UIScreen.main.bounds.width + dragOffset)
                                 .gesture(
                                     DragGesture()
                                         .onChanged { value in
                                             if showProfileView && value.translation.width > 0 {
-                                                // Allow dragging right to reveal HomeView
                                                 dragOffset = value.translation.width - UIScreen.main.bounds.width
                                             }
                                         }
                                         .onEnded { value in
-                                            withAnimation{
+                                            withAnimation {
                                                 if value.translation.width > 100 {
-                                                    // Complete transition back to HomeView
                                                     dragOffset = 0
                                                     showProfileView = false
-                                                    updateIconColors() // Ensure icon colors are updated based on the current view
+                                                    updateIconColors()
                                                 } else {
-                                                    // Snap back to ProfileView
                                                     dragOffset = -UIScreen.main.bounds.width
                                                 }
                                             }
                                         }
                                 )
-                                .transition(.identity) // Ensure no transition effects are applied
+                                .transition(.identity)
                         }
                         
                         // Fixed VStack stays on the screen at all times
-                        if !show && !isImageExpanded{
+                        if !show && !isImageExpanded && !isSettingsOpen {
                             VStack(spacing: 20) {
                                 Spacer()
                                 ZStack {
-                                    // The stroked circle with the gray-filled circle inside
                                     Button(action: {
                                         withAnimation {
                                             showCameraController.toggle()
@@ -123,60 +115,55 @@ struct Home: View {
                                         }
                                     }
                                     
-                                    // HStack to position images on either side of the circle
                                     HStack {
                                         Image(systemName: "house.fill")
                                             .resizable()
                                             .aspectRatio(contentMode: .fit)
                                             .frame(width: 34, height: 34)
-                                            .foregroundColor(homeIconColor) // Apply color state to the Home icon
+                                            .foregroundColor(homeIconColor)
                                             .onTapGesture {
-                                                // Handle Home icon tap
                                                 withAnimation {
                                                     dragOffset = 0
                                                     showProfileView = false
-                                                    updateIconColors() // Update colors
+                                                    updateIconColors()
                                                 }
                                             }
                                         
-                                        Spacer() // This spacer ensures the images are positioned on the left and right sides
+                                        Spacer()
                                         
                                         Image(systemName: "person.fill")
                                             .resizable()
                                             .aspectRatio(contentMode: .fit)
                                             .frame(width: 34, height: 34)
-                                            .foregroundColor(profileIconColor) // Apply color state to the Profile icon
+                                            .foregroundColor(profileIconColor)
                                             .onTapGesture {
-                                                // Handle Profile icon tap
                                                 withAnimation {
                                                     dragOffset = -UIScreen.main.bounds.width
                                                     showProfileView = true
-                                                    updateIconColors() // Update colors
+                                                    updateIconColors()
                                                 }
                                             }
                                     }
-                                    .frame(width: 290) // Adjust this width if needed to ensure the proper positioning
+                                    .frame(width: 290)
                                 }
                             }
                             .padding(.horizontal, 60)
-                            .padding(.bottom, 40) // Adjust the padding as needed
-                            .zIndex(3) // Ensure this VStack is always on top of everything
+                            .padding(.bottom, 40)
+                            .zIndex(3)
                         }
 
-
-                        // Custom CameraController presentation
                         if showCameraController {
                             CameraController(isPresented: $showCameraController)
-                                .transition(.opacity) // Only fade in/out without sliding
-                                .zIndex(4) // Ensure it's on top of other content
-                                .animation(.easeInOut(duration: 0.3), value: showCameraController) // Control the animation
+                                .transition(.opacity)
+                                .zIndex(4)
+                                .animation(.easeInOut(duration: 0.3), value: showCameraController)
                         }
                     }
                     .edgesIgnoringSafeArea(.all)
                     .onAppear {
                         dragOffset = showProfileView ? -UIScreen.main.bounds.width : 0
                         onAppearLogic()
-                        updateIconColors() // Set initial icon colors
+                        updateIconColors()
                     }
                 }
             }
@@ -185,13 +172,11 @@ struct Home: View {
 
     private func mainContentView(geometry: GeometryProxy) -> some View {
         ZStack {
-            // Main content with the existing image gallery, header, and footer
             imageGalleryView
-                .zIndex(1) // Ensure image gallery is below header
+                .zIndex(1)
 
-            // Header HStack remains fixed at the top, overlaid on images
             VStack {
-                Spacer().frame(height: 20) // Add space to adjust position
+                Spacer().frame(height: 20)
 
                 if tappedImageUrl == nil {
                     HStack {
@@ -202,15 +187,14 @@ struct Home: View {
                             .foregroundColor(Color.primary)
 
                         Spacer()
-
                     }
                     .padding(.top, geometry.safeAreaInsets.top)
-                    .transition(.opacity) // Add a transition for smooth appearance/disappearance
+                    .transition(.opacity)
                 }
 
                 Spacer()
             }
-            .zIndex(2) // Ensure header is on top
+            .zIndex(2)
         }
     }
 
@@ -238,11 +222,11 @@ struct Home: View {
                                                 if tappedImageUrl == imageUrl {
                                                     tappedImageUrl = nil
                                                     show = false
-                                                    isScrollDisabled = false  // Re-enable scrolling
+                                                    isScrollDisabled = false
                                                 } else {
                                                     tappedImageUrl = imageUrl
                                                     show = true
-                                                    isScrollDisabled = true   // Disable scrolling
+                                                    isScrollDisabled = true
                                                     withAnimation {
                                                         scrollProxy.scrollTo(imageUrl, anchor: .center)
                                                     }
@@ -262,7 +246,6 @@ struct Home: View {
                             .id(imageUrl)
 
                             VStack(alignment: .leading, spacing: 5) {
-                                // Conditional padding for timestamp based on whether there's a caption
                                 Text(formatDate(timestamp.dateValue()))
                                     .font(.system(size: 18, weight: .bold, design: .rounded))
                                     .foregroundColor(.white)
@@ -270,7 +253,6 @@ struct Home: View {
                                     .padding(.top, shortenCaption(caption).isEmpty ? 80 : 1)
                                     .frame(width: 348, height: 30, alignment: .leading)
                                 
-                                // Caption displayed below the timestamp
                                 Text(shortenCaption(caption))
                                     .font(.system(size: 24, weight: .bold, design: .rounded))
                                     .padding(.horizontal, 28)
@@ -350,8 +332,6 @@ struct Home: View {
 
                 if self.imageUrls.isEmpty {
                     print("No photos found.")
-                } else {
-                    //print("Photos found: \(self.imageUrls)")
                 }
             } else {
                 print("Error fetching image URLs: \(error?.localizedDescription ?? "Unknown error")")
@@ -373,7 +353,7 @@ struct Home: View {
     }
 
     private func triggerHaptic() {
-        // Trigger haptic feedback (optional)
+        // Implement haptic feedback here
     }
 }
 
