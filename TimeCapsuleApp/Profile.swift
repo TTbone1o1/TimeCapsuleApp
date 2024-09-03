@@ -5,7 +5,9 @@ import FirebaseFirestore
 import FirebaseAuth
 
 struct Profile: View {
-    @Binding var isImageExpanded: Bool // Binding to control the state from Home
+    @Binding var isImageExpanded: Bool
+    @Binding var areButtonsVisible: Bool // Binding to control the visibility of buttons from Home
+
     @State private var currentDate = Date()
     @State private var selectedDate = Date()
     @State private var displayedMonth = Calendar.current.component(.month, from: Date())
@@ -20,8 +22,6 @@ struct Profile: View {
     @State private var username: String = ""
     @State private var photos: [(String, String, Timestamp)] = [] // Store (URL, Caption, Timestamp) tuples
     @State private var photosForSelectedDate: [(String, String, Timestamp)] = [] // Filtered photos for the selected date
-    
-    //@State private var isImageExpanded = false
     @State private var tappedImageUrl: String? = nil // To track the tapped image URL
 
     @Namespace private var namespace
@@ -54,7 +54,7 @@ struct Profile: View {
                                 .clipShape(Circle())
                                 .frame(width: 125, height: 125)
                                 .scaleEffect(isShowingSetting ? 0.8 : 1.0)
-                                .animation(.interpolatingSpring(stiffness: 130, damping: 5), value: isShowingSetting)
+                                .animation(.interpolatingSpring(stiffness: 130, damping: 6), value: isShowingSetting)
                         } else {
                             Circle()
                                 .foregroundColor(.black)
@@ -62,26 +62,27 @@ struct Profile: View {
                                 .scaleEffect(isShowingSetting ? 0.8 : 1.0)
                                 .animation(.interpolatingSpring(stiffness: 130, damping: 5), value: isShowingSetting)
                         }
-                        }
+                    }
                     .gesture(
                         LongPressGesture(minimumDuration: 0.5)
                             .onEnded { _ in
                                 withAnimation {
-                                    isShowingSetting.toggle() // Toggle the state when the long press ends
+                                    isShowingSetting = true
+                                    areButtonsVisible = false // Hide buttons when showing settings
                                 }
                             }
                     )
 
-
                     Spacer()
                         .frame(height: 20)
-                    
+
                     Text(username.isEmpty ? "Loading..." : username)
                         .font(.system(size: 32, weight: .bold, design: .rounded))
                         .fontWeight(.bold)
                         .padding(.leading)
                         .foregroundColor(Color.primary)
 
+                    // Calendar should always be visible, independent of the settings
                     CalendarView(
                         currentDate: $currentDate,
                         selectedDate: $selectedDate,
@@ -120,8 +121,11 @@ struct Profile: View {
 
                                     // Delay the dismissal of the image to allow the scale-down animation
                                     if !isImageExpanded {
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                                             self.tappedImageUrl = nil
+                                            withAnimation {
+                                                areButtonsVisible = true // Show buttons again
+                                            }
                                         }
                                     }
                                 }
@@ -156,6 +160,13 @@ struct Profile: View {
                     .zIndex(1)
             }
 
+        }
+        .onChange(of: isShowingSetting) { isShowing in
+            withAnimation {
+                if !isShowing {
+                    areButtonsVisible = true // Show buttons when settings are hidden
+                }
+            }
         }
         .onChange(of: isSignedOut) { signedOut in
             if signedOut {
@@ -303,6 +314,9 @@ struct Profile: View {
         if let firstPhoto = photosForSelectedDate.first {
             tappedImageUrl = firstPhoto.0
             isImageExpanded = true
+            withAnimation {
+                areButtonsVisible = false // Hide buttons when an image is tapped
+            }
         }
     }
 
@@ -319,6 +333,9 @@ struct Profile: View {
         return shortCaption
     }
 }
+
+
+
 
 struct CalendarView: View {
     @Binding var currentDate: Date
@@ -347,7 +364,7 @@ struct CalendarView: View {
                 Button(action: {
                     changeMonth(by: -1)
                 }) {
-                    Image(systemName: "arrow.left")
+                    Image(systemName: "lessthan")
                         .foregroundColor(.black)
                 }
 
@@ -362,7 +379,7 @@ struct CalendarView: View {
                 Button(action: {
                     changeMonth(by: 1)
                 }) {
-                    Image(systemName: "arrow.right")
+                    Image(systemName: "greaterthan")
                         .foregroundColor(.black)
                 }
             }
