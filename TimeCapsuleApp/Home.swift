@@ -228,7 +228,6 @@ struct Home: View {
                                         .cornerRadius(tappedImageUrl == imageUrl ? 0 : 33)
                                         .shadow(radius: 20, x: 0, y: 24)
                                         .onTapGesture {
-                                            // Separate animations for image resize and caption visibility
                                             withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
                                                 if tappedImageUrl == imageUrl {
                                                     tappedImageUrl = nil
@@ -243,9 +242,27 @@ struct Home: View {
                                                     }
                                                 }
                                             }
-                                            // Update caption visibility without animation to avoid lag
                                             isFullCaptionVisible = tappedImageUrl != nil
                                         }
+                                        // Overlay gradient, but make it non-blocking for touch events
+                                        .overlay(
+                                            LinearGradient(
+                                                gradient: Gradient(stops: [
+                                                    .init(color: Color.black.opacity(1.0), location: 0.0), // Black at the bottom
+                                                    .init(color: Color.black.opacity(0.0), location: 0.2), // Gradually fade to clear
+                                                    .init(color: Color.clear, location: 1.0) // Clear at the top
+                                                ]),
+                                                startPoint: .bottom,  // Start gradient from the bottom
+                                                endPoint: .top        // End with clear at the top
+                                            )
+                                            .frame(width: tappedImageUrl == imageUrl ? UIScreen.main.bounds.width : 313,
+                                                  height: tappedImageUrl == imageUrl ? UIScreen.main.bounds.height : 421) // Maintain the 421px height
+                                            .clipShape(RoundedRectangle(cornerRadius: 33, style: .continuous)) // Round the bottom corners
+                                            .allowsHitTesting(false) // Allow taps to pass through the gradient
+                                         //   .padding(.top, 200) // Move the gradient down
+                                        )
+
+
                                 case .failure:
                                     Image(systemName: "xmark.circle")
                                         .resizable()
@@ -258,24 +275,26 @@ struct Home: View {
                             .frame(maxWidth: .infinity)
                             .id(imageUrl)
 
-                            VStack(alignment: .center, spacing: 5) {  // Align everything to the center
+                            // Move text outside the image but still within the ZStack
+                            VStack(alignment: .center, spacing: 5) {
                                 Text(formatDate(timestamp.dateValue()))
                                     .font(.system(size: 18, weight: .bold, design: .rounded))
                                     .foregroundColor(.white)
                                     .padding(.horizontal, 28)
                                     .padding(.top, shortenCaption(caption).isEmpty ? 80 : 1)
-                                    .frame(maxWidth: .infinity, alignment: .center) // Center the date text
-                                
-                                Text(isFullCaptionVisible ? caption : shortenCaption(caption)) // Use isFullCaptionVisible here
+                                    .frame(maxWidth: .infinity, alignment: .center)
+
+                                Text(isFullCaptionVisible ? caption : shortenCaption(caption))
                                     .font(.system(size: 24, weight: .bold, design: .rounded))
                                     .padding(.horizontal, 28)
-                                    .frame(maxWidth: .infinity, alignment: .center) // Center the caption text
+                                    .frame(maxWidth: .infinity, alignment: .center)
                                     .foregroundColor(.white)
                                     .cornerRadius(5)
                                     .padding(.bottom, 26)
                             }
                         }
                     }
+
                 }
                 .padding(.vertical, 130)
             }
