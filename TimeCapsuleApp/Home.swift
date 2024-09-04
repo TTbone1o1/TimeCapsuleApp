@@ -35,7 +35,7 @@ struct Home: View {
     @State private var showProfileView: Bool = false
     
     @State private var homeIconColor: Color = .black
-    @State private var profileIconColor: Color = Color(.systemGray3)
+    @State private var profileIconColor = Color(.systemGray3)
     @State private var showCameraController = false
     
     @State private var isImageExpanded = false
@@ -82,8 +82,8 @@ struct Home: View {
                         
                         if showProfileView || dragOffset < 0 {
                             Profile(isImageExpanded: $isImageExpanded,
-                                    areButtonsVisible: $areButtonsVisible
-                            ,isShowingSetting: $isShowingSetting)
+                                    areButtonsVisible: $areButtonsVisible,
+                                    isShowingSetting: $isShowingSetting)
                                 .zIndex(2)
                                 .offset(x: UIScreen.main.bounds.width + dragOffset)
                                 .gesture(
@@ -162,7 +162,6 @@ struct Home: View {
                             .zIndex(3)
                         }
 
-
                         if showCameraController {
                             CameraController(isPresented: $showCameraController)
                                 .transition(.opacity)
@@ -229,22 +228,23 @@ struct Home: View {
                                         .cornerRadius(tappedImageUrl == imageUrl ? 0 : 33)
                                         .shadow(radius: 20, x: 0, y: 24)
                                         .onTapGesture {
+                                            // Separate animations for image resize and caption visibility
                                             withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
                                                 if tappedImageUrl == imageUrl {
                                                     tappedImageUrl = nil
                                                     show = false
                                                     isScrollDisabled = false
-                                                    isFullCaptionVisible = false // Hide full caption
                                                 } else {
                                                     tappedImageUrl = imageUrl
                                                     show = true
                                                     isScrollDisabled = true
-                                                    isFullCaptionVisible = true // Show full caption
                                                     withAnimation {
                                                         scrollProxy.scrollTo(imageUrl, anchor: .center)
                                                     }
                                                 }
                                             }
+                                            // Update caption visibility without animation to avoid lag
+                                            isFullCaptionVisible = tappedImageUrl != nil
                                         }
                                 case .failure:
                                     Image(systemName: "xmark.circle")
