@@ -358,7 +358,7 @@ struct CalendarView: View {
 
                        Text("\(monthName(for: displayedMonth)) \(formattedYear)")
                            .font(.system(size: 24, weight: .bold, design: .rounded))
-                           .foregroundColor(.black)
+                           .foregroundColor(Color.primary)
 
                        Spacer()
 
@@ -424,9 +424,9 @@ struct CalendarView: View {
         let currentDay = calendar.component(.day, from: today)
         
         if hasPhotoForDay(day) {
-            return .black
+            return Color.primary
         } else if isCurrentMonth() && day == currentDay {
-            return .black
+            return Color.primary
         } else if calendar.component(.day, from: selectedDate) == day &&
                   calendar.component(.month, from: selectedDate) == displayedMonth &&
                   calendar.component(.year, from: selectedDate) == displayedYear {
