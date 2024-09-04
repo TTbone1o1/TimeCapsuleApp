@@ -11,7 +11,7 @@ struct CameraView: UIViewControllerRepresentable {
 
     func makeUIViewController(context: Context) -> Camera {
         let camera = Camera()
-        camera.delegate = context.coordinator
+        camera.delegate = context.coordinator // Set the delegate to the Coordinator
         return camera
     }
 
@@ -30,72 +30,19 @@ struct CameraView: UIViewControllerRepresentable {
             self.parent = parent
         }
 
+        // Delegate method to handle when a photo is taken
         func didTakePhoto() {
-            print("Photo taken, checking if posted today...")
-            
-            // Set the state to indicate that a photo has been taken
             DispatchQueue.main.async {
-                self.parent.isPhotoTaken = true
-            }
-
-            // Start checking if the user has posted today immediately, even before saving the photo
-            parent.checkIfPostedToday { hasPostedToday in
-                DispatchQueue.main.async {
-                    if hasPostedToday {
-                        print("User has posted today. Showing message button.")
-                        self.parent.isShowingMessage = true
-                    } else {
-                        print("User has not posted today.")
-                        self.parent.isShowingMessage = false
-                    }
-                }
-            }
-            
-            // Handle the photo-saving process asynchronously
-            parent.savePhoto { success in
-                if success {
-                    print("Photo saved successfully.")
-                } else {
-                    print("Photo save failed.")
-                }
+                self.parent.isPhotoTaken = true // Mark the photo as taken
             }
         }
-    }
 
-
-    private func checkIfPostedToday(completion: @escaping (Bool) -> Void) {
-        guard let user = Auth.auth().currentUser else {
-            print("No user is currently authenticated.")
-            completion(false)
-            return
-        }
-        let db = Firestore.firestore()
-        let photosCollectionRef = db.collection("users").document(user.uid).collection("photos")
-        
-        let today = Calendar.current.startOfDay(for: Date())
-        let query = photosCollectionRef.whereField("timestamp", isGreaterThanOrEqualTo: today)
-            .whereField("timestamp", isLessThan: Calendar.current.date(byAdding: .day, value: 1, to: today)!)
-        
-        query.getDocuments { snapshot, error in
-            if let snapshot = snapshot {
-                let hasPosted = !snapshot.isEmpty
-                print("Has the user posted today? \(hasPosted)")
-                completion(hasPosted)
-            } else {
-                print("Error checking if posted today: \(error?.localizedDescription ?? "Unknown error")")
-                completion(false)
+        // Delegate method to show the message button if the user has already posted today
+        func showMessageButton() {
+            DispatchQueue.main.async {
+                print("Showing MessageButton")
+                self.parent.isShowingMessage = true // Trigger showing the MessageButton
             }
-        }
-    }
-
-    private func savePhoto(completion: @escaping (Bool) -> Void) {
-        // Implement the photo saving logic here.
-        // Call completion(true) when the photo is successfully saved.
-        // Call completion(false) if saving the photo fails.
-        
-        // For demonstration, we'll assume the save is successful.
-        DispatchQueue.global().asyncAfter(deadline: .now() + 1) {
-            completion(true)
         }
     }
 }
@@ -112,10 +59,11 @@ struct CameraController: View {
 
                 if isShowingMessage {
                     MessageButton(isShowing: $isShowingMessage)
-                        .transition(.opacity) // Simplified transition for quicker appearance
-                        .animation(.linear(duration: 0.05)) // Reduced duration for almost instant appearance
+                        .transition(.opacity) // Transition for the message button appearance
+                        .animation(.linear(duration: 0.05)) // Fast animation
                 }
 
+                // Conditionally show the back button only when the photo has not been taken
                 if !isPhotoTaken {
                     Button(action: {
                         withAnimation {
