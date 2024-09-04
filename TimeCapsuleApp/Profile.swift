@@ -6,9 +6,10 @@ import FirebaseAuth
 
 struct Profile: View {
     @Binding var isImageExpanded: Bool
-    @Binding var areButtonsVisible: Bool // This will now only control visibility outside of settings
+    @Binding var areButtonsVisible: Bool
     @Binding var isShowingSetting: Bool
-    
+    @Binding var selectedImage: UIImage? // Accept the preloaded image
+
     @State private var currentDate = Date()
     @State private var selectedDate = Date()
     @State private var displayedMonth = Calendar.current.component(.month, from: Date())
@@ -16,14 +17,11 @@ struct Profile: View {
     @State private var isSignedOut = false
     @Environment(\.presentationMode) var presentationMode
     @State private var navigateToTimeCap = false
-    @State private var selectedImage: UIImage? = nil
     @State private var showingImagePicker = false
-    @State private var isLoading = true
     @State private var username: String = ""
     @State private var photos: [(String, String, Timestamp)] = [] // Store (URL, Caption, Timestamp) tuples
     @State private var photosForSelectedDate: [(String, String, Timestamp)] = [] // Filtered photos for the selected date
     @State private var tappedImageUrl: String? = nil // To track the tapped image URL
-
     @Namespace private var namespace
 
     private var userID: String {
@@ -40,14 +38,8 @@ struct Profile: View {
                         Circle()
                             .stroke(Color(.systemGray6), lineWidth: 6)
                             .frame(width: 148, height: 148)
-
-                        if isLoading {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle())
-                                .frame(width: 125, height: 125)
-                                .scaleEffect(isShowingSetting ? 0.8 : 1.0)
-                                .animation(.interpolatingSpring(stiffness: 130, damping: 5), value: isShowingSetting)
-                        } else if let image = selectedImage {
+                        
+                        if let image = selectedImage {
                             Image(uiImage: image)
                                 .resizable()
                                 .scaledToFill()
@@ -56,8 +48,7 @@ struct Profile: View {
                                 .scaleEffect(isShowingSetting ? 0.8 : 1.0)
                                 .animation(.interpolatingSpring(stiffness: 130, damping: 6), value: isShowingSetting)
                         } else {
-                            Circle()
-                                .foregroundColor(.black)
+                            ProgressView() // Show a loading spinner instead of a black circle
                                 .frame(width: 125, height: 125)
                                 .scaleEffect(isShowingSetting ? 0.8 : 1.0)
                                 .animation(.interpolatingSpring(stiffness: 130, damping: 5), value: isShowingSetting)
@@ -68,7 +59,6 @@ struct Profile: View {
                             .onEnded { _ in
                                 withAnimation {
                                     isShowingSetting = true
-                                    //areButtonsVisible = false // Hide buttons in Home
                                 }
                             }
                     )
@@ -81,7 +71,6 @@ struct Profile: View {
                         .padding(.leading)
                         .foregroundColor(Color.primary)
 
-                    // Calendar should always be visible, independent of the settings
                     CalendarView(
                         currentDate: $currentDate,
                         selectedDate: $selectedDate,
@@ -119,7 +108,6 @@ struct Profile: View {
                                         isImageExpanded.toggle()
                                     }
 
-                                    // Delay the dismissal of the image to allow the scale-down animation
                                     if !isImageExpanded {
                                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                                             self.tappedImageUrl = nil
@@ -192,13 +180,11 @@ struct Profile: View {
         guard let image = selectedImage, let imageData = image.jpegData(compressionQuality: 0.75) else { return }
         let storageRef = Storage.storage().reference().child("users/\(userID)/profileimage.jpg")
 
-        // Upload image to Firebase Storage
         let uploadTask = storageRef.putData(imageData, metadata: nil) { metadata, error in
             guard metadata != nil else {
                 print("Error uploading image: \(String(describing: error?.localizedDescription))")
                 return
             }
-            // Get download URL
             storageRef.downloadURL { url, error in
                 guard let downloadURL = url else {
                     print("Error getting download URL: \(String(describing: error?.localizedDescription))")
@@ -229,15 +215,11 @@ struct Profile: View {
                 if let urlString = document.data()?["profileImageURL"] as? String, let url = URL(string: urlString) {
                     downloadProfileImage(from: url)
                 } else {
-                    // Reset to default image if no URL is available
                     self.selectedImage = nil
-                    self.isLoading = false
                 }
             } else {
                 print("Document does not exist")
-                // Reset to default image if document doesn't exist
                 self.selectedImage = nil
-                self.isLoading = false
             }
         }
     }
@@ -247,17 +229,15 @@ struct Profile: View {
         storageRef.getData(maxSize: 1 * 1024 * 1024) { data, error in
             if let error = error {
                 print("Error downloading image: \(error.localizedDescription)")
-                // Reset to default image in case of error
                 self.selectedImage = nil
             } else if let data = data {
                 DispatchQueue.main.async {
                     self.selectedImage = UIImage(data: data)
-                    self.isLoading = false
                 }
             }
         }
     }
-    
+
     private func fetchUsername() {
         guard let user = Auth.auth().currentUser else { return }
         let db = Firestore.firestore()
@@ -302,16 +282,15 @@ struct Profile: View {
     private func filterPhotosForSelectedDate(selectedDate: Date) {
         let calendar = Calendar.current
         photosForSelectedDate = photos.filter { photo in
-            let photoDate = photo.2.dateValue() // Convert timestamp to Date
+            let photoDate = photo.2.dateValue()
             return calendar.isDate(photoDate, inSameDayAs: selectedDate)
         }
-        
-        // Automatically expand the first image when a date is selected
+
         if let firstPhoto = photosForSelectedDate.first {
             tappedImageUrl = firstPhoto.0
             isImageExpanded = true
             withAnimation {
-                areButtonsVisible = false // Hide buttons when an image is tapped
+                areButtonsVisible = false
             }
         }
     }
@@ -329,6 +308,7 @@ struct Profile: View {
         return shortCaption
     }
 }
+
 
 
 
