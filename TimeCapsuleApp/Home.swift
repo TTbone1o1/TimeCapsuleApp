@@ -30,19 +30,17 @@ struct Home: View {
     @State private var isSignedOut: Bool = false
     @State var show = false
     @State private var isScrollDisabled: Bool = false
-    
     @State private var dragOffset: CGFloat = 0
     @State private var showProfileView: Bool = false
-    
     @State private var homeIconColor: Color = .black
     @State private var profileIconColor = Color(.systemGray3)
     @State private var showCameraController = false
-    
     @State private var isImageExpanded = false
     @State private var areButtonsVisible = true
     @State private var isSettingsOpen = false  // State for settings
     @State private var isShowingSetting = false
     @State private var isFullCaptionVisible: Bool = false // State for showing full caption
+    @State private var preloadedProfileImage: UIImage? = nil // State to store the preloaded profile image
 
     @Namespace var namespace
 
@@ -83,7 +81,8 @@ struct Home: View {
                         if showProfileView || dragOffset < 0 {
                             Profile(isImageExpanded: $isImageExpanded,
                                     areButtonsVisible: $areButtonsVisible,
-                                    isShowingSetting: $isShowingSetting)
+                                    isShowingSetting: $isShowingSetting,
+                                    selectedImage: $preloadedProfileImage) // Pass the preloaded image here
                                 .zIndex(2)
                                 .offset(x: UIScreen.main.bounds.width + dragOffset)
                                 .gesture(
@@ -174,6 +173,9 @@ struct Home: View {
                         dragOffset = showProfileView ? -UIScreen.main.bounds.width : 0
                         onAppearLogic()
                         updateIconColors()
+
+                        // Preload the profile image
+                        loadProfileImage()
                     }
                 }
             }
@@ -244,25 +246,6 @@ struct Home: View {
                                             }
                                             isFullCaptionVisible = tappedImageUrl != nil
                                         }
-                                        // Overlay gradient, but make it non-blocking for touch events
-                                        .overlay(
-                                            LinearGradient(
-                                                gradient: Gradient(stops: [
-                                                    .init(color: Color.black.opacity(1.0), location: 0.0), // Black at the bottom
-                                                    .init(color: Color.black.opacity(0.0), location: 0.2), // Gradually fade to clear
-                                                    .init(color: Color.clear, location: 1.0) // Clear at the top
-                                                ]),
-                                                startPoint: .bottom,  // Start gradient from the bottom
-                                                endPoint: .top        // End with clear at the top
-                                            )
-                                            .frame(width: tappedImageUrl == imageUrl ? UIScreen.main.bounds.width : 313,
-                                                  height: tappedImageUrl == imageUrl ? UIScreen.main.bounds.height : 421) // Maintain the 421px height
-                                            .clipShape(RoundedRectangle(cornerRadius: 33, style: .continuous)) // Round the bottom corners
-                                            .allowsHitTesting(false) // Allow taps to pass through the gradient
-                                         //   .padding(.top, 200) // Move the gradient down
-                                        )
-
-
                                 case .failure:
                                     Image(systemName: "xmark.circle")
                                         .resizable()
@@ -275,14 +258,11 @@ struct Home: View {
                             .frame(maxWidth: .infinity)
                             .id(imageUrl)
 
-                            // Move text outside the image but still within the ZStack
                             VStack(alignment: .center, spacing: 5) {
                                 Text(formatDate(timestamp.dateValue()))
                                     .font(.system(size: 18, weight: .bold, design: .rounded))
                                     .foregroundColor(.white)
                                     .padding(.horizontal, 28)
-                                    .padding(.top, shortenCaption(caption).isEmpty ? 80 : 1)
-                                    .frame(maxWidth: .infinity, alignment: .center)
 
                                 Text(isFullCaptionVisible ? caption : shortenCaption(caption))
                                     .font(.system(size: 24, weight: .bold, design: .rounded))
@@ -294,7 +274,6 @@ struct Home: View {
                             }
                         }
                     }
-
                 }
                 .padding(.vertical, 130)
             }
@@ -361,10 +340,6 @@ struct Home: View {
                     return nil
                 }
                 self.imageUrls.sort { $0.2.dateValue() > $1.2.dateValue() }
-
-                if self.imageUrls.isEmpty {
-                    print("No photos found.")
-                }
             } else {
                 print("Error fetching image URLs: \(error?.localizedDescription ?? "Unknown error")")
             }
@@ -391,10 +366,27 @@ struct Home: View {
     private func triggerHaptic() {
         // Implement haptic feedback here
     }
-}
 
-struct Home_Previews: PreviewProvider {
-    static var previews: some View {
-        Home()
+    private func loadProfileImage() {
+        let db = Firestore.firestore()
+        let userRef = db.collection("users").document(Auth.auth().currentUser?.uid ?? "")
+        userRef.getDocument { document, error in
+            if let document = document, document.exists {
+                if let urlString = document.data()?["profileImageURL"] as? String, let url = URL(string: urlString) {
+                    downloadProfileImage(from: url)
+                }
+            }
+        }
+    }
+
+    private func downloadProfileImage(from url: URL) {
+        let storageRef = Storage.storage().reference(forURL: url.absoluteString)
+        storageRef.getData(maxSize: 1 * 1024 * 1024) { data, error in
+            if let data = data, let image = UIImage(data: data) {
+                DispatchQueue.main.async {
+                    self.preloadedProfileImage = image
+                }
+            }
+        }
     }
 }
