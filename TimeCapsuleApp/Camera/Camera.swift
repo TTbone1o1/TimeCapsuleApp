@@ -22,17 +22,24 @@ class Camera: UIViewController {
 
     // Shutter button
     private let shutterButton: UIButton = {
-        let outerCircle = UIButton(frame: CGRect(x: 0, y: 0, width: 75, height: 75))
-        outerCircle.layer.cornerRadius = 37.5
-        outerCircle.backgroundColor = .white
+        // Outer circle (stroked)
+        let outerCircle = UIButton(frame: CGRect(x: 0, y: 0, width: 56, height: 56))
+        outerCircle.layer.cornerRadius = 56 / 2 // Make it circular
+        outerCircle.layer.borderWidth = 3 // Stroke width
+        outerCircle.layer.borderColor = UIColor.white.withAlphaComponent(0.5).cgColor // Stroke color with opacity
+        outerCircle.backgroundColor = .clear // Transparent background
 
-        let innerCircle = UIView(frame: CGRect(x: 5, y: 5, width: 65, height: 65))
-        innerCircle.layer.cornerRadius = 32.5
-        innerCircle.backgroundColor = .white
+        // Inner circle (filled)
+        let innerCircle = UIView(frame: CGRect(x: 9.5, y: 9.5, width: 37, height: 37)) // Positioned inside the outer circle with padding
+        innerCircle.layer.cornerRadius = 37 / 2 // Make it circular
+        innerCircle.backgroundColor = UIColor.white // Fill color
 
+        // Add innerCircle to outerCircle
         outerCircle.addSubview(innerCircle)
+
         return outerCircle
     }()
+
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -54,7 +61,7 @@ class Camera: UIViewController {
         previewLayer.videoGravity = .resizeAspectFill
 
         let safeAreaInsets = view.safeAreaInsets
-        let shutterButtonY = view.frame.size.height - safeAreaInsets.bottom - 250 / 2
+        let shutterButtonY = view.frame.size.height - safeAreaInsets.bottom - 65 / 2
         shutterButton.center = CGPoint(x: view.frame.size.width / 2, y: shutterButtonY)
         
         view.bringSubviewToFront(shutterButton)
