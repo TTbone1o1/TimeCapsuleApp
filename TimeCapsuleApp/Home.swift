@@ -42,6 +42,8 @@ struct Home: View {
     @State private var isFullCaptionVisible: Bool = false // State for showing full caption
     @State private var preloadedProfileImage: UIImage? = nil // State to store the preloaded profile image
 
+    @Environment(\.colorScheme) var currentColorScheme
+
     @Namespace var namespace
 
     var body: some View {
@@ -119,18 +121,18 @@ struct Home: View {
                                     }) {
                                         ZStack {
                                             Circle()
-                                                .stroke(Color(.systemGray3), lineWidth: 3)
+                                                .stroke(Color.secondary, lineWidth: 3) // Secondary adapts to the mode as a lighter color
                                                 .frame(width: 52, height: 52)
                                             
                                             Circle()
-                                                .fill(Color(.systemGray3))
+                                                .fill(Color.secondary) // Secondary adapts to light gray in both modes
                                                 .frame(width: 37, height: 37)
                                         }
                                     }
                                     
                                     HStack {
                                         Image("Home")
-                                            .withTintColor(homeIconColor) // Using the custom extension
+                                            .withTintColor(showProfileView ? Color.secondary : Color.primary) // Primary for active, Secondary for inactive
                                             .frame(width: 34, height: 34)
                                             .onTapGesture {
                                                 withAnimation {
@@ -143,7 +145,7 @@ struct Home: View {
                                         Spacer()
                                         
                                         Image("Profile")
-                                            .withTintColor(profileIconColor) // Using the custom extension
+                                            .withTintColor(showProfileView ? Color.primary : Color.secondary) // Primary for active, Secondary for inactive
                                             .frame(width: 34, height: 34)
                                             .onTapGesture {
                                                 withAnimation {
@@ -159,6 +161,7 @@ struct Home: View {
                             .padding(.horizontal, 60)
                             .padding(.bottom, 40)
                             .zIndex(3)
+
                         }
 
                         if showCameraController {
@@ -257,10 +260,9 @@ struct Home: View {
                                             endPoint: .top        // End with clear at the top
                                         )
                                         .frame(width: tappedImageUrl == imageUrl ? UIScreen.main.bounds.width : 313,
-                                              height: tappedImageUrl == imageUrl ? UIScreen.main.bounds.height : 421) // Maintain the 421px height
+                                              height: tappedImageUrl == imageUrl ? UIScreen.main.bounds.height : 422) // Maintain the 421px height
                                         .clipShape(RoundedRectangle(cornerRadius: 33, style: .continuous)) // Round the bottom corners
                                         .allowsHitTesting(false) // Allow taps to pass through the gradient
-                                     //   .padding(.top, 200) // Move the gradient down
                                     )
                                     
                                 case .failure:
@@ -407,3 +409,4 @@ struct Home: View {
         }
     }
 }
+
