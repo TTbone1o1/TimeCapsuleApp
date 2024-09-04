@@ -258,18 +258,18 @@ struct Home: View {
                             .frame(maxWidth: .infinity)
                             .id(imageUrl)
 
-                            VStack(alignment: .center, spacing: 5) {
+                            VStack(alignment: .center, spacing: 5) {  // Align everything to the center
                                 Text(formatDate(timestamp.dateValue()))
                                     .font(.system(size: 18, weight: .bold, design: .rounded))
                                     .foregroundColor(.white)
                                     .padding(.horizontal, 28)
                                     .padding(.top, shortenCaption(caption).isEmpty ? 80 : 1)
-                                    .frame(maxWidth: .infinity, alignment: .center)
+                                    .frame(maxWidth: .infinity, alignment: .center) // Center the date text
                                 
-                                Text(shortenCaption(caption))
+                                Text(isFullCaptionVisible ? caption : shortenCaption(caption)) // Use isFullCaptionVisible here
                                     .font(.system(size: 24, weight: .bold, design: .rounded))
                                     .padding(.horizontal, 28)
-                                    .frame(maxWidth: .infinity, alignment: .center)
+                                    .frame(maxWidth: .infinity, alignment: .center) // Center the caption text
                                     .foregroundColor(.white)
                                     .cornerRadius(5)
                                     .padding(.bottom, 26)
