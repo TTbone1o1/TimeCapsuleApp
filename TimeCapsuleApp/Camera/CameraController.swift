@@ -33,38 +33,35 @@ struct CameraView: UIViewControllerRepresentable {
         func didTakePhoto() {
             print("Photo taken, checking if posted today...")
             
-            // Show the message button immediately when the photo is taken
-            DispatchQueue.main.async {
-                self.parent.isShowingMessage = true
-            }
-            
             // Set the state to indicate that a photo has been taken
             DispatchQueue.main.async {
                 self.parent.isPhotoTaken = true
             }
+
+            // Start checking if the user has posted today immediately, even before saving the photo
+            parent.checkIfPostedToday { hasPostedToday in
+                DispatchQueue.main.async {
+                    if hasPostedToday {
+                        print("User has posted today. Showing message button.")
+                        self.parent.isShowingMessage = true
+                    } else {
+                        print("User has not posted today.")
+                        self.parent.isShowingMessage = false
+                    }
+                }
+            }
             
-            // Handle the photo-taking process
+            // Handle the photo-saving process asynchronously
             parent.savePhoto { success in
                 if success {
-                    // Check if the user has posted today
-                    self.parent.checkIfPostedToday { hasPostedToday in
-                        DispatchQueue.main.async {
-                            if hasPostedToday {
-                                print("User has posted today. Showing message button.")
-                                self.parent.isShowingMessage = true
-                            } else {
-                                print("User has not posted today. Photo taken successfully.")
-                                // Optionally remove this line to prevent automatic dismissal
-                                // self.parent.isPresented = false
-                            }
-                        }
-                    }
+                    print("Photo saved successfully.")
                 } else {
                     print("Photo save failed.")
                 }
             }
         }
     }
+
 
     private func checkIfPostedToday(completion: @escaping (Bool) -> Void) {
         guard let user = Auth.auth().currentUser else {
@@ -115,8 +112,8 @@ struct CameraController: View {
 
                 if isShowingMessage {
                     MessageButton(isShowing: $isShowingMessage)
-                        .transition(.opacity.combined(with: .scale(scale: 0.95)))
-                        .animation(.linear(duration: 0.1)) // Reduced duration for quicker appearance
+                        .transition(.opacity) // Simplified transition for quicker appearance
+                        .animation(.linear(duration: 0.05)) // Reduced duration for almost instant appearance
                 }
 
                 if !isPhotoTaken {
