@@ -1,9 +1,13 @@
 import AVFoundation
 import SwiftUI
 import UIKit
+import FirebaseAuth
+import Firebase
+import FirebaseFirestore
 
 protocol CameraDelegate: AnyObject {
     func didTakePhoto()
+    func showMessageButton() // Add this delegate function to show the message button when necessary
 }
 
 class Camera: UIViewController {
@@ -100,6 +104,25 @@ class Camera: UIViewController {
     }
 
     @objc private func didTapTakePhoto() {
+        // Check if the user has posted today before deciding what to do
+        checkIfPostedToday { [weak self] hasPostedToday in
+            guard let self = self else { return }
+            
+            if hasPostedToday {
+                // User has already posted today, show the MessageButton instead of taking the photo
+                print("User has posted today. Showing MessageButton instead of taking a photo.")
+                self.delegate?.showMessageButton()
+            } else {
+                // User has not posted today, proceed with the photo-taking animation and capture
+                self.animateShutterButton()
+
+                self.output.capturePhoto(with: AVCapturePhotoSettings(), delegate: self)
+            }
+        }
+    }
+
+    private func animateShutterButton() {
+        // Shutter button animation
         UIView.animate(withDuration: 0.1,
                        animations: {
                            self.shutterButton.transform = CGAffineTransform(scaleX: 0.6, y: 0.6)
@@ -124,8 +147,32 @@ class Camera: UIViewController {
                                                              })
                                           })
                        })
+    }
 
-        output.capturePhoto(with: AVCapturePhotoSettings(), delegate: self)
+    private func checkIfPostedToday(completion: @escaping (Bool) -> Void) {
+        // This function checks Firestore to see if the user has posted today
+        guard let user = Auth.auth().currentUser else {
+            print("No user is currently authenticated.")
+            completion(false)
+            return
+        }
+        
+        let db = Firestore.firestore()
+        let photosCollectionRef = db.collection("users").document(user.uid).collection("photos")
+        
+        let today = Calendar.current.startOfDay(for: Date())
+        let query = photosCollectionRef.whereField("timestamp", isGreaterThanOrEqualTo: today)
+            .whereField("timestamp", isLessThan: Calendar.current.date(byAdding: .day, value: 1, to: today)!)
+        
+        query.getDocuments { snapshot, error in
+            if let snapshot = snapshot {
+                let hasPosted = !snapshot.isEmpty
+                completion(hasPosted)
+            } else {
+                print("Error checking if posted today: \(error?.localizedDescription ?? "Unknown error")")
+                completion(false)
+            }
+        }
     }
 
     private func showPostView(with image: UIImage) {
