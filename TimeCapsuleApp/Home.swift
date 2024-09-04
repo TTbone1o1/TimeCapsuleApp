@@ -246,6 +246,23 @@ struct Home: View {
                                             }
                                             isFullCaptionVisible = tappedImageUrl != nil
                                         }
+                                        .overlay(
+                                        LinearGradient(
+                                            gradient: Gradient(stops: [
+                                                .init(color: Color.black.opacity(1.0), location: 0.0), // Black at the bottom
+                                                .init(color: Color.black.opacity(0.0), location: 0.2), // Gradually fade to clear
+                                                .init(color: Color.clear, location: 1.0) // Clear at the top
+                                            ]),
+                                            startPoint: .bottom,  // Start gradient from the bottom
+                                            endPoint: .top        // End with clear at the top
+                                        )
+                                        .frame(width: tappedImageUrl == imageUrl ? UIScreen.main.bounds.width : 313,
+                                              height: tappedImageUrl == imageUrl ? UIScreen.main.bounds.height : 421) // Maintain the 421px height
+                                        .clipShape(RoundedRectangle(cornerRadius: 33, style: .continuous)) // Round the bottom corners
+                                        .allowsHitTesting(false) // Allow taps to pass through the gradient
+                                     //   .padding(.top, 200) // Move the gradient down
+                                    )
+                                    
                                 case .failure:
                                     Image(systemName: "xmark.circle")
                                         .resizable()
