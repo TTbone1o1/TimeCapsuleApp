@@ -233,7 +233,7 @@ struct Home: View {
                                         .cornerRadius(tappedImageUrl == imageUrl ? 0 : 33)
                                         .shadow(radius: 20, x: 0, y: 24)
                                         .onTapGesture {
-                                            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+                                            withAnimation(.spring(response: 0.5, dampingFraction: 0.95)) {
                                                 if tappedImageUrl == imageUrl {
                                                     tappedImageUrl = nil
                                                     show = false
