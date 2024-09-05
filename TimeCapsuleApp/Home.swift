@@ -41,11 +41,11 @@ struct Home: View {
     @State private var isShowingSetting = false
     @State private var isFullCaptionVisible: Bool = false // State for showing full caption
     @State private var preloadedProfileImage: UIImage? = nil // State to store the preloaded profile image
-
+    
     @Environment(\.colorScheme) var currentColorScheme
-
+    
     @Namespace var namespace
-
+    
     var body: some View {
         if isSignedOut {
             Timecap()
@@ -85,28 +85,28 @@ struct Home: View {
                                     areButtonsVisible: $areButtonsVisible,
                                     isShowingSetting: $isShowingSetting,
                                     selectedImage: $preloadedProfileImage) // Pass the preloaded image here
-                                .zIndex(2)
-                                .offset(x: UIScreen.main.bounds.width + dragOffset)
-                                .gesture(
-                                    DragGesture()
-                                        .onChanged { value in
-                                            if showProfileView && value.translation.width > 0 {
-                                                dragOffset = value.translation.width - UIScreen.main.bounds.width
+                            .zIndex(2)
+                            .offset(x: UIScreen.main.bounds.width + dragOffset)
+                            .gesture(
+                                DragGesture()
+                                    .onChanged { value in
+                                        if showProfileView && value.translation.width > 0 {
+                                            dragOffset = value.translation.width - UIScreen.main.bounds.width
+                                        }
+                                    }
+                                    .onEnded { value in
+                                        withAnimation {
+                                            if value.translation.width > 100 {
+                                                dragOffset = 0
+                                                showProfileView = false
+                                                updateIconColors()
+                                            } else {
+                                                dragOffset = -UIScreen.main.bounds.width
                                             }
                                         }
-                                        .onEnded { value in
-                                            withAnimation {
-                                                if value.translation.width > 100 {
-                                                    dragOffset = 0
-                                                    showProfileView = false
-                                                    updateIconColors()
-                                                } else {
-                                                    dragOffset = -UIScreen.main.bounds.width
-                                                }
-                                            }
-                                        }
-                                )
-                                .transition(.identity)
+                                    }
+                            )
+                            .transition(.identity)
                         }
                         
                         // Fixed VStack stays on the screen at all times
@@ -116,6 +116,10 @@ struct Home: View {
                                 ZStack {
                                     Button(action: {
                                         withAnimation {
+                                            
+                                            let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                                            impactFeedback.impactOccurred()
+                                            
                                             showCameraController.toggle()
                                         }
                                     }) {
@@ -161,9 +165,9 @@ struct Home: View {
                             .padding(.horizontal, 60)
                             .padding(.bottom, 40)
                             .zIndex(3)
-
+                            
                         }
-
+                        
                         if showCameraController {
                             CameraController(isPresented: $showCameraController)
                                 .transition(.opacity)
@@ -176,7 +180,7 @@ struct Home: View {
                         dragOffset = showProfileView ? -UIScreen.main.bounds.width : 0
                         onAppearLogic()
                         updateIconColors()
-
+                        
                         // Preload the profile image
                         loadProfileImage()
                     }
@@ -184,15 +188,15 @@ struct Home: View {
             }
         }
     }
-
+    
     private func mainContentView(geometry: GeometryProxy) -> some View {
         ZStack {
             imageGalleryView
                 .zIndex(1)
-
+            
             VStack {
                 Spacer().frame(height: 20)
-
+                
                 if tappedImageUrl == nil {
                     HStack {
                         Text(username.isEmpty ? "" : username)
@@ -200,19 +204,19 @@ struct Home: View {
                             .fontWeight(.bold)
                             .padding(.leading)
                             .foregroundColor(Color.primary)
-
+                        
                         Spacer()
                     }
                     .padding(.top, geometry.safeAreaInsets.top)
                     .transition(.opacity)
                 }
-
+                
                 Spacer()
             }
             .zIndex(2)
         }
     }
-
+    
     private var imageGalleryView: some View {
         ScrollViewReader { scrollProxy in
             ScrollView {
@@ -254,20 +258,20 @@ struct Home: View {
                                             isFullCaptionVisible = tappedImageUrl != nil
                                         }
                                         .overlay(
-                                        LinearGradient(
-                                            gradient: Gradient(stops: [
-                                                .init(color: Color.black.opacity(1.0), location: 0.0), // Black at the bottom
-                                                .init(color: Color.black.opacity(0.0), location: 0.2), // Gradually fade to clear
-                                                .init(color: Color.clear, location: 1.0) // Clear at the top
-                                            ]),
-                                            startPoint: .bottom,  // Start gradient from the bottom
-                                            endPoint: .top        // End with clear at the top
+                                            LinearGradient(
+                                                gradient: Gradient(stops: [
+                                                    .init(color: Color.black.opacity(1.0), location: 0.0), // Black at the bottom
+                                                    .init(color: Color.black.opacity(0.0), location: 0.2), // Gradually fade to clear
+                                                    .init(color: Color.clear, location: 1.0) // Clear at the top
+                                                ]),
+                                                startPoint: .bottom,  // Start gradient from the bottom
+                                                endPoint: .top        // End with clear at the top
+                                            )
+                                            .frame(width: tappedImageUrl == imageUrl ? UIScreen.main.bounds.width : 313,
+                                                   height: tappedImageUrl == imageUrl ? UIScreen.main.bounds.height : 422) // Maintain the 421px height
+                                                .clipShape(RoundedRectangle(cornerRadius: 33, style: .continuous)) // Round the bottom corners
+                                                .allowsHitTesting(false) // Allow taps to pass through the gradient
                                         )
-                                        .frame(width: tappedImageUrl == imageUrl ? UIScreen.main.bounds.width : 313,
-                                              height: tappedImageUrl == imageUrl ? UIScreen.main.bounds.height : 422) // Maintain the 421px height
-                                        .clipShape(RoundedRectangle(cornerRadius: 33, style: .continuous)) // Round the bottom corners
-                                        .allowsHitTesting(false) // Allow taps to pass through the gradient
-                                    )
                                     
                                 case .failure:
                                     Image(systemName: "xmark.circle")
@@ -280,13 +284,13 @@ struct Home: View {
                             }
                             .frame(maxWidth: .infinity)
                             .id(imageUrl)
-
+                            
                             VStack(alignment: .center, spacing: 5) {
                                 Text(formatDate(timestamp.dateValue()))
                                     .font(.system(size: 18, weight: .bold, design: .rounded))
                                     .foregroundColor(.white)
                                     .padding(.horizontal, 28)
-
+                                
                                 Text(isFullCaptionVisible ? caption : shortenCaption(caption))
                                     .font(.system(size: 24, weight: .bold, design: .rounded))
                                     .padding(.horizontal, 28)
@@ -305,8 +309,8 @@ struct Home: View {
             .scrollIndicators(.hidden)
         }
     }
-
-
+    
+    
     private func updateIconColors() {
         if showProfileView {
             homeIconColor = Color(.systemGray3)
@@ -316,7 +320,7 @@ struct Home: View {
             profileIconColor = Color(.systemGray3)
         }
     }
-
+    
     private func onAppearLogic() {
         fetchUsername()
         fetchAllPhotos()
@@ -330,7 +334,7 @@ struct Home: View {
             }
         }
     }
-
+    
     private func fetchUsername() {
         guard let user = Auth.auth().currentUser else { return }
         let db = Firestore.firestore()
@@ -345,12 +349,12 @@ struct Home: View {
             }
         }
     }
-
+    
     private func fetchAllPhotos() {
         guard let user = Auth.auth().currentUser else { return }
         let db = Firestore.firestore()
         let photosCollectionRef = db.collection("users").document(user.uid).collection("photos")
-
+        
         photosCollectionRef.getDocuments { snapshot, error in
             if let snapshot = snapshot {
                 self.photoCount = snapshot.count
@@ -369,7 +373,7 @@ struct Home: View {
             }
         }
     }
-
+    
     private func shortenCaption(_ caption: String) -> String {
         if isFullCaptionVisible {
             return caption
@@ -380,17 +384,17 @@ struct Home: View {
             return shortCaption + (words.count > 4 ? "..." : "")
         }
     }
-
+    
     private func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMM d"
         return formatter.string(from: date)
     }
-
+    
     private func triggerHaptic() {
         // Implement haptic feedback here
     }
-
+    
     private func loadProfileImage() {
         let db = Firestore.firestore()
         let userRef = db.collection("users").document(Auth.auth().currentUser?.uid ?? "")
@@ -402,15 +406,21 @@ struct Home: View {
             }
         }
     }
-
+    
     private func downloadProfileImage(from url: URL) {
         let storageRef = Storage.storage().reference(forURL: url.absoluteString)
-        storageRef.getData(maxSize: 1 * 1024 * 1024) { data, error in
+        storageRef.getData(maxSize: Int64(1 * 1024 * 1024)) { data, error in
             if let data = data, let image = UIImage(data: data) {
                 DispatchQueue.main.async {
                     self.preloadedProfileImage = image
                 }
             }
+        }
+    }
+    
+    struct Home_Previews: PreviewProvider {
+        static var previews: some View {
+            Home()
         }
     }
 }
