@@ -64,9 +64,14 @@ struct MessageButton: View {
                     
                     Spacer()
                     
-                    NavigationLink(destination: Home().navigationBarBackButtonHidden(true),
-                        isActive: $navigateToHome,
-                        label: {
+                    Button(action: {
+                        // Trigger haptic feedback
+                        let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                        impactFeedback.impactOccurred()
+
+                        // Navigate to the home screen
+                        navigateToHome = true
+                    }) {
                         ZStack {
                             Rectangle()
                                 .frame(width: 291, height: 62)
@@ -80,8 +85,13 @@ struct MessageButton: View {
                                     .font(.system(size: 16, weight: .semibold))
                             }
                         }
-                        }
+                    }
+                    .background(
+                        NavigationLink(destination: Home().navigationBarBackButtonHidden(true),
+                                       isActive: $navigateToHome,
+                                       label: { EmptyView() }) // Hide the label to trigger navigation only
                     )
+
                     
                  
                 }
