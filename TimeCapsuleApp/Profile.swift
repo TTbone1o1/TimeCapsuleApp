@@ -58,6 +58,10 @@ struct Profile: View {
                         LongPressGesture(minimumDuration: 0.5)
                             .onEnded { _ in
                                 withAnimation {
+                                    
+                                    let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                                    impactFeedback.impactOccurred()
+                                    
                                     isShowingSetting = true
                                 }
                             }
@@ -104,6 +108,10 @@ struct Profile: View {
                                 .cornerRadius(isImageExpanded ? 33 : 33)
                                 .transition(.scale)
                                 .onTapGesture {
+                                    
+                                    let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                                    impactFeedback.impactOccurred()
+                                    
                                     withAnimation(.spring(response: 0.5, dampingFraction: 0.95, blendDuration: 0.3)) {
                                         isImageExpanded.toggle()
                                     }
@@ -445,6 +453,10 @@ struct CalendarView: View {
     }
 
     private func selectDay(_ day: Int) {
+        // Trigger haptic feedback
+        let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+        impactFeedback.impactOccurred()
+
         let dateComponents = DateComponents(year: displayedYear, month: displayedMonth, day: day)
         if let date = calendar.date(from: dateComponents) {
             selectedDate = date
