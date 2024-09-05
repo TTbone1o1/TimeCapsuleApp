@@ -13,6 +13,10 @@ struct Setting: View {
                 .opacity(0.3)
                 .ignoresSafeArea()
                 .onTapGesture {
+                    
+                    let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                    impactFeedback.impactOccurred()
+                    
                     isShowing = false
                 }
             
