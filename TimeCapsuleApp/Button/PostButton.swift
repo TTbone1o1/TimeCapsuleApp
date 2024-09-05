@@ -136,7 +136,10 @@ struct PostView: View {
             // Add a black circle in the top left corner with a tap gesture to retake photo
             VStack {
                 HStack {
-                    NavigationLink(destination: CameraController(isPresented: $showCameraController).navigationBarBackButtonHidden(true).edgesIgnoringSafeArea(.all)) {
+                    Button(action: {
+                        // Dismiss the current post view and go back to retake the photo
+                        showCameraController = true // This will present the CameraController again
+                    }) {
                         Image(systemName: "arrow.triangle.2.circlepath.camera")
                             .font(.system(size: 24)) // Adjust the size as needed
                             .foregroundColor(.black) // Set the color to black
@@ -146,6 +149,14 @@ struct PostView: View {
                 }
                 Spacer()
             }
+            .fullScreenCover(isPresented: $showCameraController, onDismiss: {
+                // Reset any relevant state here
+                // This could involve clearing the image or other fields
+            }) {
+                CameraController(isPresented: $showCameraController) // Re-open the CameraController for retaking the photo
+                    .edgesIgnoringSafeArea(.all)
+            }
+
 
         }
         //This colored the background
