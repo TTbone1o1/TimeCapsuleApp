@@ -51,23 +51,25 @@ struct CameraController: View {
     @Binding var isPresented: Bool
     @State private var isShowingMessage = false
     @State private var isPhotoTaken = false
+    @State private var navigateToHome = false
+
 
     var body: some View {
         NavigationView {
             ZStack {
                 CameraView(isShowingMessage: $isShowingMessage, isPresented: $isPresented, isPhotoTaken: $isPhotoTaken)
-
+                
                 if isShowingMessage {
                     MessageButton(isShowing: $isShowingMessage)
                         .transition(.opacity) // Transition for the message button appearance
                         .animation(.linear(duration: 0.05)) // Fast animation
                 }
-
-                // Conditionally show the back button only when the photo has not been taken
+                
                 if !isPhotoTaken {
                     Button(action: {
                         withAnimation {
-                            isPresented = false
+                            // Set the navigation to home instead of just dismissing the current view
+                            navigateToHome = true
                         }
                     }) {
                         Image(systemName: "arrowshape.backward.fill")
@@ -78,9 +80,15 @@ struct CameraController: View {
                     }
                     .position(x: 40, y: 80)
                 }
+                
+                // Add the hidden NavigationLink here
+                NavigationLink(destination: Home().navigationBarBackButtonHidden(true), isActive: $navigateToHome) {
+                    EmptyView() // Hidden NavigationLink
+                }
             }
             .navigationBarHidden(true)
             .edgesIgnoringSafeArea(.all)
+
         }
     }
 }
