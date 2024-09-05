@@ -121,18 +121,18 @@ struct Home: View {
                                     }) {
                                         ZStack {
                                             Circle()
-                                                .stroke(Color.secondary, lineWidth: 3) // Secondary adapts to the mode as a lighter color
+                                                .stroke(Color.secondary.opacity(0.7), lineWidth: 3) // Secondary adapts to the mode as a lighter color
                                                 .frame(width: 52, height: 52)
                                             
                                             Circle()
-                                                .fill(Color.secondary) // Secondary adapts to light gray in both modes
+                                                .fill(Color.secondary.opacity(0.7)) // Secondary adapts to light gray in both modes
                                                 .frame(width: 37, height: 37)
                                         }
                                     }
                                     
                                     HStack {
                                         Image("Home")
-                                            .withTintColor(showProfileView ? Color.secondary : Color.primary) // Primary for active, Secondary for inactive
+                                            .withTintColor(showProfileView ? Color.secondary.opacity(0.7) : Color.primary) // Primary for active, Secondary for inactive
                                             .frame(width: 34, height: 34)
                                             .onTapGesture {
                                                 withAnimation {
@@ -145,7 +145,7 @@ struct Home: View {
                                         Spacer()
                                         
                                         Image("Profile")
-                                            .withTintColor(showProfileView ? Color.primary : Color.secondary) // Primary for active, Secondary for inactive
+                                            .withTintColor(showProfileView ? Color.primary : Color.secondary.opacity(0.7)) // Primary for active, Secondary for inactive
                                             .frame(width: 34, height: 34)
                                             .onTapGesture {
                                                 withAnimation {
@@ -289,7 +289,7 @@ struct Home: View {
                                     .frame(maxWidth: .infinity, alignment: .center)
                                     .foregroundColor(.white)
                                     .cornerRadius(5)
-                                    .padding(.bottom, 26)
+                                    .padding(.bottom, isFullCaptionVisible ? 50 : 26)
                             }
                         }
                     }
@@ -409,4 +409,3 @@ struct Home: View {
         }
     }
 }
-
