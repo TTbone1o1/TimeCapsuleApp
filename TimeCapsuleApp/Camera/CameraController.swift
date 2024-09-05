@@ -68,6 +68,9 @@ struct CameraController: View {
                 if !isPhotoTaken {
                     Button(action: {
                         withAnimation {
+                            
+                            let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                            impactFeedback.impactOccurred()
                             // Set the navigation to home instead of just dismissing the current view
                             navigateToHome = true
                         }
