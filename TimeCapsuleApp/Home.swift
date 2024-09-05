@@ -233,6 +233,10 @@ struct Home: View {
                                         .cornerRadius(tappedImageUrl == imageUrl ? 0 : 33)
                                         .shadow(radius: 20, x: 0, y: 24)
                                         .onTapGesture {
+                                            // Trigger haptic feedback
+                                            let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                                            impactFeedback.impactOccurred()
+                                            
                                             withAnimation(.spring(response: 0.5, dampingFraction: 0.95)) {
                                                 if tappedImageUrl == imageUrl {
                                                     tappedImageUrl = nil
@@ -301,6 +305,7 @@ struct Home: View {
             .scrollIndicators(.hidden)
         }
     }
+
 
     private func updateIconColors() {
         if showProfileView {
