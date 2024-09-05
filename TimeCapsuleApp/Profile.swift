@@ -104,7 +104,7 @@ struct Profile: View {
                                 .cornerRadius(isImageExpanded ? 33 : 33)
                                 .transition(.scale)
                                 .onTapGesture {
-                                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8, blendDuration: 0.4)) {
+                                    withAnimation(.spring(response: 0.5, dampingFraction: 0.95, blendDuration: 0.3)) {
                                         isImageExpanded.toggle()
                                     }
 
