@@ -48,10 +48,14 @@ struct Profile: View {
                                 .scaleEffect(isShowingSetting ? 0.8 : 1.0)
                                 .animation(.interpolatingSpring(stiffness: 130, damping: 6), value: isShowingSetting)
                         } else {
-                            ProgressView() // Show a loading spinner instead of a black circle
+                            Image(systemName: "person.crop.circle.fill")
+                                .resizable()
+                                .scaledToFit()
                                 .frame(width: 125, height: 125)
+                                .foregroundColor(.gray) // Optional: Set a placeholder color
                                 .scaleEffect(isShowingSetting ? 0.8 : 1.0)
                                 .animation(.interpolatingSpring(stiffness: 130, damping: 5), value: isShowingSetting)
+
                         }
                     }
                     .gesture(
@@ -234,7 +238,7 @@ struct Profile: View {
 
     private func downloadProfileImage(from url: URL) {
         let storageRef = Storage.storage().reference(forURL: url.absoluteString)
-        storageRef.getData(maxSize: 1 * 1024 * 1024) { data, error in
+        storageRef.getData(maxSize: Int64(1 * 1024 * 1024)) { data, error in
             if let error = error {
                 print("Error downloading image: \(error.localizedDescription)")
                 self.selectedImage = nil
@@ -468,5 +472,16 @@ struct CalendarView: View {
     
     private var formattedYear: String {
         return yearFormatter.string(from: NSNumber(value: displayedYear)) ?? "\(displayedYear)"
+    }
+}
+
+struct Profile_Previews: PreviewProvider {
+    static var previews: some View {
+        // For preview purposes, pass sample data and default values to bindings
+        Profile(
+            isImageExpanded: .constant(false),
+            areButtonsVisible: .constant(true),
+            isShowingSetting: .constant(false),
+            selectedImage: .constant(nil))
     }
 }
