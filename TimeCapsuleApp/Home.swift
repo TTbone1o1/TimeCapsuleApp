@@ -115,13 +115,12 @@ struct Home: View {
                                 Spacer()
                                 ZStack {
                                     Button(action: {
-                                        withAnimation {
-                                            
-                                            let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
-                                            impactFeedback.impactOccurred()
-                                            
-                                            showCameraController.toggle()
-                                        }
+                                        // Remove animation from toggle to avoid delay
+                                        let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                                        impactFeedback.impactOccurred()
+
+                                        // Toggle the camera view instantly without animation
+                                        showCameraController = true
                                     }) {
                                         ZStack {
                                             Circle()
@@ -133,6 +132,7 @@ struct Home: View {
                                                 .frame(width: 37, height: 37)
                                         }
                                     }
+
                                     
                                     HStack {
                                         Image("Home")
@@ -172,7 +172,7 @@ struct Home: View {
                             CameraController(isPresented: $showCameraController)
                                 .transition(.opacity)
                                 .zIndex(4)
-                                .animation(.easeInOut(duration: 0.3), value: showCameraController)
+                                //.animation(.easeInOut(duration: 0.1), value: showCameraController)
                         }
                     }
                     .edgesIgnoringSafeArea(.all)
