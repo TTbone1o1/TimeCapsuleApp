@@ -138,7 +138,7 @@ struct PostView: View {
 
     // Helper function to dismiss keyboard and move the content up
     private func dismissKeyboardAndMoveContentUp() {
-        if isEditing {
+        if isEditing && !caption.isEmpty { // Check if caption is not empty
             withAnimation {
                 moveToTop = true
                 timestamp = formatDate(date: Date())
@@ -270,21 +270,24 @@ struct MultilineTextField: View {
                 })
                 .submitLabel(.done)
                 .onSubmit {
-                    withAnimation {
-                        moveToTop = true
-                        timestamp = formatDate(date: Date())
-                        showBlurView = true
+                    if !text.isEmpty { // Check if the text is not empty
+                        withAnimation {
+                            moveToTop = true
+                            timestamp = formatDate(date: Date())
+                            showBlurView = true
+                        }
+                        isEditing = false
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                     }
-                    isEditing = false
-                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                 }
                 .font(.system(size: 24, weight: .bold))
-                .foregroundColor(.white) // The color of the actual input text
+                .foregroundColor(.white)
                 .frame(minHeight: 50, maxHeight: .infinity, alignment: .center)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 24)
                 .background(isEditing ? Color.clear : Color.clear)
                 .cornerRadius(10)
+
             }
             .frame(minHeight: 50, maxHeight: .infinity, alignment: .center)
         }
