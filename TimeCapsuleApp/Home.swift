@@ -53,61 +53,42 @@ struct Home: View {
             NavigationView {
                 GeometryReader { geometry in
                     ZStack {
+                        // Profile view stays behind the Home view and slides in
+                        Profile(isImageExpanded: $isImageExpanded,
+                                areButtonsVisible: $areButtonsVisible,
+                                isShowingSetting: $isShowingSetting,
+                                selectedImage: $preloadedProfileImage) // Pass the preloaded image here
+                        .offset(x: UIScreen.main.bounds.width + dragOffset) // Start outside the screen on the right
+                        .zIndex(1)  // Ensure Profile is behind
+                        
+                        // Main Content View (Home) slides out as the user swipes
                         mainContentView(geometry: geometry)
-                            .offset(x: dragOffset)
+                            .offset(x: dragOffset)  // Move with dragOffset
                             .gesture(
                                 DragGesture()
                                     .onChanged { value in
-                                        if !showProfileView && value.translation.width < 0 {
-                                            dragOffset = value.translation.width
-                                        } else if showProfileView && value.translation.width > 0 {
-                                            dragOffset = value.translation.width - UIScreen.main.bounds.width
-                                        }
+                                        // Allow swiping between 0 and -screen width (left to right and vice versa)
+                                        dragOffset = value.translation.width + (showProfileView ? -UIScreen.main.bounds.width : 0)
                                     }
                                     .onEnded { value in
                                         withAnimation {
-                                            if value.translation.width < -100 {
+                                            if value.translation.width < -geometry.size.width / 3 {
+                                                // If swipe exceeds 1/3 of screen, complete transition to Profile view
                                                 dragOffset = -UIScreen.main.bounds.width
                                                 showProfileView = true
-                                            } else if value.translation.width > 100 {
+                                            } else if value.translation.width > geometry.size.width / 3 {
+                                                // If swipe is enough to go back to Home, transition back
                                                 dragOffset = 0
                                                 showProfileView = false
                                             } else {
+                                                // If swipe is too small, return to the previous state (either Home or Profile)
                                                 dragOffset = showProfileView ? -UIScreen.main.bounds.width : 0
                                             }
                                             updateIconColors()
                                         }
                                     }
                             )
-                        
-                        if showProfileView || dragOffset < 0 {
-                            Profile(isImageExpanded: $isImageExpanded,
-                                    areButtonsVisible: $areButtonsVisible,
-                                    isShowingSetting: $isShowingSetting,
-                                    selectedImage: $preloadedProfileImage) // Pass the preloaded image here
-                            .zIndex(2)
-                            .offset(x: UIScreen.main.bounds.width + dragOffset)
-                            .gesture(
-                                DragGesture()
-                                    .onChanged { value in
-                                        if showProfileView && value.translation.width > 0 {
-                                            dragOffset = value.translation.width - UIScreen.main.bounds.width
-                                        }
-                                    }
-                                    .onEnded { value in
-                                        withAnimation {
-                                            if value.translation.width > 100 {
-                                                dragOffset = 0
-                                                showProfileView = false
-                                                updateIconColors()
-                                            } else {
-                                                dragOffset = -UIScreen.main.bounds.width
-                                            }
-                                        }
-                                    }
-                            )
-                            .transition(.identity)
-                        }
+                            .zIndex(2) // Ensure Home stays above Profile
                         
                         // Fixed VStack stays on the screen at all times
                         if !show && !isImageExpanded && !isSettingsOpen && !isShowingSetting {
@@ -172,7 +153,6 @@ struct Home: View {
                             CameraController(isPresented: $showCameraController)
                                 .transition(.opacity)
                                 .zIndex(4)
-                                //.animation(.easeInOut(duration: 0.1), value: showCameraController)
                         }
                     }
                     .edgesIgnoringSafeArea(.all)
