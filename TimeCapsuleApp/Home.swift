@@ -379,9 +379,9 @@ struct Home: View {
             return caption
         } else {
             let words = caption.split(separator: " ")
-            let limitedWords = words.prefix(4) // Show only the first 4 words
+            let limitedWords = words.prefix(3) // Show only the first 3 words
             let shortCaption = limitedWords.joined(separator: " ")
-            return shortCaption + (words.count > 4 ? "..." : "")
+            return shortCaption + (words.count > 3 ? "..." : "")
         }
     }
     
