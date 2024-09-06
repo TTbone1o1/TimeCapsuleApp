@@ -111,6 +111,11 @@ class Camera: UIViewController {
     }
 
     @objc private func didTapTakePhoto() {
+        // Add haptic feedback
+        let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+        impactFeedback.impactOccurred()
+
+        
         // Check if the user has posted today before deciding what to do
         checkIfPostedToday { [weak self] hasPostedToday in
             guard let self = self else { return }
