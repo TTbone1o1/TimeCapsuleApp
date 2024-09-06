@@ -149,8 +149,8 @@ struct Profile: View {
                 Setting(isShowing: $isShowingSetting, isSignedOut: $isSignedOut, onChangeProfilePicture: {
                     self.showingImagePicker = true
                 })
-                .transition(.opacity.combined(with: .scale(scale: 0.9)))
-                .animation(.easeInOut)
+//                .transition(.opacity.combined(with: .scale(scale: 0.9)))
+//                .animation(.easeInOut)
                 .zIndex(1)
             }
 
