@@ -15,7 +15,6 @@ struct PostView: View {
     @State private var moveToTop = false
     @State private var timestamp: String = "" // New state for timestamp
     @State private var showBlurView: Bool = false // New state for showing blur view
-    //@State private var showCameraController = false // New state to present the CameraController
     @State private var isEditing = false // New state to track if the TextEditor is being edited
     @State private var showCameraController = false
     var selectedImage: UIImage?
@@ -53,35 +52,18 @@ struct PostView: View {
                             }
                             
                             ZStack(alignment: .leading) {
-                                if caption.isEmpty && !isEditing {
-                                    Text("Say something about this day...")
-                                        .font(.system(size: 24, weight: .bold, design: .rounded))
-                                        .foregroundColor(.white)
-                                        .frame(width: 300)
-                                        .multilineTextAlignment(.center)
-                                        .padding(.horizontal, 24)
-                                }
-
-                                TextEditor(text: $caption)
-                                    .submitLabel(.done)
-                                    .font(.system(size: 24, weight: .bold))
-                                    .foregroundColor(.white) // Keep text color white
-                                    .frame(width: 300, height: 50) // Adjust the height as needed
+                                // Custom MultilineTextField for user input
+                                MultilineTextField(text: $caption, isEditing: $isEditing, moveToTop: $moveToTop, showBlurView: $showBlurView, timestamp: $timestamp)
+                                    .frame(minHeight: 50, maxHeight: .infinity)
                                     .multilineTextAlignment(.center)
                                     .padding(.horizontal, 24)
-                                    //.background(Color.clear) // Ensure background is clear
+                                    .background(isEditing ? Color.clear : Color.clear)
                                     .cornerRadius(10)
-                                    .scrollContentBackground(.hidden)
-                                    .offset(y: moveToTop ? -45 : 0) // Move caption on top of blur when moving up
+                                    .offset(y: moveToTop ? -65 : 0)
                                     .zIndex(3)
                                     .onTapGesture {
                                         isEditing = true
                                     }
-                                    .onDisappear {
-                                        isEditing = false
-                                    }
-
-
                             }
                             .padding()
                             Spacer()
@@ -92,18 +74,7 @@ struct PostView: View {
             }
             .contentShape(Rectangle())
             .onTapGesture {
-                // Move text up when tapping outside the TextEditor
-                if isEditing {
-                    withAnimation {
-                        moveToTop = true
-                        // Update timestamp with formatted date
-                        timestamp = formatDate(date: Date())
-                        // Show blur view when text editor is dismissed and text is not empty
-                        showBlurView = true
-                    }
-                    isEditing = false // Stop editing when tapping outside
-                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                }
+                dismissKeyboardAndMoveContentUp()
             }
 
             if !keyboardObserver.isKeyboardVisible && !isUploading {
@@ -137,13 +108,12 @@ struct PostView: View {
             VStack {
                 HStack {
                     Button(action: {
-                        // Dismiss the current post view and go back to retake the photo
-                        showCameraController = true // This will present the CameraController again
+                        showCameraController = true
                     }) {
                         Image(systemName: "arrow.triangle.2.circlepath.camera")
-                            .font(.system(size: 24)) // Adjust the size as needed
-                            .foregroundColor(.black) // Set the color to black
-                            .padding(20) // Adjust padding as needed
+                            .font(.system(size: 24))
+                            .foregroundColor(.black)
+                            .padding(20)
                     }
                     Spacer()
                 }
@@ -151,36 +121,37 @@ struct PostView: View {
             }
             .fullScreenCover(isPresented: $showCameraController, onDismiss: {
                 // Reset any relevant state here
-                // This could involve clearing the image or other fields
             }) {
-                CameraController(isPresented: $showCameraController) // Re-open the CameraController for retaking the photo
+                CameraController(isPresented: $showCameraController)
                     .edgesIgnoringSafeArea(.all)
             }
-
-
         }
-        //This colored the background
         .background(Color.clear)
-//        .fullScreenCover(isPresented: $showCameraController, onDismiss: {
-//            // Reset the state to avoid navigation conflicts
-//            showCameraController = false // Ensure this is reset
-//        }) {
-//            CameraController() // Present CameraController
-//                .edgesIgnoringSafeArea(.all)
-//        }
     }
 
     // Helper function to format the date
     private func formatDate(date: Date) -> String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "MMM d" // Format for "Aug 13"
+        formatter.dateFormat = "MMM d"
         return formatter.string(from: date)
+    }
+
+    // Helper function to dismiss keyboard and move the content up
+    private func dismissKeyboardAndMoveContentUp() {
+        if isEditing {
+            withAnimation {
+                moveToTop = true
+                timestamp = formatDate(date: Date())
+                showBlurView = true
+            }
+            isEditing = false
+            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        }
     }
 
     private func uploadPhoto(image: UIImage) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
 
-        // Check if the user has already posted today
         let db = Firestore.firestore()
         let photosCollectionRef = db.collection("users").document(uid).collection("photos")
 
@@ -252,36 +223,83 @@ struct PostView: View {
                 isUploading = false
             } else {
                 print("Photo metadata successfully saved")
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { // Add a delay
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     navigateToHome = true
                 }
             }
             isUploading = false
         }
     }
+}
+
+// Custom MultilineTextField with keyboard dismissal and move content up
+struct MultilineTextField: View {
+    @Binding var text: String
+    @Binding var isEditing: Bool
+    @Binding var moveToTop: Bool
+    @Binding var showBlurView: Bool
+    @Binding var timestamp: String
     
-    func checkIfUserPostedToday(uid: String, completion: @escaping (Bool) -> Void) {
-        let db = Firestore.firestore()
-        let photosCollectionRef = db.collection("users").document(uid).collection("photos")
+    var body: some View {
+        VStack {
+            ZStack(alignment: .leading) {
+                // Custom placeholder with two lines
+                if text.isEmpty && !isEditing {
+                    VStack {
+                        Text("Say something about")
+                            .font(.system(size: 24, weight: .bold, design: .rounded))
+                            .foregroundColor(.white) // Placeholder styling
+                            .multilineTextAlignment(.center)
 
-        let startOfToday = Calendar.current.startOfDay(for: Date())
-        photosCollectionRef
-            .whereField("timestamp", isGreaterThanOrEqualTo: Timestamp(date: startOfToday))
-            .getDocuments { snapshot, error in
-                if let error = error {
-                    print("Error checking today's post: \(error.localizedDescription)")
-                    completion(false)
-                    return
+                        Text("this day...")
+                            .font(.system(size: 24, weight: .bold, design: .rounded))
+                            .foregroundColor(.white) // Placeholder styling
+                            .multilineTextAlignment(.center)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.horizontal, 24)
+                    .onTapGesture {
+                        // Ensure tapping on the placeholder focuses the TextField
+                        isEditing = true
+                    }
                 }
 
-                if let snapshot = snapshot, !snapshot.isEmpty {
-                    completion(true) // User has posted today
-                } else {
-                    completion(false) // No posts today
+                // The actual TextField with no prompt
+                TextField("", text: $text, onEditingChanged: { editing in
+                    isEditing = editing
+                })
+                .submitLabel(.done)
+                .onSubmit {
+                    withAnimation {
+                        moveToTop = true
+                        timestamp = formatDate(date: Date())
+                        showBlurView = true
+                    }
+                    isEditing = false
+                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                 }
+                .font(.system(size: 24, weight: .bold))
+                .foregroundColor(.white) // The color of the actual input text
+                .frame(minHeight: 50, maxHeight: .infinity, alignment: .center)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 24)
+                .background(isEditing ? Color.clear : Color.clear)
+                .cornerRadius(10)
             }
+            .frame(minHeight: 50, maxHeight: .infinity, alignment: .center)
+        }
+
+    }
+
+    // Helper function to format the date
+    private func formatDate(date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d"
+        return formatter.string(from: date)
     }
 }
+
+
 
 #Preview {
     PostView(selectedImage: UIImage(systemName: "photo")!)
