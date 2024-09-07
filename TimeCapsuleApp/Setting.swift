@@ -5,6 +5,7 @@ struct Setting: View {
     @Environment(\.presentationMode) var presentationMode
     @Binding var isShowing: Bool
     @Binding var isSignedOut: Bool
+    @Environment(\.colorScheme) var colorScheme
     var onChangeProfilePicture: (() -> Void)?
 
     var body: some View {
@@ -29,55 +30,55 @@ struct Setting: View {
     }
 
     var mainView: some View {
-        VStack {
-            ZStack {
-                Capsule()
-                    .foregroundColor(.gray)
-                    .opacity(0.4)
-                    .frame(width: 40, height: 6)
-            }
-            .frame(height: 40)
-            .frame(maxWidth: .infinity)
-
             VStack {
-                Spacer()
-
                 ZStack {
-                    Rectangle()
-                        .frame(width: 291, height: 62)
-                        .cornerRadius(40)
-                        .foregroundColor(.black)
-                        .shadow(radius: 24, x: 0, y: 14)
-                        .overlay(
-                            Text("Change profile picture")
-                                .foregroundColor(.white)
-                                .font(.system(size: 16, weight: .bold, design: .rounded))
-                        )
-                        .onTapGesture {
-                            onChangeProfilePicture?()
-                        }
-                }
-
-                Spacer()
-                    .frame(height: 20)
-
-                Button(action: signOut) {
-                    Text("Log out")
+                    Capsule()
                         .foregroundColor(.gray)
-                        .font(.system(size: 16, weight: .bold, design: .rounded))
-                        .padding()
+                        .opacity(0.4)
+                        .frame(width: 40, height: 6)
                 }
+                .frame(height: 40)
+                .frame(maxWidth: .infinity)
+
+                VStack {
+                    Spacer()
+
+                    ZStack {
+                        Rectangle()
+                            .frame(width: 291, height: 62)
+                            .cornerRadius(40)
+                            .foregroundColor(colorScheme == .dark ? .white : .black) // Invert colors based on dark mode
+                            .shadow(radius: 24, x: 0, y: 14)
+                            .overlay(
+                                Text("Change profile picture")
+                                    .foregroundColor(colorScheme == .dark ? .black : .white) // Invert text color
+                                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                            )
+                            .onTapGesture {
+                                onChangeProfilePicture?()
+                            }
+                    }
+
+                    Spacer()
+                        .frame(height: 20)
+
+                    Button(action: signOut) {
+                        Text("Log out")
+                            .foregroundColor(.gray)
+                            .font(.system(size: 16, weight: .bold, design: .rounded))
+                            .padding()
+                    }
+                }
+                .padding(.horizontal, 30)
+                .padding(.bottom, 55)
             }
-            .padding(.horizontal, 30)
-            .padding(.bottom, 55)
+            .frame(height: 261)
+            .frame(maxWidth: .infinity)
+            .background(
+                RoundedRectangle(cornerRadius: 30)
+                    .foregroundColor(colorScheme == .dark ? .black : .white) // Invert background color
+            )
         }
-        .frame(height: 261)
-        .frame(maxWidth: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: 30)
-                .foregroundColor(.white)
-        )
-    }
 
     private func signOut() {
         do {
