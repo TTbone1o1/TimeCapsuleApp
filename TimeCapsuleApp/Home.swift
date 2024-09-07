@@ -306,14 +306,8 @@ struct Home: View {
         fetchAllPhotos()
         imagesAppeared = true
         triggerHaptic()
-        NotificationManager.shared.checkForPermission { granted in
-            if granted {
-                NotificationManager.shared.dispatchNotification()
-            } else {
-                print("Notification permissions not granted.")
-            }
-        }
     }
+
     
     private func fetchUsername() {
         guard let user = Auth.auth().currentUser else { return }
