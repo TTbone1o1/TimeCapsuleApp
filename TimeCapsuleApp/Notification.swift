@@ -29,38 +29,42 @@ class NotificationManager {
     }
 
     // Method to schedule the notification
-    func dispatchNotification() {
-        let identifier = "my-morning-notification"
-        let title = "Time to take a picture!"
+    func dispatchMultipleNotifications() {
+        let times = [
+            (identifier: "my-2pm-notification", hour: 14, minute: 0),
+            (identifier: "my-4pm-notification", hour: 16, minute: 0),
+            (identifier: "my-6pm-notification", hour: 18, minute: 0)
+        ]
+        
+        let title = "Share what you’re doing right now!"
         let body = "You haven't posted your daily photo yet. Share what you've been up to today!"
-        let hour = 16
-        let minute = 0
         let isDaily = true
-        
         let notificationCenter = UNUserNotificationCenter.current()
-        
-        let content = UNMutableNotificationContent()
-        content.title = title
-        content.body = body
-        content.sound = .default
-        
-        let calendar = Calendar.current
-        var dateComponents = DateComponents(calendar: calendar, timeZone: TimeZone.current)
-        dateComponents.hour = hour
-        dateComponents.minute = minute
-        
-        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: isDaily)
-        let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
-        
-        // Remove any previous notifications with the same identifier
-        notificationCenter.removePendingNotificationRequests(withIdentifiers: [identifier])
-        
-        // Add the new notification request
-        notificationCenter.add(request) { error in
-            if let error = error {
-                print("Error scheduling notification: \(error.localizedDescription)")
-            } else {
-                print("Notification scheduled successfully.")
+
+        for time in times {
+            let content = UNMutableNotificationContent()
+            content.title = title
+            content.body = body
+            content.sound = .default
+            
+            let calendar = Calendar.current
+            var dateComponents = DateComponents(calendar: calendar, timeZone: TimeZone.current)
+            dateComponents.hour = time.hour
+            dateComponents.minute = time.minute
+            
+            let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: isDaily)
+            let request = UNNotificationRequest(identifier: time.identifier, content: content, trigger: trigger)
+            
+            // Remove any previous notifications with the same identifier
+            notificationCenter.removePendingNotificationRequests(withIdentifiers: [time.identifier])
+            
+            // Add the new notification request
+            notificationCenter.add(request) { error in
+                if let error = error {
+                    print("Error scheduling \(time.identifier): \(error.localizedDescription)")
+                } else {
+                    print("\(time.identifier) scheduled successfully at \(time.hour):\(time.minute).")
+                }
             }
         }
     }
