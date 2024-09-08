@@ -243,18 +243,20 @@ struct Home: View {
                                         .overlay(
                                             LinearGradient(
                                                 gradient: Gradient(stops: [
-                                                    .init(color: Color.black.opacity(1.0), location: 0.0), // Black at the bottom
-                                                    .init(color: Color.black.opacity(0.0), location: 0.2), // Gradually fade to clear
-                                                    .init(color: Color.clear, location: 1.0) // Clear at the top
+                                                    .init(color: currentColorScheme == .dark ? Color.black.opacity(0.8) : Color.black.opacity(1.0), location: 0.0),
+                                                    .init(color: Color.black.opacity(0.0), location: 0.2),
+                                                    .init(color: Color.clear, location: 1.0)
                                                 ]),
-                                                startPoint: .bottom,  // Start gradient from the bottom
-                                                endPoint: .top        // End with clear at the top
+                                                startPoint: .bottom,
+                                                endPoint: .top
                                             )
                                             .frame(width: tappedImageUrl == imageUrl ? UIScreen.main.bounds.width : 313,
-                                                   height: tappedImageUrl == imageUrl ? UIScreen.main.bounds.height : 422) // Maintain the 421px height
-                                                .clipShape(RoundedRectangle(cornerRadius: 33, style: .continuous)) // Round the bottom corners
-                                                .allowsHitTesting(false) // Allow taps to pass through the gradient
+                                                   height: tappedImageUrl == imageUrl ? UIScreen.main.bounds.height : 422)
+                                            .clipShape(RoundedRectangle(cornerRadius: tappedImageUrl == imageUrl ? 0 : 33, style: .continuous))
+                                            .animation(.spring(response: 0.5, dampingFraction: 0.95), value: tappedImageUrl)
+                                            .allowsHitTesting(false)
                                         )
+
                                     
                                 case .failure:
                                     Image(systemName: "xmark.circle")
