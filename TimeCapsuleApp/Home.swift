@@ -65,6 +65,7 @@ struct Home: View {
                         mainContentView(geometry: geometry)
                             .offset(x: dragOffset)
                             .gesture(
+                                tappedImageUrl == nil ?  // Only allow swiping if no image is tapped
                                 DragGesture()
                                     .onChanged { value in
                                         let translationWidth = value.translation.width
@@ -88,8 +89,8 @@ struct Home: View {
                                             updateIconColors()
                                         }
                                     }
+                                : nil // Disable the gesture when an image is tapped
                             )
-
                             .zIndex(2) // Ensure Home stays above Profile
                         
                         // Fixed VStack stays on the screen at all times
