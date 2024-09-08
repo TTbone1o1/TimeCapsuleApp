@@ -63,12 +63,13 @@ struct Home: View {
                         
                         // Main Content View (Home) slides out as the user swipes
                         mainContentView(geometry: geometry)
-                            .offset(x: dragOffset)  // Move with dragOffset
+                            .offset(x: dragOffset)
                             .gesture(
                                 DragGesture()
                                     .onChanged { value in
-                                        // Allow swiping between 0 and -screen width (left to right and vice versa)
-                                        dragOffset = value.translation.width + (showProfileView ? -UIScreen.main.bounds.width : 0)
+                                        let translationWidth = value.translation.width
+                                        // Allow swiping between -screenWidth and 0 (restrict dragOffset)
+                                        dragOffset = min(0, max(-UIScreen.main.bounds.width, translationWidth + (showProfileView ? -UIScreen.main.bounds.width : 0)))
                                     }
                                     .onEnded { value in
                                         withAnimation {
@@ -88,6 +89,7 @@ struct Home: View {
                                         }
                                     }
                             )
+
                             .zIndex(2) // Ensure Home stays above Profile
                         
                         // Fixed VStack stays on the screen at all times
