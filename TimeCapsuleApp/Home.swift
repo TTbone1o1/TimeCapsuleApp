@@ -41,6 +41,7 @@ struct Home: View {
     @State private var isShowingSetting = false
     @State private var isFullCaptionVisible: Bool = false // State for showing full caption
     @State private var preloadedProfileImage: UIImage? = nil // State to store the preloaded profile image
+    @State private var canTap: Bool = true // Add this to control tapping
     
     @Environment(\.colorScheme) var currentColorScheme
     
@@ -220,10 +221,13 @@ struct Home: View {
                                         .cornerRadius(tappedImageUrl == imageUrl ? 0 : 33)
                                         .shadow(radius: 20, x: 0, y: 24)
                                         .onTapGesture {
+                                            guard canTap else { return }  // Check if tapping is allowed
+                                            canTap = false                // Disable tapping immediately
+                                            
                                             // Trigger haptic feedback
                                             let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
                                             impactFeedback.impactOccurred()
-                                            
+
                                             withAnimation(.spring(response: 0.5, dampingFraction: 0.95)) {
                                                 if tappedImageUrl == imageUrl {
                                                     tappedImageUrl = nil
@@ -239,6 +243,11 @@ struct Home: View {
                                                 }
                                             }
                                             isFullCaptionVisible = tappedImageUrl != nil
+                                            
+                                            // Re-enable tapping after a delay (0.5 seconds for example)
+                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                                canTap = true
+                                            }
                                         }
                                         .overlay(
                                             LinearGradient(
