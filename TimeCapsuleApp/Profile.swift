@@ -116,7 +116,7 @@ struct Profile: View {
                                     let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
                                     impactFeedback.impactOccurred()
                                     
-                                    withAnimation(.spring(response: 0.5, dampingFraction: 0.95, blendDuration: 0.3)) {
+                                    withAnimation(.spring(response: 0.4, dampingFraction: 0.85, blendDuration: 0.3)) {
                                         isImageExpanded.toggle()
                                     }
 
