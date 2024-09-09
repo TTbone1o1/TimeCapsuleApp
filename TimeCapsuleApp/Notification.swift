@@ -67,7 +67,7 @@ class NotificationManager {
                     print("User has posted today. No need to send notifications.")
                     completion(true) // User has posted today
                 } else {
-                    print("User has not posted today. This account needs notifications!!")
+                    print("User has not posted today. Notifications are needed.")
                     completion(false) // User has not posted today
                 }
             } else {
@@ -77,7 +77,7 @@ class NotificationManager {
         }
     }
 
-    // Schedule a daily task to check at 12:00 PM if the user has posted
+    // Schedule a daily task to check at 12:00 PM if the user has posted (without sending a notification)
     func scheduleDailyCheckAtNoon() {
         let notificationCenter = UNUserNotificationCenter.current()
         
@@ -86,7 +86,7 @@ class NotificationManager {
         
         let content = UNMutableNotificationContent()
         content.title = "Checking if you've posted today"
-        content.body = "Let's see if you need notifications for posting!"
+        content.body = ""  // No body, as we're not notifying the user
         content.sound = nil // No sound, this is just a trigger for background logic
         
         var dateComponents = DateComponents()
@@ -105,14 +105,14 @@ class NotificationManager {
         }
     }
 
-    // Method to handle what happens when the noon notification triggers
+    // Method to handle what happens when the noon background check triggers
     func handleNoonCheck() {
         hasPostedToday { hasPosted in
             if hasPosted {
-                print("User has posted. Cancelling notifications.")
+                print("Noon check: User has posted today. Cancelling any reminder notifications.")
                 self.cancelAllNotifications() // If the user has posted, cancel all notifications
             } else {
-                print("User has not posted. Scheduling reminder notifications.")
+                print("Noon check: User has NOT posted today. Scheduling reminder notifications.")
                 self.scheduleReminderNotifications() // Schedule notifications if the user hasn't posted
             }
         }
