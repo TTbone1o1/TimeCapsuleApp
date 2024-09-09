@@ -5,7 +5,12 @@ import UserNotifications
 class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+        // Initialize Firebase
         FirebaseApp.configure()
+
+        // Manually trigger the noon check for testing purposes
+        NotificationManager.shared.handleNoonCheck()
+
         return true
     }
 }
