@@ -17,7 +17,11 @@ struct PostView: View {
     @State private var showBlurView: Bool = false // New state for showing blur view
     @State private var isEditing = false // New state to track if the TextEditor is being edited
     @State private var showCameraController = false
+    
+    @Environment(\.colorScheme) var currentColorScheme
+    
     var selectedImage: UIImage?
+    
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -32,11 +36,21 @@ struct PostView: View {
                         ZStack {
                             if showBlurView {
                                 // Show the blur view at the top of the screen
-                                TransparentBlurView(removeAllFilters: true)
-                                    .blur(radius: 5)
-                                    .frame(height: 200) // Adjust height as needed
-                                    .edgesIgnoringSafeArea(.top)
-                                    .offset(y: -110)
+//                                Color.clear
+//                                .frame(height: 200) // Adjust height as needed
+//                                .edgesIgnoringSafeArea(.top)
+//                                .overlay(
+//                                    LinearGradient(
+//                                        gradient: Gradient(stops: [
+//                                            .init(color: currentColorScheme == .dark ? Color.black.opacity(0.8) : Color.black.opacity(1.0), location: 0.0),
+//                                            .init(color: Color.black.opacity(0.0), location: 0.2),
+//                                            .init(color: Color.clear, location: 1.0)
+//                                        ]),
+//                                        startPoint: .bottom,
+//                                        endPoint: .top
+//                                    )
+//                                )
+//                                //.offset(y: -110)
                             }
                             
                             // Display formatted timestamp
