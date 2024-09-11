@@ -35,22 +35,22 @@ struct PostView: View {
                         // Main content area
                         ZStack {
                             if showBlurView {
-                                // Show the blur view at the top of the screen
-//                                Color.clear
-//                                .frame(height: 200) // Adjust height as needed
-//                                .edgesIgnoringSafeArea(.top)
-//                                .overlay(
-//                                    LinearGradient(
-//                                        gradient: Gradient(stops: [
-//                                            .init(color: currentColorScheme == .dark ? Color.black.opacity(0.8) : Color.black.opacity(1.0), location: 0.0),
-//                                            .init(color: Color.black.opacity(0.0), location: 0.2),
-//                                            .init(color: Color.clear, location: 1.0)
-//                                        ]),
-//                                        startPoint: .bottom,
-//                                        endPoint: .top
-//                                    )
-//                                )
-//                                //.offset(y: -110)
+                                 //Show the blur view at the top of the screen
+                                Color.clear
+                                .frame(height: 200) // Adjust height as needed
+                                .edgesIgnoringSafeArea(.top)
+                                .overlay(
+                                    LinearGradient(
+                                        gradient: Gradient(stops: [
+                                            .init(color: currentColorScheme == .dark ? Color.black.opacity(0.9) : Color.black.opacity(1.0), location: 0.0),
+                                            .init(color: Color.black.opacity(0.0), location: 0.9),
+                                            .init(color: Color.clear, location: 1.0)
+                                        ]),
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
+                                )
+                                .offset(y: -110)
                             }
                             
                             // Display formatted timestamp
