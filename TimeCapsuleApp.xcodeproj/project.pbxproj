@@ -22,6 +22,7 @@
 		CDA00CC52C66BAFB002C0B50 /* TransparentBlurView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA00CC42C66BAFB002C0B50 /* TransparentBlurView.swift */; };
 		CDA00CC82C67FCB7002C0B50 /* MessageButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA00CC72C67FCB7002C0B50 /* MessageButton.swift */; };
 		CDA00CCA2C6ADC74002C0B50 /* ImagePreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA00CC92C6ADC73002C0B50 /* ImagePreview.swift */; };
+		CDA1B56E2C8F8E54004196CE /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = CDA1B56D2C8F8E54004196CE /* FirebaseMessaging */; };
 		CDA2DF762C60431D0005FB4E /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = CDA2DF752C60431D0005FB4E /* FirebaseFirestore */; };
 		CDA2DF782C6043260005FB4E /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = CDA2DF772C6043260005FB4E /* FirebaseStorage */; };
 		CDA2DF7A2C611DBE0005FB4E /* Photoinfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA2DF792C611DBE0005FB4E /* Photoinfo.swift */; };
@@ -70,6 +71,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CDA1B56E2C8F8E54004196CE /* FirebaseMessaging in Frameworks */,
 				CD1E8CC12C6001E800C01341 /* FirebaseAnalytics in Frameworks */,
 				CDA2DF782C6043260005FB4E /* FirebaseStorage in Frameworks */,
 				CDA2DF7F2C6167280005FB4E /* StoreKit.framework in Frameworks */,
@@ -190,6 +192,7 @@
 				CD1E8CC32C60090900C01341 /* FirebaseAuth */,
 				CDA2DF752C60431D0005FB4E /* FirebaseFirestore */,
 				CDA2DF772C6043260005FB4E /* FirebaseStorage */,
+				CDA1B56D2C8F8E54004196CE /* FirebaseMessaging */,
 			);
 			productName = TimeCapsuleApp;
 			productReference = CD3671B22C5C3AC1002DA9F2 /* TimeCapsuleApp.app */;
@@ -400,7 +403,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = TimeCapsuleApp/TimeCapsuleApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 21;
+				CURRENT_PROJECT_VERSION = 22;
 				DEVELOPMENT_ASSET_PATHS = "\"TimeCapsuleApp/Preview Content\"";
 				DEVELOPMENT_TEAM = MZGVVRYJXL;
 				ENABLE_PREVIEWS = YES;
@@ -434,7 +437,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = TimeCapsuleApp/TimeCapsuleApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 21;
+				CURRENT_PROJECT_VERSION = 22;
 				DEVELOPMENT_ASSET_PATHS = "\"TimeCapsuleApp/Preview Content\"";
 				DEVELOPMENT_TEAM = MZGVVRYJXL;
 				ENABLE_PREVIEWS = YES;
@@ -505,6 +508,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = CD1E8CBF2C6001E800C01341 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAuth;
+		};
+		CDA1B56D2C8F8E54004196CE /* FirebaseMessaging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CD1E8CBF2C6001E800C01341 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseMessaging;
 		};
 		CDA2DF752C60431D0005FB4E /* FirebaseFirestore */ = {
 			isa = XCSwiftPackageProductDependency;
