@@ -140,7 +140,7 @@ struct Profile: View {
                     }
                     .frame(maxWidth: isImageExpanded ? UIScreen.main.bounds.width : 0,
                            maxHeight: isImageExpanded ? UIScreen.main.bounds.height : 0)
-                    .animation(.spring(response: 0.6, dampingFraction: 0.85, blendDuration: 0.6))
+                    .animation(.spring(response: 0.6, dampingFraction: 0.75, blendDuration: 0.6))
                 }
                 .zIndex(2)
             }
