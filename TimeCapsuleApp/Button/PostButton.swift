@@ -294,7 +294,7 @@ struct MultilineTextField: View {
                         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                     }
                 }
-                .font(.system(size: 24, weight: .bold))
+                .font(.system(size: 24, weight: .bold, design: .rounded))
                 .foregroundColor(.white)
                 .frame(minHeight: 50, maxHeight: .infinity, alignment: .center)
                 .multilineTextAlignment(.center)
