@@ -140,7 +140,7 @@ struct Profile: View {
                     }
                     .frame(maxWidth: isImageExpanded ? UIScreen.main.bounds.width : 0,
                            maxHeight: isImageExpanded ? UIScreen.main.bounds.height : 0)
-                    .animation(.spring(response: 0.6, dampingFraction: 0.5, blendDuration: 0.6))
+                    .animation(.spring(response: 0.6, dampingFraction: 0.85, blendDuration: 0.6))
                 }
                 .zIndex(2)
             }
@@ -432,21 +432,18 @@ struct CalendarView: View {
     }
 
     private func colorForDay(_ day: Int) -> Color {
-        let today = Date()
-        let currentDay = calendar.component(.day, from: today)
-        
-        if hasPhotoForDay(day) {
-            return Color.primary
-        } else if isCurrentMonth() && day == currentDay {
-            return Color.primary
-        } else if calendar.component(.day, from: selectedDate) == day &&
-                  calendar.component(.month, from: selectedDate) == displayedMonth &&
-                  calendar.component(.year, from: selectedDate) == displayedYear {
-            return .blue
-        } else {
-            return .gray
+            let today = Date()
+            let currentDay = calendar.component(.day, from: today)
+            
+            if hasPhotoForDay(day) {
+                return Color.primary
+            } else if isCurrentMonth() && day == currentDay {
+                return Color.primary
+            } else {
+                return .gray
+            }
         }
-    }
+
 
     private func hasPhotoForDay(_ day: Int) -> Bool {
         let dateComponents = DateComponents(year: displayedYear, month: displayedMonth, day: day)
