@@ -6,9 +6,9 @@ import FirebaseAuth
 
 struct Profile: View {
     @Binding var isImageExpanded: Bool
-    @Binding var areButtonsVisible: Bool
     @Binding var isShowingSetting: Bool
-    @Binding var selectedImage: UIImage? // Accept the preloaded image
+    @Binding var selectedImage: UIImage?
+    @Binding var homeProfileScale: CGFloat
 
     @State private var currentDate = Date()
     @State private var selectedDate = Date()
@@ -66,6 +66,11 @@ struct Profile: View {
                                     let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
                                     impactFeedback.impactOccurred()
                                     isShowingSetting = true
+
+                                    // Scale down buttons when settings are shown
+                                    withAnimation(.easeInOut(duration: 0.2)) {
+                                        homeProfileScale = 0.0
+                                    }
                                 }
                             }
                     )
@@ -121,12 +126,13 @@ struct Profile: View {
                                             isFadingOut = true // Start fading out on collapse
                                         }
 
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                                             self.tappedImageUrl = nil
-                                            withAnimation {
-                                                areButtonsVisible = true // Show buttons in Home again
+                                            withAnimation(.easeInOut(duration: 0.1)) {
+                                                homeProfileScale = 1.0 // Scale buttons back up
                                             }
                                         }
+
                                     } else {
                                         withAnimation(.spring(response: 0.4, dampingFraction: 0.85, blendDuration: 0.3)) {
                                             isImageExpanded.toggle()
@@ -154,8 +160,6 @@ struct Profile: View {
                 Setting(isShowing: $isShowingSetting, isSignedOut: $isSignedOut, onChangeProfilePicture: {
                     self.showingImagePicker = true
                 })
-//                .transition(.opacity.combined(with: .scale(scale: 0.9)))
-//                .animation(.easeInOut)
                 .zIndex(1)
             }
 
@@ -167,9 +171,9 @@ struct Profile: View {
 
         }
         .onChange(of: isShowingSetting) { isShowing in
-            withAnimation {
+            withAnimation(.easeInOut(duration: 0.2)) {
                 if !isShowing {
-                    areButtonsVisible = true // Show buttons in Home again
+                    homeProfileScale = 1.0 // Scale buttons back up
                 }
             }
         }
@@ -306,11 +310,16 @@ struct Profile: View {
         if let firstPhoto = photosForSelectedDate.first {
             tappedImageUrl = firstPhoto.0
             isImageExpanded = true
-            withAnimation {
-                areButtonsVisible = false
+
+            // Step 1: Scale down the buttons quickly when an image is tapped
+            withAnimation(.easeInOut(duration: 0.1)) {  // Reduce the duration to 0.1 for faster scaling
+                homeProfileScale = 0.0  // Scale buttons down quickly
             }
         }
     }
+
+
+
 
     private func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
@@ -325,9 +334,6 @@ struct Profile: View {
         return shortCaption
     }
 }
-
-
-
 
 
 struct CalendarView: View {
@@ -352,47 +358,46 @@ struct CalendarView: View {
     }()
 
     var body: some View {
-        
         Spacer()
         
         VStack {
             HStack {
-                       Button(action: {
-                           changeMonth(by: -1)
-                           isLeftButtonPressed = true
-                           DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                               isLeftButtonPressed = false
-                           }
-                       }) {
-                           Image(systemName: "chevron.left")
-                               .foregroundColor(isLeftButtonPressed ? .black : .gray)
-                               .font(.system(size: 25))
-                               .padding(.leading, 20)
-                               .fontWeight(.bold)
-                       }
+                Button(action: {
+                    changeMonth(by: -1)
+                    isLeftButtonPressed = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        isLeftButtonPressed = false
+                    }
+                }) {
+                    Image(systemName: "chevron.left")
+                        .foregroundColor(isLeftButtonPressed ? .black : .gray)
+                        .font(.system(size: 25))
+                        .padding(.leading, 20)
+                        .fontWeight(.bold)
+                }
 
-                       Spacer()
+                Spacer()
 
-                       Text("\(monthName(for: displayedMonth)) \(formattedYear)")
-                           .font(.system(size: 24, weight: .bold, design: .rounded))
-                           .foregroundColor(Color.primary)
+                Text("\(monthName(for: displayedMonth)) \(formattedYear)")
+                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                    .foregroundColor(Color.primary)
 
-                       Spacer()
+                Spacer()
 
-                       Button(action: {
-                           changeMonth(by: 1)
-                           isRightButtonPressed = true
-                           DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                               isRightButtonPressed = false
-                           }
-                       }) {
-                           Image(systemName: "chevron.right")
-                               .foregroundColor(isRightButtonPressed ? .black : .gray)
-                               .font(.system(size: 25))
-                               .padding(.trailing, 20)
-                               .fontWeight(.bold)
-                       }
-                   }
+                Button(action: {
+                    changeMonth(by: 1)
+                    isRightButtonPressed = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        isRightButtonPressed = false
+                    }
+                }) {
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(isRightButtonPressed ? .black : .gray)
+                        .font(.system(size: 25))
+                        .padding(.trailing, 20)
+                        .fontWeight(.bold)
+                }
+            }
             .padding(.horizontal)
 
             let daysInMonth = calendar.range(of: .day, in: .month, for: firstOfMonth())!.count
@@ -437,18 +442,17 @@ struct CalendarView: View {
     }
 
     private func colorForDay(_ day: Int) -> Color {
-            let today = Date()
-            let currentDay = calendar.component(.day, from: today)
-            
-            if hasPhotoForDay(day) {
-                return Color.primary
-            } else if isCurrentMonth() && day == currentDay {
-                return Color.primary
-            } else {
-                return .gray
-            }
+        let today = Date()
+        let currentDay = calendar.component(.day, from: today)
+        
+        if hasPhotoForDay(day) {
+            return Color.primary
+        } else if isCurrentMonth() && day == currentDay {
+            return Color.primary
+        } else {
+            return .gray
         }
-
+    }
 
     private func hasPhotoForDay(_ day: Int) -> Bool {
         let dateComponents = DateComponents(year: displayedYear, month: displayedMonth, day: day)
@@ -482,8 +486,9 @@ struct Profile_Previews: PreviewProvider {
         // For preview purposes, pass sample data and default values to bindings
         Profile(
             isImageExpanded: .constant(false),
-            areButtonsVisible: .constant(true),
             isShowingSetting: .constant(false),
-            selectedImage: .constant(nil))
+            selectedImage: .constant(nil),
+            homeProfileScale: .constant(1.0)
+        )
     }
 }
