@@ -42,6 +42,7 @@ struct Home: View {
     @State private var isFullCaptionVisible: Bool = false // State for showing full caption
     @State private var preloadedProfileImage: UIImage? = nil // State to store the preloaded profile image
     @State private var canTap: Bool = true // Add this to control tapping
+    @State private var homeProfileScale: CGFloat = 1.0
     
     @Environment(\.colorScheme) var currentColorScheme
     
@@ -95,12 +96,13 @@ struct Home: View {
                             .zIndex(2) // Ensure Home stays above Profile
                         
                         // Fixed VStack stays on the screen at all times
-                        if !show && !isImageExpanded && !isSettingsOpen && !isShowingSetting {
+                         // Add this to control the scaling effect
+
+                        if !isImageExpanded && !isSettingsOpen && !isShowingSetting {
                             VStack(spacing: 20) {
                                 Spacer()
                                 ZStack {
                                     Button(action: {
-                                        // Remove animation from toggle to avoid delay
                                         let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
                                         impactFeedback.impactOccurred()
 
@@ -109,20 +111,21 @@ struct Home: View {
                                     }) {
                                         ZStack {
                                             Circle()
-                                                .stroke(Color.secondary.opacity(0.7), lineWidth: 3) // Secondary adapts to the mode as a lighter color
+                                                .stroke(Color.secondary.opacity(0.7), lineWidth: 3)
                                                 .frame(width: 52, height: 52)
                                             
                                             Circle()
-                                                .fill(Color.secondary.opacity(0.7)) // Secondary adapts to light gray in both modes
+                                                .fill(Color.secondary.opacity(0.7))
                                                 .frame(width: 37, height: 37)
                                         }
+                                        .scaleEffect(homeProfileScale)
                                     }
 
-                                    
                                     HStack {
                                         Image("Home")
-                                            .withTintColor(showProfileView ? Color.secondary.opacity(0.7) : Color.primary) // Primary for active, Secondary for inactive
+                                            .withTintColor(showProfileView ? Color.secondary.opacity(0.7) : Color.primary)
                                             .frame(width: 34, height: 34)
+                                            .scaleEffect(homeProfileScale)  // Apply scale effect to Home icon
                                             .onTapGesture {
                                                 withAnimation {
                                                     dragOffset = 0
@@ -130,12 +133,13 @@ struct Home: View {
                                                     updateIconColors()
                                                 }
                                             }
-                                        
+
                                         Spacer()
-                                        
+
                                         Image("Profile")
-                                            .withTintColor(showProfileView ? Color.primary : Color.secondary.opacity(0.7)) // Primary for active, Secondary for inactive
+                                            .withTintColor(showProfileView ? Color.primary : Color.secondary.opacity(0.7))
                                             .frame(width: 34, height: 34)
+                                            .scaleEffect(homeProfileScale)  // Apply scale effect to Profile icon
                                             .onTapGesture {
                                                 withAnimation {
                                                     dragOffset = -UIScreen.main.bounds.width
@@ -150,8 +154,21 @@ struct Home: View {
                             .padding(.horizontal, 60)
                             .padding(.bottom, 40)
                             .zIndex(3)
-                            
+                            .onChange(of: tappedImageUrl) { newValue in
+                                if tappedImageUrl != nil {
+                                    // Scale down when an image is tapped
+                                    withAnimation(.easeInOut(duration: 0.2)) {
+                                        homeProfileScale = 0.0
+                                    }
+                                } else {
+                                    // Scale back to original size when no image is tapped
+                                    withAnimation(.easeInOut(duration: 0.2)) {
+                                        homeProfileScale = 1.0
+                                    }
+                                }
+                            }
                         }
+
                         
                         if showCameraController {
                             CameraController(isPresented: $showCameraController)
