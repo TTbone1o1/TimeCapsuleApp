@@ -24,6 +24,8 @@ struct Profile: View {
     @State private var tappedImageUrl: String? = nil // To track the tapped image URL
     @Namespace private var namespace
 
+    @State private var isFadingOut: Bool = false // New state for managing opacity
+
     private var userID: String {
         return Auth.auth().currentUser?.uid ?? ""
     }
@@ -55,17 +57,14 @@ struct Profile: View {
                                 .foregroundColor(.gray) // Optional: Set a placeholder color
                                 .scaleEffect(isShowingSetting ? 0.8 : 1.0)
                                 .animation(.interpolatingSpring(stiffness: 130, damping: 5), value: isShowingSetting)
-
                         }
                     }
                     .gesture(
                         LongPressGesture(minimumDuration: 0.5)
                             .onEnded { _ in
                                 withAnimation {
-                                    
                                     let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
                                     impactFeedback.impactOccurred()
-                                    
                                     isShowingSetting = true
                                 }
                             }
@@ -110,22 +109,28 @@ struct Profile: View {
                                 .frame(width: isImageExpanded ? UIScreen.main.bounds.width : 0,
                                        height: isImageExpanded ? UIScreen.main.bounds.height : 0)
                                 .cornerRadius(isImageExpanded ? 33 : 33)
-                                .transition(.scale)
+                                .opacity(isImageExpanded ? 1 : isFadingOut ? 0 : 1) // Handle opacity based on image state
+                                .transition(isImageExpanded ? .scale : .asymmetric(insertion: .scale, removal: .opacity)) // Use scale for expansion and opacity for removal
                                 .onTapGesture {
-                                    
                                     let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
                                     impactFeedback.impactOccurred()
-                                    
-                                    withAnimation(.spring(response: 0.4, dampingFraction: 0.85, blendDuration: 0.3)) {
-                                        isImageExpanded.toggle()
-                                    }
 
-                                    if !isImageExpanded {
+                                    if isImageExpanded {
+                                        withAnimation(.spring(response: 0.4, dampingFraction: 0.85, blendDuration: 0.3)) {
+                                            isImageExpanded.toggle()
+                                            isFadingOut = true // Start fading out on collapse
+                                        }
+
                                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                                             self.tappedImageUrl = nil
                                             withAnimation {
                                                 areButtonsVisible = true // Show buttons in Home again
                                             }
+                                        }
+                                    } else {
+                                        withAnimation(.spring(response: 0.4, dampingFraction: 0.85, blendDuration: 0.3)) {
+                                            isImageExpanded.toggle()
+                                            isFadingOut = false // Reset fading out state when expanding
                                         }
                                     }
                                 }
