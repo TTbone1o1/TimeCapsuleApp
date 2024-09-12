@@ -57,9 +57,10 @@ struct Home: View {
                     ZStack {
                         // Profile view stays behind the Home view and slides in
                         Profile(isImageExpanded: $isImageExpanded,
-                                areButtonsVisible: $areButtonsVisible,
                                 isShowingSetting: $isShowingSetting,
-                                selectedImage: $preloadedProfileImage) // Pass the preloaded image here
+                                selectedImage: $preloadedProfileImage,
+                                homeProfileScale: $homeProfileScale) // Pass the binding for scale
+                        // Pass the preloaded image here
                         .offset(x: UIScreen.main.bounds.width + dragOffset) // Start outside the screen on the right
                         .zIndex(1)  // Ensure Profile is behind
                         
