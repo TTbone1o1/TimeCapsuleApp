@@ -19,6 +19,7 @@
 		CD4B48E72C5D2BBC008DC1D2 /* Timecap.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4B48E62C5D2BBC008DC1D2 /* Timecap.swift */; };
 		CD4B48E92C5D6B19008DC1D2 /* Create.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4B48E82C5D6B19008DC1D2 /* Create.swift */; };
 		CD4B48ED2C5D9EF5008DC1D2 /* Camera.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4B48EC2C5D9EF5008DC1D2 /* Camera.swift */; };
+		CDA005012C937469003537F8 /* Pow in Frameworks */ = {isa = PBXBuildFile; productRef = CDA005002C937469003537F8 /* Pow */; };
 		CDA00CC52C66BAFB002C0B50 /* TransparentBlurView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA00CC42C66BAFB002C0B50 /* TransparentBlurView.swift */; };
 		CDA00CC82C67FCB7002C0B50 /* MessageButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA00CC72C67FCB7002C0B50 /* MessageButton.swift */; };
 		CDA00CCA2C6ADC74002C0B50 /* ImagePreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA00CC92C6ADC73002C0B50 /* ImagePreview.swift */; };
@@ -72,6 +73,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CDA1B56E2C8F8E54004196CE /* FirebaseMessaging in Frameworks */,
+				CDA005012C937469003537F8 /* Pow in Frameworks */,
 				CD1E8CC12C6001E800C01341 /* FirebaseAnalytics in Frameworks */,
 				CDA2DF782C6043260005FB4E /* FirebaseStorage in Frameworks */,
 				CDA2DF7F2C6167280005FB4E /* StoreKit.framework in Frameworks */,
@@ -193,6 +195,7 @@
 				CDA2DF752C60431D0005FB4E /* FirebaseFirestore */,
 				CDA2DF772C6043260005FB4E /* FirebaseStorage */,
 				CDA1B56D2C8F8E54004196CE /* FirebaseMessaging */,
+				CDA005002C937469003537F8 /* Pow */,
 			);
 			productName = TimeCapsuleApp;
 			productReference = CD3671B22C5C3AC1002DA9F2 /* TimeCapsuleApp.app */;
@@ -224,6 +227,7 @@
 			mainGroup = CD3671A92C5C3AC1002DA9F2;
 			packageReferences = (
 				CD1E8CBF2C6001E800C01341 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				CDA004FF2C937469003537F8 /* XCRemoteSwiftPackageReference "Pow" */,
 			);
 			productRefGroup = CD3671B32C5C3AC1002DA9F2 /* Products */;
 			projectDirPath = "";
@@ -496,6 +500,14 @@
 				minimumVersion = 11.0.0;
 			};
 		};
+		CDA004FF2C937469003537F8 /* XCRemoteSwiftPackageReference "Pow" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/EmergeTools/Pow";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.4;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -508,6 +520,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = CD1E8CBF2C6001E800C01341 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAuth;
+		};
+		CDA005002C937469003537F8 /* Pow */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CDA004FF2C937469003537F8 /* XCRemoteSwiftPackageReference "Pow" */;
+			productName = Pow;
 		};
 		CDA1B56D2C8F8E54004196CE /* FirebaseMessaging */ = {
 			isa = XCSwiftPackageProductDependency;
