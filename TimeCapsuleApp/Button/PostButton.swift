@@ -10,134 +10,128 @@ struct PostView: View {
     @ObservedObject private var keyboardObserver = KeyboardObserver()
     @State private var caption: String = ""
     @State private var username: String = ""
-    @State private var navigateToHome = false
     @State private var isUploading = false
     @State private var moveToTop = false
-    @State private var timestamp: String = "" // New state for timestamp
-    @State private var showBlurView: Bool = false // New state for showing blur view
-    @State private var isEditing = false // New state to track if the TextEditor is being edited
+    @State private var timestamp: String = ""
+    @State private var showBlurView: Bool = false
+    @State private var isEditing = false
     @State private var showCameraController = false
+    @State private var navigateToHome = false // Use @State to manage navigation
     
     @Environment(\.colorScheme) var currentColorScheme
     
     var selectedImage: UIImage?
     
-
     var body: some View {
         ZStack(alignment: .bottom) {
-            GeometryReader { geometry in
-                ScrollView {
-                    VStack {
-                        // Spacer to adjust content position based on moveToTop state
-                        Spacer()
-                            .frame(height: moveToTop ? 55 : 315)
-                        
-                        // Main content area
-                        ZStack {
-                            if showBlurView {
-                                 //Show the blur view at the top of the screen
-                                Color.clear
-                                .frame(height: 200) // Adjust height as needed
-                                .edgesIgnoringSafeArea(.top)
-                                .overlay(
-                                    LinearGradient(
-                                        gradient: Gradient(stops: [
-                                            .init(color: currentColorScheme == .dark ? Color.black.opacity(0.9) : Color.black.opacity(1.0), location: 0.0),
-                                            .init(color: Color.black.opacity(0.0), location: 0.9),
-                                            .init(color: Color.clear, location: 1.0)
-                                        ]),
-                                        startPoint: .top,
-                                        endPoint: .bottom
-                                    )
-                                )
-                                .offset(y: -110)
-                            }
-                            
-                            // Display formatted timestamp
-                            if !timestamp.isEmpty {
-                                Text(timestamp)
-                                    .font(.system(size: 18))
-                                    .foregroundColor(.white)
-                                    .padding(.horizontal, 28)
-                                    .frame(width: 348, height: 30, alignment: .center)
-                                    .background(showBlurView ? Color.clear : Color.black.opacity(0.3))
-                                    .offset(y: -100)
-                                    .zIndex(2) // Ensure timestamp is on top of the blur view
-                            }
-                            
-                            ZStack(alignment: .leading) {
-                                // Custom MultilineTextField for user input
-                                MultilineTextField(text: $caption, isEditing: $isEditing, moveToTop: $moveToTop, showBlurView: $showBlurView, timestamp: $timestamp)
-                                    .frame(minHeight: 50, maxHeight: .infinity)
-                                    .multilineTextAlignment(.center)
-                                    .padding(.horizontal, 24)
-                                    .background(isEditing ? Color.clear : Color.clear)
-                                    .cornerRadius(10)
-                                    .offset(y: moveToTop ? -65 : 0)
-                                    .zIndex(3)
-                                    .onTapGesture {
-                                        isEditing = true
-                                    }
-                            }
-                            .padding()
+            if navigateToHome { // Conditional navigation
+                Home() // Show Home view
+            } else {
+                GeometryReader { geometry in
+                    ScrollView {
+                        VStack {
                             Spacer()
+                                .frame(height: moveToTop ? 55 : 315)
+                            
+                            ZStack {
+                                if showBlurView {
+                                    Color.clear
+                                        .frame(height: 200)
+                                        .edgesIgnoringSafeArea(.top)
+                                        .overlay(
+                                            LinearGradient(
+                                                gradient: Gradient(stops: [
+                                                    .init(color: currentColorScheme == .dark ? Color.black.opacity(0.9) : Color.black.opacity(1.0), location: 0.0),
+                                                    .init(color: Color.black.opacity(0.0), location: 0.9),
+                                                    .init(color: Color.clear, location: 1.0)
+                                                ]),
+                                                startPoint: .top,
+                                                endPoint: .bottom
+                                            )
+                                        )
+                                        .offset(y: -110)
+                                }
+                                
+                                if !timestamp.isEmpty {
+                                    Text(timestamp)
+                                        .font(.system(size: 18))
+                                        .foregroundColor(.white)
+                                        .padding(.horizontal, 28)
+                                        .frame(width: 348, height: 30, alignment: .center)
+                                        .background(showBlurView ? Color.clear : Color.black.opacity(0.3))
+                                        .offset(y: -100)
+                                        .zIndex(2)
+                                }
+                                
+                                ZStack(alignment: .leading) {
+                                    MultilineTextField(text: $caption, isEditing: $isEditing, moveToTop: $moveToTop, showBlurView: $showBlurView, timestamp: $timestamp)
+                                        .frame(minHeight: 50, maxHeight: .infinity)
+                                        .multilineTextAlignment(.center)
+                                        .padding(.horizontal, 24)
+                                        .background(isEditing ? Color.clear : Color.clear)
+                                        .cornerRadius(10)
+                                        .offset(y: moveToTop ? -65 : 0)
+                                        .zIndex(3)
+                                        .onTapGesture {
+                                            isEditing = true
+                                        }
+                                }
+                                .padding()
+                                Spacer()
+                            }
+                            .frame(width: geometry.size.width)
                         }
-                        .frame(width: geometry.size.width)
                     }
                 }
-            }
-            .contentShape(Rectangle())
-            .onTapGesture {
-                dismissKeyboardAndMoveContentUp()
-            }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    dismissKeyboardAndMoveContentUp()
+                }
 
-            if !keyboardObserver.isKeyboardVisible && !isUploading {
-                NavigationLink(destination: Home().navigationBarBackButtonHidden(true),
-                               isActive: $navigateToHome,
-                               label: {
-                    ZStack {
-                        Rectangle()
-                            .frame(width: 291, height: 62)
-                            .cornerRadius(40)
-                            .foregroundColor(.black)
-                            .shadow(radius: 24, x: 0, y: 14)
-                        
-                        HStack {
-                            Text("Post")
-                                .foregroundColor(.white)
-                                .font(.system(size: 16, weight: .bold, design: .rounded))
+                if !keyboardObserver.isKeyboardVisible && !isUploading {
+                    Button(action: {
+                        if let image = selectedImage {
+                            isUploading = true
+                            uploadPhoto(image: image)
+                        }
+                    }) {
+                        ZStack {
+                            Rectangle()
+                                .frame(width: 291, height: 62)
+                                .cornerRadius(40)
+                                .foregroundColor(.black)
+                                .shadow(radius: 24, x: 0, y: 14)
+                            
+                            HStack {
+                                Text("Post")
+                                    .foregroundColor(.white)
+                                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                            }
                         }
                     }
-                })
-                .simultaneousGesture(TapGesture().onEnded {
-                    if let image = selectedImage {
-                        isUploading = true
-                        uploadPhoto(image: image)
-                    }
-                })
-                .padding(.bottom, 20)
-            }
-            
-            // Add a black circle in the top left corner with a tap gesture to retake photo
-            VStack {
-                HStack {
-                    Button(action: {
-                        showCameraController = true
-                    }) {
-                        Image(systemName: "arrow.triangle.2.circlepath.camera")
-                            .font(.system(size: 24))
-                            .foregroundColor(.black)
-                            .padding(20)
+                    .padding(.bottom, 20)
+                }
+                
+                VStack {
+                    HStack {
+                        Button(action: {
+                            showCameraController = true
+                        }) {
+                            Image(systemName: "arrow.triangle.2.circlepath.camera")
+                                .font(.system(size: 24))
+                                .foregroundColor(.black)
+                                .padding(20)
+                        }
+                        Spacer()
                     }
                     Spacer()
                 }
-                Spacer()
-            }
-            .fullScreenCover(isPresented: $showCameraController, onDismiss: {
-                // Reset any relevant state here
-            }) {
-                CameraController(isPresented: $showCameraController)
-                    .edgesIgnoringSafeArea(.all)
+                .fullScreenCover(isPresented: $showCameraController, onDismiss: {
+                    // Reset any relevant state here
+                }) {
+                    CameraController(isPresented: $showCameraController)
+                        .edgesIgnoringSafeArea(.all)
+                }
             }
         }
         .background(Color.clear)
@@ -152,7 +146,7 @@ struct PostView: View {
 
     // Helper function to dismiss keyboard and move the content up
     private func dismissKeyboardAndMoveContentUp() {
-        if isEditing && !caption.isEmpty { // Check if caption is not empty
+        if isEditing && !caption.isEmpty {
             withAnimation {
                 moveToTop = true
                 timestamp = formatDate(date: Date())
@@ -238,10 +232,10 @@ struct PostView: View {
             } else {
                 print("Photo metadata successfully saved")
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    navigateToHome = true
+                    isUploading = false
+                    navigateToHome = true // Navigate to Home after post
                 }
             }
-            isUploading = false
         }
     }
 }
@@ -257,34 +251,31 @@ struct MultilineTextField: View {
     var body: some View {
         VStack {
             ZStack(alignment: .leading) {
-                // Custom placeholder with two lines
                 if text.isEmpty && !isEditing {
                     VStack {
                         Text("Say something about")
                             .font(.system(size: 24, weight: .bold, design: .rounded))
-                            .foregroundColor(.white) // Placeholder styling
+                            .foregroundColor(.white)
                             .multilineTextAlignment(.center)
 
                         Text("this day...")
                             .font(.system(size: 24, weight: .bold, design: .rounded))
-                            .foregroundColor(.white) // Placeholder styling
+                            .foregroundColor(.white)
                             .multilineTextAlignment(.center)
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.horizontal, 24)
                     .onTapGesture {
-                        // Ensure tapping on the placeholder focuses the TextField
                         isEditing = true
                     }
                 }
 
-                // The actual TextField with no prompt
                 TextField("", text: $text, onEditingChanged: { editing in
                     isEditing = editing
                 })
                 .submitLabel(.done)
                 .onSubmit {
-                    if !text.isEmpty { // Check if the text is not empty
+                    if !text.isEmpty {
                         withAnimation {
                             moveToTop = true
                             timestamp = formatDate(date: Date())
@@ -305,18 +296,14 @@ struct MultilineTextField: View {
             }
             .frame(minHeight: 50, maxHeight: .infinity, alignment: .center)
         }
-
     }
 
-    // Helper function to format the date
     private func formatDate(date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMM d"
         return formatter.string(from: date)
     }
 }
-
-
 
 #Preview {
     PostView(selectedImage: UIImage(systemName: "photo")!)
