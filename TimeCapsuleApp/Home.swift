@@ -316,9 +316,8 @@ struct Home: View {
                             AsyncImage(url: URL(string: imageUrl)) { phase in
                                 switch phase {
                                 case .empty:
-                                    // Do nothing, or you can add a placeholder image or background color here
                                     Color.clear
-                                        .frame(width: 313, height: 421) // Or another size placeholder if needed
+                                        .frame(width: 313, height: 421)
                                 case .success(let image):
                                     image
                                         .resizable()
@@ -329,10 +328,9 @@ struct Home: View {
                                         .cornerRadius(tappedImageUrl == imageUrl ? 0 : 33)
                                         .shadow(radius: 20, x: 0, y: 24)
                                         .onTapGesture {
-                                            guard canTap else { return }  // Check if tapping is allowed
-                                            canTap = false                // Disable tapping immediately
+                                            guard canTap else { return }  // Disable tapping immediately
+                                            canTap = false
 
-                                            // Trigger haptic feedback
                                             let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
                                             impactFeedback.impactOccurred()
 
@@ -345,8 +343,23 @@ struct Home: View {
                                                     tappedImageUrl = imageUrl
                                                     show = true
                                                     isScrollDisabled = true
-                                                    withAnimation {
-                                                        scrollProxy.scrollTo(imageUrl, anchor: .center)
+
+                                                    // Check if the tapped image is the first or last one
+                                                    if imageUrls.first?.0 == imageUrl {
+                                                        // Scroll up slightly for the first image
+                                                        withAnimation {
+                                                            scrollProxy.scrollTo(imageUrl, anchor: .top)
+                                                        }
+                                                    } else if imageUrls.last?.0 == imageUrl {
+                                                        // Scroll down slightly for the last image
+                                                        withAnimation {
+                                                            scrollProxy.scrollTo(imageUrl, anchor: .bottom)
+                                                        }
+                                                    } else {
+                                                        // For all other images, center the image
+                                                        withAnimation {
+                                                            scrollProxy.scrollTo(imageUrl, anchor: .center)
+                                                        }
                                                     }
                                                 }
                                             }
@@ -410,6 +423,8 @@ struct Home: View {
             .scrollIndicators(.hidden)
         }
     }
+
+
 
     
     
