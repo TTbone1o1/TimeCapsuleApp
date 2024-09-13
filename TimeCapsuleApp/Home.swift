@@ -316,7 +316,9 @@ struct Home: View {
                             AsyncImage(url: URL(string: imageUrl)) { phase in
                                 switch phase {
                                 case .empty:
-                                    ProgressView()
+                                    // Do nothing, or you can add a placeholder image or background color here
+                                    Color.clear
+                                        .frame(width: 313, height: 421) // Or another size placeholder if needed
                                 case .success(let image):
                                     image
                                         .resizable()
@@ -329,7 +331,7 @@ struct Home: View {
                                         .onTapGesture {
                                             guard canTap else { return }  // Check if tapping is allowed
                                             canTap = false                // Disable tapping immediately
-                                            
+
                                             // Trigger haptic feedback
                                             let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
                                             impactFeedback.impactOccurred()
@@ -349,7 +351,7 @@ struct Home: View {
                                                 }
                                             }
                                             isFullCaptionVisible = tappedImageUrl != nil
-                                            
+
                                             // Re-enable tapping after a delay (0.5 seconds for example)
                                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                                                 canTap = true
@@ -372,7 +374,6 @@ struct Home: View {
                                             .allowsHitTesting(false)
                                         )
 
-                                    
                                 case .failure:
                                     Image(systemName: "xmark.circle")
                                         .resizable()
@@ -384,13 +385,13 @@ struct Home: View {
                             }
                             .frame(maxWidth: .infinity)
                             .id(imageUrl)
-                            
+
                             VStack(alignment: .center, spacing: 5) {
                                 Text(formatDate(timestamp.dateValue()))
                                     .font(.system(size: 18, weight: .bold, design: .rounded))
                                     .foregroundColor(.white)
                                     .padding(.horizontal, 28)
-                                
+
                                 Text(isFullCaptionVisible ? caption : shortenCaption(caption))
                                     .font(.system(size: 24, weight: .bold, design: .rounded))
                                     .padding(.horizontal, 28)
@@ -409,6 +410,7 @@ struct Home: View {
             .scrollIndicators(.hidden)
         }
     }
+
     
     
     private func updateIconColors() {
