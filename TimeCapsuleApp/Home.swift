@@ -43,6 +43,8 @@ struct Home: View {
     @State private var preloadedProfileImage: UIImage? = nil // State to store the preloaded profile image
     @State private var canTap: Bool = true // Add this to control tapping
     @State private var homeProfileScale: CGFloat = 1.0
+    @State private var isLoadingImages = true
+
     
     @Environment(\.colorScheme) var currentColorScheme
     
@@ -195,29 +197,115 @@ struct Home: View {
         ZStack {
             imageGalleryView
                 .zIndex(1)
-            
+
             VStack {
                 Spacer().frame(height: 20)
-                
+
+                // Only show username and images when no image is tapped
                 if tappedImageUrl == nil {
+                    // HStack for displaying username
                     HStack {
                         Text(username.isEmpty ? "" : username)
                             .font(.system(size: 18, weight: .bold, design: .rounded))
                             .fontWeight(.bold)
                             .padding(.leading)
                             .foregroundColor(Color.primary)
-                        
+
                         Spacer()
                     }
                     .padding(.top, geometry.safeAreaInsets.top)
                     .transition(.opacity)
+
+                    // Show placeholder images if no photos have been posted (imageUrls is empty)
+                    if !isLoadingImages && imageUrls.isEmpty {
+                        VStack {
+                            Spacer() // Push content down to center vertically
+
+                            Text("Take a photo to start")
+                                .font(.system(size: 18))
+                                .fontWeight(.bold)
+                                .padding(.bottom, 30)
+
+                            // HStack for the three images (1, 2, 3)
+                            HStack {
+                                Spacer() // Push the images to the center horizontally
+
+                                HStack {
+                                    Image("1")
+                                        .resizable()
+                                        .frame(width: 82.37, height: 120.26)
+                                        .cornerRadius(19)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 19)
+                                                .stroke(Color.white, lineWidth: 4)
+                                        )
+                                        .rotationEffect(Angle(degrees: -16))
+                                        .offset(x: 25, y: 15)
+                                        .shadow(radius: 24, x: 0, y: 14)
+                                        .zIndex(3)
+                                        .scaleEffect(imagesAppeared ? 1 : 0)
+                                        .animation(.interpolatingSpring(stiffness: 60, damping: 7).delay(0.1), value: imagesAppeared)
+                                        .onAppear {
+                                            if imagesAppeared {
+                                                triggerHaptic()
+                                            }
+                                        }
+
+                                    Image("2")
+                                        .resizable()
+                                        .frame(width: 82.37, height: 120.26)
+                                        .cornerRadius(19)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 19)
+                                                .stroke(Color.white, lineWidth: 4)
+                                        )
+                                        .zIndex(2)
+                                        .rotationEffect(Angle(degrees: -2))
+                                        .shadow(radius: 24, x: 0, y: 14)
+                                        .scaleEffect(imagesAppeared ? 1 : 0)
+                                        .animation(.interpolatingSpring(stiffness: 60, damping: 7).delay(0.2), value: imagesAppeared)
+                                        .onAppear {
+                                            if imagesAppeared {
+                                                triggerHaptic()
+                                            }
+                                        }
+
+                                    Image("3")
+                                        .resizable()
+                                        .frame(width: 82.37, height: 120.26)
+                                        .cornerRadius(19)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 19)
+                                                .stroke(Color.white, lineWidth: 4)
+                                        )
+                                        .zIndex(1)
+                                        .rotationEffect(Angle(degrees: 17))
+                                        .shadow(radius: 24, x: 0, y: 14)
+                                        .offset(x: -33, y: 15)
+                                        .scaleEffect(imagesAppeared ? 1 : 0)
+                                        .animation(.interpolatingSpring(stiffness: 60, damping: 7).delay(0.3), value: imagesAppeared)
+                                        .onAppear {
+                                            if imagesAppeared {
+                                                triggerHaptic()
+                                            }
+                                        }
+                                }
+
+                                Spacer() // Push the images to the center horizontally
+                            }
+
+                            Spacer() // Push content up to center vertically
+                        }
+                    }
+
                 }
-                
+
                 Spacer()
             }
             .zIndex(2)
         }
     }
+
     
     private var imageGalleryView: some View {
         ScrollViewReader { scrollProxy in
@@ -374,11 +462,14 @@ struct Home: View {
                     return nil
                 }
                 self.imageUrls.sort { $0.2.dateValue() > $1.2.dateValue() }
+                self.isLoadingImages = false // Set loading to false after fetching images
             } else {
                 print("Error fetching image URLs: \(error?.localizedDescription ?? "Unknown error")")
+                self.isLoadingImages = false // Ensure loading is set to false even on error
             }
         }
     }
+
     
     private func shortenCaption(_ caption: String) -> String {
         if isFullCaptionVisible {
@@ -424,9 +515,10 @@ struct Home: View {
         }
     }
     
-    struct Home_Previews: PreviewProvider {
-        static var previews: some View {
-            Home()
-        }
+}
+
+struct Home_Previews: PreviewProvider {
+    static var previews: some View {
+        Home()
     }
 }
