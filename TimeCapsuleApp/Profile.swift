@@ -121,25 +121,26 @@ struct Profile: View {
                                     impactFeedback.impactOccurred()
 
                                     if isImageExpanded {
-                                        withAnimation(.spring(response: 0.4, dampingFraction: 0.85, blendDuration: 0.3)) {
+                                        withAnimation(.spring(response: 0.5, dampingFraction: 0.9, blendDuration: 0.4)) {
                                             isImageExpanded.toggle()
                                             isFadingOut = true // Start fading out on collapse
                                         }
 
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
                                             self.tappedImageUrl = nil
-                                            withAnimation(.easeInOut(duration: 0.1)) {
-                                                homeProfileScale = 1.0 // Scale buttons back up
+                                            withAnimation(.easeInOut(duration: 0.15)) {
+                                                homeProfileScale = 1.0 // Scale buttons back up smoothly
                                             }
                                         }
 
                                     } else {
-                                        withAnimation(.spring(response: 0.4, dampingFraction: 0.85, blendDuration: 0.3)) {
+                                        withAnimation(.spring(response: 0.5, dampingFraction: 0.85, blendDuration: 0.4)) {
                                             isImageExpanded.toggle()
                                             isFadingOut = false // Reset fading out state when expanding
                                         }
                                     }
                                 }
+
                         case .failure:
                             Image(systemName: "xmark.circle")
                                 .resizable()
