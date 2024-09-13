@@ -104,8 +104,6 @@ struct Profile: View {
                 ZStack {
                     AsyncImage(url: URL(string: tappedImageUrl)) { phase in
                         switch phase {
-                        case .empty:
-                            ProgressView()
                         case .success(let image):
                             image
                                 .resizable()
@@ -156,6 +154,7 @@ struct Profile: View {
                 }
                 .zIndex(2)
             }
+
 
             if isShowingSetting {
                 Setting(isShowing: $isShowingSetting, isSignedOut: $isSignedOut, onChangeProfilePicture: {
