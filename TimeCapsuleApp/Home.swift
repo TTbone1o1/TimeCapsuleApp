@@ -114,7 +114,7 @@ struct Home: View {
                                     }) {
                                         ZStack {
                                             Circle()
-                                                .stroke(Color.secondary.opacity(0.7), lineWidth: 3)
+                                                .stroke(Color.secondary.opacity(0.9), lineWidth: 3)
                                                 .frame(width: 52, height: 52)
                                             
                                             Circle()
@@ -126,7 +126,7 @@ struct Home: View {
 
                                     HStack {
                                         Image("Home")
-                                            .withTintColor(showProfileView ? Color.secondary.opacity(0.7) : Color.primary)
+                                            .withTintColor(showProfileView ? Color.secondary.opacity(0.9) : Color.primary)
                                             .frame(width: 34, height: 34)
                                             .scaleEffect(homeProfileScale)  // Apply scale effect to Home icon
                                             .onTapGesture {
@@ -140,7 +140,7 @@ struct Home: View {
                                         Spacer()
 
                                         Image("Profile")
-                                            .withTintColor(showProfileView ? Color.primary : Color.secondary.opacity(0.7))
+                                            .withTintColor(showProfileView ? Color.primary : Color.secondary.opacity(0.9))
                                             .frame(width: 34, height: 34)
                                             .scaleEffect(homeProfileScale)  // Apply scale effect to Profile icon
                                             .onTapGesture {
