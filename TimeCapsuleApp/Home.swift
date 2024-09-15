@@ -222,7 +222,7 @@ struct Home: View {
                             Spacer() // Push content down to center vertically
 
                             Text("Take a photo to start")
-                                .font(.system(size: 18))
+                                .font(.system(size: 18, weight: .bold, design: .rounded))
                                 .fontWeight(.bold)
                                 .padding(.bottom, 30)
 
