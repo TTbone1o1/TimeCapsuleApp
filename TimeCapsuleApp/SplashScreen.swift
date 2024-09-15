@@ -1,10 +1,3 @@
-//
-//  SplashScreen.swift
-//  TimeCapsuleApp
-//
-//  Created by Abraham May on 9/14/24.
-//
-
 import SwiftUI
 
 struct SplashScreen: View {
@@ -15,7 +8,7 @@ struct SplashScreen: View {
     
     var body: some View {
         if isActive {
-            Home() // Replace with your actual home view
+            Timecap() // Replace with your actual home view
         } else {
             VStack {
                 Spacer() // Push content down to center vertically
