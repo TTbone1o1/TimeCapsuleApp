@@ -93,8 +93,8 @@ struct SplashScreen: View {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     imagesAppeared = true
                 }
-                // Delay to move to the main view
-                DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                // Delay to move to the main view (changed from 3.0 to 1.5)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                     withAnimation {
                         self.isActive = true
                     }
