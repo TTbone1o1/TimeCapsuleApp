@@ -3,6 +3,7 @@ import Firebase
 import FirebaseAuth
 import FirebaseFirestore
 import FirebaseStorage
+import Pow
 
 // Image extension to apply a tint color
 extension Image {
@@ -313,98 +314,112 @@ struct Home: View {
                 VStack(spacing: 45) {
                     ForEach(imageUrls, id: \.0) { imageUrl, caption, timestamp in
                         ZStack(alignment: .bottom) {
-                            AsyncImage(url: URL(string: imageUrl)) { phase in
-                                switch phase {
-                                case .empty:
-                                    Color.clear
-                                        .frame(width: 313, height: 421)
-                                case .success(let image):
-                                    image
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fill)
-                                        .matchedGeometryEffect(id: imageUrl, in: namespace)
-                                        .frame(width: tappedImageUrl == imageUrl ? UIScreen.main.bounds.width : 313,
-                                               height: tappedImageUrl == imageUrl ? UIScreen.main.bounds.height : 421)
-                                        .cornerRadius(tappedImageUrl == imageUrl ? 0 : 33)
-                                        .shadow(radius: 20, x: 0, y: 24)
-                                        .onTapGesture {
-                                            guard canTap else { return }  // Disable tapping immediately
-                                            canTap = false
+                            // Using AsyncImage with Pow animation for loading
+                            AsyncImage(
+                                url: URL(string: imageUrl),
+                                transaction: .init(animation: .easeInOut(duration: 1.8))
+                            ) { phase in
+                                ZStack {
+                                   // Color.black // Background color during loading/transition
 
-                                            let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
-                                            impactFeedback.impactOccurred()
+                                    switch phase {
+                                    case .empty:
+                                        // Empty phase (loading state) with transition effect
+                                        Color.clear
+                                            .frame(width: 313, height: 421)
+                                            .transition(.movingParts.filmExposure) // Apply transition during loading
 
-                                            withAnimation(.spring(response: 0.5, dampingFraction: 0.95)) {
-                                                if tappedImageUrl == imageUrl {
-                                                    tappedImageUrl = nil
-                                                    show = false
-                                                    isScrollDisabled = false
-                                                } else {
-                                                    tappedImageUrl = imageUrl
-                                                    show = true
-                                                    isScrollDisabled = true
+                                    case .success(let image):
+                                        image
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fill)
+                                            .matchedGeometryEffect(id: imageUrl, in: namespace)
+                                            .frame(width: tappedImageUrl == imageUrl ? UIScreen.main.bounds.width : 313,
+                                                   height: tappedImageUrl == imageUrl ? UIScreen.main.bounds.height : 421)
+                                            .cornerRadius(tappedImageUrl == imageUrl ? 0 : 33)
+                                            .shadow(radius: 20, x: 0, y: 24)
+                                            .onTapGesture {
+                                                guard canTap else { return }  // Disable tapping immediately
+                                                canTap = false
 
-                                                    // Check if the tapped image is the first or last one
-                                                    if imageUrls.first?.0 == imageUrl {
-                                                        // Scroll up slightly for the first image
-                                                        withAnimation {
-                                                            scrollProxy.scrollTo(imageUrl, anchor: .top)
-                                                        }
-                                                    } else if imageUrls.last?.0 == imageUrl {
-                                                        // Scroll down slightly for the last image
-                                                        withAnimation {
-                                                            scrollProxy.scrollTo(imageUrl, anchor: .bottom)
-                                                        }
+                                                let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                                                impactFeedback.impactOccurred()
+
+                                                withAnimation(.spring(response: 0.5, dampingFraction: 0.95)) {
+                                                    if tappedImageUrl == imageUrl {
+                                                        tappedImageUrl = nil
+                                                        show = false
+                                                        isScrollDisabled = false
                                                     } else {
-                                                        // For all other images, center the image
-                                                        withAnimation {
-                                                            scrollProxy.scrollTo(imageUrl, anchor: .center)
+                                                        tappedImageUrl = imageUrl
+                                                        show = true
+                                                        isScrollDisabled = true
+
+                                                        // Scroll adjustments
+                                                        if imageUrls.first?.0 == imageUrl {
+                                                            withAnimation {
+                                                                scrollProxy.scrollTo(imageUrl, anchor: .top)
+                                                            }
+                                                        } else if imageUrls.last?.0 == imageUrl {
+                                                            withAnimation {
+                                                                scrollProxy.scrollTo(imageUrl, anchor: .bottom)
+                                                            }
+                                                        } else {
+                                                            withAnimation {
+                                                                scrollProxy.scrollTo(imageUrl, anchor: .center)
+                                                            }
                                                         }
                                                     }
                                                 }
-                                            }
-                                            isFullCaptionVisible = tappedImageUrl != nil
+                                                isFullCaptionVisible = tappedImageUrl != nil
 
-                                            // Re-enable tapping after a delay (0.5 seconds for example)
-                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                                canTap = true
+                                                // Re-enable tapping after a delay
+                                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                                    canTap = true
+                                                }
                                             }
-                                        }
-                                        .overlay(
-                                            LinearGradient(
-                                                gradient: Gradient(stops: [
-                                                    .init(color: currentColorScheme == .dark ? Color.black.opacity(0.8) : Color.black.opacity(1.0), location: 0.0),
-                                                    .init(color: Color.black.opacity(0.0), location: 0.2),
-                                                    .init(color: Color.clear, location: 1.0)
-                                                ]),
-                                                startPoint: .bottom,
-                                                endPoint: .top
-                                            )
-                                            .frame(width: tappedImageUrl == imageUrl ? UIScreen.main.bounds.width : 313,
-                                                   height: tappedImageUrl == imageUrl ? UIScreen.main.bounds.height : 422)
-                                            .clipShape(RoundedRectangle(cornerRadius: tappedImageUrl == imageUrl ? 0 : 33, style: .continuous))
-                                            .animation(.spring(response: 0.5, dampingFraction: 0.95), value: tappedImageUrl)
-                                            .allowsHitTesting(false)
+                                            .overlay(
+                                        LinearGradient(
+                                            gradient: Gradient(stops: [
+                                                .init(color: currentColorScheme == .dark ? Color.black.opacity(0.8) : Color.black.opacity(1.0), location: 0.0),
+                                                .init(color: Color.black.opacity(0.0), location: 0.2),
+                                                .init(color: Color.clear, location: 1.0)
+                                            ]),
+                                            startPoint: .bottom,
+                                            endPoint: .top
                                         )
+                                        .frame(width: tappedImageUrl == imageUrl ? UIScreen.main.bounds.width : 313,
+                                               height: tappedImageUrl == imageUrl ? UIScreen.main.bounds.height : 422)
+                                        .clipShape(RoundedRectangle(cornerRadius: tappedImageUrl == imageUrl ? 0 : 33, style: .continuous))
+                                        .animation(.spring(response: 0.5, dampingFraction: 0.95), value: tappedImageUrl)
+                                        .allowsHitTesting(false)
+                                    )
+//                                            // Apply the film exposure animation after successful loading
+//                                            .transition(.movingParts.filmExposure)
+                                        
 
-                                case .failure:
-                                    Image(systemName: "xmark.circle")
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .frame(width: 100, height: 100)
-                                @unknown default:
-                                    EmptyView()
+                                    case .failure:
+                                        Image(systemName: "xmark.circle")
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                            .frame(width: 100, height: 100)
+                                    @unknown default:
+                                        EmptyView()
+                                    }
                                 }
+                                .frame(maxWidth: .infinity)
+                                .id(imageUrl)
                             }
-                            .frame(maxWidth: .infinity)
-                            .id(imageUrl)
 
+                            // Overlay for caption and timestamp
                             VStack(alignment: .center, spacing: 5) {
+                                // Timestamp
                                 Text(formatDate(timestamp.dateValue()))
                                     .font(.system(size: 18, weight: .bold, design: .rounded))
                                     .foregroundColor(.white)
                                     .padding(.horizontal, 28)
 
+                                // Caption
                                 Text(isFullCaptionVisible ? caption : shortenCaption(caption))
                                     .font(.system(size: 24, weight: .bold, design: .rounded))
                                     .padding(.horizontal, 28)
@@ -413,6 +428,7 @@ struct Home: View {
                                     .cornerRadius(5)
                                     .padding(.bottom, isFullCaptionVisible ? 50 : 26)
                             }
+                            
                         }
                     }
                 }
@@ -423,6 +439,8 @@ struct Home: View {
             .scrollIndicators(.hidden)
         }
     }
+
+
 
 
 
