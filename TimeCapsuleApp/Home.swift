@@ -295,7 +295,7 @@ struct Home: View {
                                 Spacer() // Push the images to the center horizontally
                             }
 
-                            Spacer() // Push content up to center vertically
+                            Spacer(minLength: 350) // Push content up to center vertically
                         }
                     }
 
