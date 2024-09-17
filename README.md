@@ -1,7 +1,7 @@
 Privacy Policy
 Effective Date: 09/17/2024
 
-TimeCapsuleApp ("we", "us", or "our") respects your privacy and is committed to protecting your personal data. This Privacy Policy explains how we collect, use, and protect your information when you use our app.
+TimeCapsuleApp respects your privacy and is committed to protecting your personal data. This Privacy Policy explains how we collect, use, and protect your information when you use our app.
 
 1. Information We Collect
 Photos: You can take one photo per day within the app. These photos are stored locally on your device and are not uploaded to our servers.
