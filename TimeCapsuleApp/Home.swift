@@ -68,7 +68,7 @@ struct Home: View {
                         .zIndex(1)  // Ensure Profile is behind
                         
                         // Main Content View (Home) slides out as the user swipes
-                        mainContentView(geometry: geometry)
+                        mainContentView(geometry: geometry) // <--- Pass geometry here
                             .offset(x: dragOffset)
                             .gesture(
                                 tappedImageUrl == nil ?  // Only allow swiping if no image is tapped
@@ -191,12 +191,13 @@ struct Home: View {
                     }
                 }
             }
+            .navigationViewStyle(StackNavigationViewStyle()) // Force Stack Navigation View for iPad
         }
     }
     
-    private func mainContentView(geometry: GeometryProxy) -> some View {
+    private func mainContentView(geometry: GeometryProxy) -> some View {  // Add geometry as a parameter
         ZStack {
-            imageGalleryView
+            imageGalleryView()  // Pass geometry to imageGalleryView
                 .zIndex(1)
 
             VStack {
@@ -234,7 +235,7 @@ struct Home: View {
                                 HStack {
                                     Image("1")
                                         .resizable()
-                                        .frame(width: 82.37, height: 120.26)
+                                        .frame(width: geometry.size.width * 0.25, height: geometry.size.height * 0.25) // Adapt to screen size
                                         .cornerRadius(19)
                                         .overlay(
                                             RoundedRectangle(cornerRadius: 19)
@@ -254,7 +255,7 @@ struct Home: View {
 
                                     Image("2")
                                         .resizable()
-                                        .frame(width: 82.37, height: 120.26)
+                                        .frame(width: geometry.size.width * 0.25, height: geometry.size.height * 0.25) // Adapt to screen size
                                         .cornerRadius(19)
                                         .overlay(
                                             RoundedRectangle(cornerRadius: 19)
@@ -273,7 +274,7 @@ struct Home: View {
 
                                     Image("3")
                                         .resizable()
-                                        .frame(width: 82.37, height: 120.26)
+                                        .frame(width: geometry.size.width * 0.25, height: geometry.size.height * 0.25) // Adapt to screen size
                                         .cornerRadius(19)
                                         .overlay(
                                             RoundedRectangle(cornerRadius: 19)
@@ -308,25 +309,22 @@ struct Home: View {
     }
 
     
-    private var imageGalleryView: some View {
+    private func imageGalleryView() -> some View {
         ScrollViewReader { scrollProxy in
             ScrollView {
                 VStack(spacing: 45) {
                     ForEach(imageUrls, id: \.0) { imageUrl, caption, timestamp in
                         ZStack(alignment: .bottom) {
-                            // Using AsyncImage with Pow animation for loading
                             AsyncImage(
                                 url: URL(string: imageUrl),
                                 transaction: .init(animation: .easeInOut(duration: 1.8))
                             ) { phase in
                                 ZStack {
-                                   // Color.black // Background color during loading/transition
-
                                     switch phase {
                                     case .empty:
                                         // Empty phase (loading state) with transition effect
                                         Color.clear
-                                            .frame(width: 313, height: 421)
+                                            .frame(width: 313, height: 421)  // Fixed size here
                                             .transition(.movingParts.filmExposure) // Apply transition during loading
 
                                     case .success(let image):
@@ -335,7 +333,7 @@ struct Home: View {
                                             .aspectRatio(contentMode: .fill)
                                             .matchedGeometryEffect(id: imageUrl, in: namespace)
                                             .frame(width: tappedImageUrl == imageUrl ? UIScreen.main.bounds.width : 313,
-                                                   height: tappedImageUrl == imageUrl ? UIScreen.main.bounds.height : 421)
+                                                   height: tappedImageUrl == imageUrl ? UIScreen.main.bounds.height : 421) // Keep fixed size when not tapped
                                             .cornerRadius(tappedImageUrl == imageUrl ? 0 : 33)
                                             .shadow(radius: 20, x: 0, y: 24)
                                             .onTapGesture {
@@ -379,24 +377,21 @@ struct Home: View {
                                                 }
                                             }
                                             .overlay(
-                                        LinearGradient(
-                                            gradient: Gradient(stops: [
-                                                .init(color: currentColorScheme == .dark ? Color.black.opacity(0.8) : Color.black.opacity(1.0), location: 0.0),
-                                                .init(color: Color.black.opacity(0.0), location: 0.2),
-                                                .init(color: Color.clear, location: 1.0)
-                                            ]),
-                                            startPoint: .bottom,
-                                            endPoint: .top
-                                        )
-                                        .frame(width: tappedImageUrl == imageUrl ? UIScreen.main.bounds.width : 313,
-                                               height: tappedImageUrl == imageUrl ? UIScreen.main.bounds.height : 422)
-                                        .clipShape(RoundedRectangle(cornerRadius: tappedImageUrl == imageUrl ? 0 : 33, style: .continuous))
-                                        .animation(.spring(response: 0.5, dampingFraction: 0.95), value: tappedImageUrl)
-                                        .allowsHitTesting(false)
-                                    )
-//                                            // Apply the film exposure animation after successful loading
-//                                            .transition(.movingParts.filmExposure)
-                                        
+                                                LinearGradient(
+                                                    gradient: Gradient(stops: [
+                                                        .init(color: currentColorScheme == .dark ? Color.black.opacity(0.8) : Color.black.opacity(1.0), location: 0.0),
+                                                        .init(color: Color.black.opacity(0.0), location: 0.2),
+                                                        .init(color: Color.clear, location: 1.0)
+                                                    ]),
+                                                    startPoint: .bottom,
+                                                    endPoint: .top
+                                                )
+                                                .frame(width: tappedImageUrl == imageUrl ? UIScreen.main.bounds.width : 313,  // Keep fixed size when not tapped
+                                                       height: tappedImageUrl == imageUrl ? UIScreen.main.bounds.height : 421)
+                                                .clipShape(RoundedRectangle(cornerRadius: tappedImageUrl == imageUrl ? 0 : 33, style: .continuous))
+                                                .animation(.spring(response: 0.5, dampingFraction: 0.95), value: tappedImageUrl)
+                                                .allowsHitTesting(false)
+                                            )
 
                                     case .failure:
                                         Image(systemName: "xmark.circle")
@@ -441,10 +436,6 @@ struct Home: View {
     }
 
 
-
-
-
-    
     
     private func updateIconColors() {
         if showProfileView {
