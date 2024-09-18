@@ -16,10 +16,12 @@ struct Timecap: View {
 
     var body: some View {
         if isLoading {
-            ProgressView() // Show a loading indicator while checking the user's status
-                .onAppear {
-                    checkUserStatus()
-                }
+            VStack {
+                // Nothing inside, or you can add a placeholder UI element if needed
+            }
+            .onAppear {
+                checkUserStatus()
+            }
         } else {
             NavigationView {
                 VStack {
