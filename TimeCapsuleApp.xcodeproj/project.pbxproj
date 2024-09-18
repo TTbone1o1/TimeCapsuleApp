@@ -422,8 +422,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TimeCapsuleApp/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Timecap;
-				INFOPLIST_KEY_NSCameraUsageDescription = "Allow camera";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Allow Library";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Allow Timecapped to access your camera to take photos";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Allow Timecapped to access your photo library";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -456,8 +456,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TimeCapsuleApp/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Timecap;
-				INFOPLIST_KEY_NSCameraUsageDescription = "Allow camera";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Allow Library";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Allow Timecapped to access your camera to take photos";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Allow Timecapped to access your photo library";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
