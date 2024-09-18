@@ -102,7 +102,7 @@ struct Home: View {
                         // Fixed VStack stays on the screen at all times
                          // Add this to control the scaling effect
 
-                        if !isImageExpanded && !isSettingsOpen && !isShowingSetting {
+                        if !isImageExpanded && !isSettingsOpen && !isShowingSetting && !isSignedOut {
                             VStack(spacing: 20) {
                                 Spacer()
                                 ZStack {
@@ -235,7 +235,7 @@ struct Home: View {
                                 HStack {
                                     Image("1")
                                         .resizable()
-                                        .frame(width: geometry.size.width * 0.25, height: geometry.size.height * 0.25) // Adapt to screen size
+                                        .frame(width: 82.37, height: 120.26)
                                         .cornerRadius(19)
                                         .overlay(
                                             RoundedRectangle(cornerRadius: 19)
@@ -255,7 +255,7 @@ struct Home: View {
 
                                     Image("2")
                                         .resizable()
-                                        .frame(width: geometry.size.width * 0.25, height: geometry.size.height * 0.25) // Adapt to screen size
+                                        .frame(width: 82.37, height: 120.26)
                                         .cornerRadius(19)
                                         .overlay(
                                             RoundedRectangle(cornerRadius: 19)
@@ -274,7 +274,7 @@ struct Home: View {
 
                                     Image("3")
                                         .resizable()
-                                        .frame(width: geometry.size.width * 0.25, height: geometry.size.height * 0.25) // Adapt to screen size
+                                        .frame(width: 82.37, height: 120.26)
                                         .cornerRadius(19)
                                         .overlay(
                                             RoundedRectangle(cornerRadius: 19)
