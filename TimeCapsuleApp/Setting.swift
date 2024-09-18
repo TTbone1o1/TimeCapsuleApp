@@ -39,6 +39,7 @@ struct Setting: View {
                 }
                 .frame(height: 40)
                 .frame(maxWidth: .infinity)
+                .offset(y : 5)
 
                 VStack {
                     Spacer()
@@ -68,6 +69,16 @@ struct Setting: View {
                             .font(.system(size: 16, weight: .bold, design: .rounded))
                             .padding()
                     }
+                    
+                    Button {
+                        //add the function for delete
+                    } label: {
+                        Text("Delete Account")
+                            .foregroundColor(.red)
+                            .font(.system(size: 16, weight: .bold, design: .rounded))
+                            .padding()
+                    }
+
                 }
                 .padding(.horizontal, 30)
                 .padding(.bottom, 55)
