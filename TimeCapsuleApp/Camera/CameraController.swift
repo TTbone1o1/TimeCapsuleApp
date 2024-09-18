@@ -53,25 +53,24 @@ struct CameraController: View {
     @State private var isPhotoTaken = false
     @State private var navigateToHome = false
 
-
     var body: some View {
         NavigationView {
             ZStack {
                 CameraView(isShowingMessage: $isShowingMessage, isPresented: $isPresented, isPhotoTaken: $isPhotoTaken)
-                
+                    .frame(maxWidth: .infinity, maxHeight: .infinity) // Ensures the camera view fills the available space
+                    .background(Color.black.edgesIgnoringSafeArea(.all)) // Optional background to fill space if needed
+
                 if isShowingMessage {
                     MessageButton(isShowing: $isShowingMessage)
                         .transition(.opacity) // Transition for the message button appearance
                         .animation(.linear(duration: 0.05)) // Fast animation
                 }
-                
+
                 if !isPhotoTaken {
                     Button(action: {
                         withAnimation {
-                            
                             let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
                             impactFeedback.impactOccurred()
-                            // Set the navigation to home instead of just dismissing the current view
                             navigateToHome = true
                         }
                     }) {
@@ -81,9 +80,9 @@ struct CameraController: View {
                             .foregroundColor(.white)
                             .padding()
                     }
-                    .position(x: 40, y: 80)
+                    .position(x: 40, y: 80) // Fixed position for the back button
                 }
-                
+
                 // Add the hidden NavigationLink here
                 NavigationLink(destination: Home().navigationBarBackButtonHidden(true), isActive: $navigateToHome) {
                     EmptyView() // Hidden NavigationLink
@@ -91,8 +90,8 @@ struct CameraController: View {
             }
             .navigationBarHidden(true)
             .edgesIgnoringSafeArea(.all)
-
         }
+        .navigationViewStyle(StackNavigationViewStyle()) // Ensures stack style navigation on iPads
     }
 }
 
