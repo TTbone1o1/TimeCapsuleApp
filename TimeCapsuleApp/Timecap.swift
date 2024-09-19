@@ -151,8 +151,6 @@ struct Timecap: View {
                     // End sign in button
 
                     if let authError = authError {
-                        Text("Authorization failed: \(authError)")
-                            .foregroundColor(.red)
                     }
                     
                     // Hidden NavigationLink to handle navigation
