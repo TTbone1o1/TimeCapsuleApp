@@ -30,6 +30,7 @@ struct Setting: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         .ignoresSafeArea()
         .animation(.easeInOut, value: isShowing)
+        .navigationViewStyle(.stack) // Ensure navigation behaves in stack mode
     }
 
     var mainView: some View {
@@ -65,13 +66,17 @@ struct Setting: View {
 
                 Spacer().frame(height: 20)
 
-                Button(action: signOut) {
+                // Button to log out with custom UIAlert
+                Button(action: {
+                    showLogoutAlert() // Call custom alert for logout confirmation
+                }) {
                     Text("Log out")
                         .foregroundColor(.gray)
                         .font(.system(size: 16, weight: .bold, design: .rounded))
                         .padding()
                 }
 
+                // Button to delete account with confirmation dialog
                 Button(action: {
                     showDeleteConfirmation = true
                 }) {
@@ -89,7 +94,7 @@ struct Setting: View {
                     Button("Cancel", role: .cancel) {}
                 }
 
-                // Navigation link to Timecap after deletion
+                // Navigation link to Timecap after deletion or sign out
                 NavigationLink(destination: Timecap().navigationBarBackButtonHidden(true), isActive: $navigateToTimecap) {
                     EmptyView()
                 }
@@ -105,11 +110,32 @@ struct Setting: View {
         )
     }
 
-    private func signOut() {
+    // MARK: - Custom UIAlert for Logout
+    private func showLogoutAlert() {
+        guard let window = UIApplication.shared.windows.first else { return }
+
+        let alert = UIAlertController(
+            title: "Log out",
+            message: "Are you sure you want to log out?",
+            preferredStyle: .alert
+        )
+
+        alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil))
+        alert.addAction(UIAlertAction(title: "Yes", style: .destructive, handler: { _ in
+            Task {
+                await handleSignOut() // Log the user out and navigate to Timecap
+            }
+        }))
+
+        window.rootViewController?.present(alert, animated: true, completion: nil)
+    }
+
+    // Async function to handle sign-out and trigger navigation
+    private func handleSignOut() async {
         do {
             try Auth.auth().signOut()
             isSignedOut = true
-            isShowing = false
+            navigateToTimecap = true // Trigger navigation to Timecap after signing out
         } catch let signOutError as NSError {
             print("Error signing out: \(signOutError)")
         }
