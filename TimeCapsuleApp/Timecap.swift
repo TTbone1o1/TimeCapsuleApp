@@ -27,6 +27,8 @@ struct Timecap: View {
                 VStack {
                     Text("TimeCap")
                         .font(.system(size: 39, weight: .bold, design: .rounded))
+                        .foregroundColor(.black)
+                    
                     Text("only one photo a day.")
                         .font(.system(size: 22, weight: .bold, design: .rounded))
                         .foregroundColor(.gray)
@@ -167,6 +169,7 @@ struct Timecap: View {
                 }
                 .frame(maxHeight: .infinity, alignment: .top)
                 .padding(.top, 134)
+                .background(Color.white)
                 .onAppear {
                     imagesAppeared = true
                     triggerHaptic()
