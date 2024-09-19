@@ -67,14 +67,16 @@ struct Writeinfo: View {
                         Rectangle()
                             .frame(width: 291, height: 62)
                             .cornerRadius(40)
-                            .foregroundColor(.black)
+                            .foregroundColor(.primary)
                             .shadow(radius: 24, x: 0, y: 14)
-                        
+
                         HStack {
-                            Text("Continue")
-                                .foregroundColor(.white)
-                                .font(.system(size: 16, weight: .bold, design: .rounded))
-                        }
+                                Text("Continue")
+                                    .foregroundColor(Color(UIColor { traitCollection in
+                                        return traitCollection.userInterfaceStyle == .dark ? UIColor.black : UIColor.white
+                                    }))
+                                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                            }
                     }
                 }
                 .padding(.bottom, 20) // Adds some space at the bottom of the screen
