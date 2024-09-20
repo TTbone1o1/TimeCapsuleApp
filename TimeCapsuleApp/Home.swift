@@ -320,8 +320,11 @@ struct Home: View {
                                                             if status == .authorized {
                                                                 downloadAndSaveImage(from: imageUrl) {
                                                                     DispatchQueue.main.async {
-                                                                        savedImages.insert(imageUrl)
-                                                                        saveImageUrlToUserDefaults(imageUrl: imageUrl)
+                                                                        // Animate the save button scale effect
+                                                                        withAnimation(.spring(response: 0.4, dampingFraction: 0.6, blendDuration: 0.6)) {
+                                                                            savedImages.insert(imageUrl)
+                                                                            saveImageUrlToUserDefaults(imageUrl: imageUrl)
+                                                                        }
                                                                     }
                                                                 }
                                                             } else {
@@ -330,16 +333,19 @@ struct Home: View {
                                                         }
                                                     }
                                                 } label: {
+                                                    // Animate the button icon based on whether the image is saved
                                                     Image(systemName: savedImages.contains(imageUrl) ? "checkmark.circle.fill" : "square.and.arrow.down")
                                                         .foregroundColor(savedImages.contains(imageUrl) ? .green : .white)
                                                         .font(.system(size: 24))
                                                         .padding(40)
-                                                        .transition(.opacity)
-                                                        .animation(.easeInOut(duration: 0.3), value: tappedImageUrl)
+                                                        .scaleEffect(savedImages.contains(imageUrl) ? 1.2 : 1) // Scale the checkmark when saved
+                                                        .animation(.spring(response: 0.4, dampingFraction: 0.6), value: savedImages.contains(imageUrl))
+                                                        .transition(.opacity) // Optional: Transition smoothly
                                                 }
-                                                .disabled(savedImages.contains(imageUrl))
+                                                .disabled(savedImages.contains(imageUrl)) // Disable the button if the image is saved
                                             }
                                         }
+
                                         .onTapGesture {
                                             guard canTap else { return }
                                             canTap = false
