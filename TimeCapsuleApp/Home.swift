@@ -46,14 +46,11 @@ struct Home: View {
     @State private var canTap: Bool = true // Add this to control tapping
     @State private var homeProfileScale: CGFloat = 1.0
     @State private var isLoadingImages = true
-    @State private var savedImages: Set<String> = [] // Track saved image URLs
+    @State private var savedImages: Set<String> = loadSavedImages() // Track saved image URLs
 
-
-    
     @Environment(\.colorScheme) var currentColorScheme
-    
     @Namespace var namespace
-    
+
     var body: some View {
         if isSignedOut {
             Timecap()
@@ -61,50 +58,40 @@ struct Home: View {
             NavigationView {
                 GeometryReader { geometry in
                     ZStack {
-                        // Profile view stays behind the Home view and slides in
                         Profile(isImageExpanded: $isImageExpanded,
                                 isShowingSetting: $isShowingSetting,
                                 selectedImage: $preloadedProfileImage,
-                                homeProfileScale: $homeProfileScale) // Pass the binding for scale
-                        // Pass the preloaded image here
-                        .offset(x: UIScreen.main.bounds.width + dragOffset) // Start outside the screen on the right
-                        .zIndex(1)  // Ensure Profile is behind
+                                homeProfileScale: $homeProfileScale)
+                        .offset(x: UIScreen.main.bounds.width + dragOffset)
+                        .zIndex(1)
                         
-                        // Main Content View (Home) slides out as the user swipes
-                        mainContentView(geometry: geometry) // <--- Pass geometry here
+                        mainContentView(geometry: geometry)
                             .offset(x: dragOffset)
                             .gesture(
-                                tappedImageUrl == nil ?  // Only allow swiping if no image is tapped
+                                tappedImageUrl == nil ?
                                 DragGesture()
                                     .onChanged { value in
                                         let translationWidth = value.translation.width
-                                        // Allow swiping between -screenWidth and 0 (restrict dragOffset)
                                         dragOffset = min(0, max(-UIScreen.main.bounds.width, translationWidth + (showProfileView ? -UIScreen.main.bounds.width : 0)))
                                     }
                                     .onEnded { value in
                                         withAnimation {
                                             if value.translation.width < -geometry.size.width / 3 {
-                                                // If swipe exceeds 1/3 of screen, complete transition to Profile view
                                                 dragOffset = -UIScreen.main.bounds.width
                                                 showProfileView = true
                                             } else if value.translation.width > geometry.size.width / 3 {
-                                                // If swipe is enough to go back to Home, transition back
                                                 dragOffset = 0
                                                 showProfileView = false
                                             } else {
-                                                // If swipe is too small, return to the previous state (either Home or Profile)
                                                 dragOffset = showProfileView ? -UIScreen.main.bounds.width : 0
                                             }
                                             updateIconColors()
                                         }
                                     }
-                                : nil // Disable the gesture when an image is tapped
+                                : nil
                             )
-                            .zIndex(2) // Ensure Home stays above Profile
+                            .zIndex(2)
                         
-                        // Fixed VStack stays on the screen at all times
-                         // Add this to control the scaling effect
-
                         if !isImageExpanded && !isSettingsOpen && !isShowingSetting && !isSignedOut {
                             VStack(spacing: 20) {
                                 Spacer()
@@ -112,8 +99,6 @@ struct Home: View {
                                     Button(action: {
                                         let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
                                         impactFeedback.impactOccurred()
-
-                                        // Toggle the camera view instantly without animation
                                         showCameraController = true
                                     }) {
                                         ZStack {
@@ -132,7 +117,7 @@ struct Home: View {
                                         Image("Home")
                                             .withTintColor(showProfileView ? Color.secondary.opacity(0.9) : Color.primary)
                                             .frame(width: 34, height: 34)
-                                            .scaleEffect(homeProfileScale)  // Apply scale effect to Home icon
+                                            .scaleEffect(homeProfileScale)
                                             .onTapGesture {
                                                 withAnimation {
                                                     dragOffset = 0
@@ -146,7 +131,7 @@ struct Home: View {
                                         Image("Profile")
                                             .withTintColor(showProfileView ? Color.primary : Color.secondary.opacity(0.9))
                                             .frame(width: 34, height: 34)
-                                            .scaleEffect(homeProfileScale)  // Apply scale effect to Profile icon
+                                            .scaleEffect(homeProfileScale)
                                             .onTapGesture {
                                                 withAnimation {
                                                     dragOffset = -UIScreen.main.bounds.width
@@ -163,12 +148,10 @@ struct Home: View {
                             .zIndex(3)
                             .onChange(of: tappedImageUrl) { newValue in
                                 if tappedImageUrl != nil {
-                                    // Scale down when an image is tapped
                                     withAnimation(.easeInOut(duration: 0.2)) {
                                         homeProfileScale = 0.0
                                     }
                                 } else {
-                                    // Scale back to original size when no image is tapped
                                     withAnimation(.easeInOut(duration: 0.2)) {
                                         homeProfileScale = 1.0
                                     }
@@ -176,7 +159,6 @@ struct Home: View {
                             }
                         }
 
-                        
                         if showCameraController {
                             CameraController(isPresented: $showCameraController)
                                 .transition(.opacity)
@@ -188,52 +170,45 @@ struct Home: View {
                         dragOffset = showProfileView ? -UIScreen.main.bounds.width : 0
                         onAppearLogic()
                         updateIconColors()
-                        
-                        // Preload the profile image
                         loadProfileImage()
                     }
                 }
             }
-            .navigationViewStyle(StackNavigationViewStyle()) // Force Stack Navigation View for iPad
+            .navigationViewStyle(StackNavigationViewStyle())
         }
     }
     
-    private func mainContentView(geometry: GeometryProxy) -> some View {  // Add geometry as a parameter
+    private func mainContentView(geometry: GeometryProxy) -> some View {
         ZStack {
-            imageGalleryView()  // Pass geometry to imageGalleryView
+            imageGalleryView()
                 .zIndex(1)
 
             VStack {
                 Spacer().frame(height: 20)
 
-                // Only show username and images when no image is tapped
                 if tappedImageUrl == nil {
-                    // HStack for displaying username
                     HStack {
                         Text(username.isEmpty ? "" : username)
                             .font(.system(size: 18, weight: .bold, design: .rounded))
                             .fontWeight(.bold)
                             .padding(.leading)
                             .foregroundColor(Color.primary)
-
                         Spacer()
                     }
                     .padding(.top, geometry.safeAreaInsets.top)
                     .transition(.opacity)
 
-                    // Show placeholder images if no photos have been posted (imageUrls is empty)
                     if !isLoadingImages && imageUrls.isEmpty {
                         VStack {
-                            Spacer() // Push content down to center vertically
+                            Spacer()
 
                             Text("Take a photo to start")
                                 .font(.system(size: 18, weight: .bold, design: .rounded))
                                 .fontWeight(.bold)
                                 .padding(.bottom, 30)
 
-                            // HStack for the three images (1, 2, 3)
                             HStack {
-                                Spacer() // Push the images to the center horizontally
+                                Spacer()
 
                                 HStack {
                                     Image("1")
@@ -296,13 +271,12 @@ struct Home: View {
                                         }
                                 }
 
-                                Spacer() // Push the images to the center horizontally
+                                Spacer()
                             }
 
-                            Spacer(minLength: 350) // Push content up to center vertically
+                            Spacer(minLength: 350)
                         }
                     }
-
                 }
 
                 Spacer()
@@ -311,7 +285,6 @@ struct Home: View {
         }
     }
 
-    
     private func imageGalleryView() -> some View {
         ScrollViewReader { scrollProxy in
             ScrollView {
@@ -342,14 +315,13 @@ struct Home: View {
 
                                             if tappedImageUrl == imageUrl {
                                                 Button {
-                                                    // Only allow saving if the image hasn't been saved yet
                                                     if !savedImages.contains(imageUrl) {
                                                         PHPhotoLibrary.requestAuthorization { status in
                                                             if status == .authorized {
                                                                 downloadAndSaveImage(from: imageUrl) {
-                                                                    // Mark this image as saved once the save operation is complete
                                                                     DispatchQueue.main.async {
                                                                         savedImages.insert(imageUrl)
+                                                                        saveImageUrlToUserDefaults(imageUrl: imageUrl)
                                                                     }
                                                                 }
                                                             } else {
@@ -358,7 +330,6 @@ struct Home: View {
                                                         }
                                                     }
                                                 } label: {
-                                                    // Change the button icon and color based on whether the image is saved
                                                     Image(systemName: savedImages.contains(imageUrl) ? "checkmark.circle.fill" : "square.and.arrow.down")
                                                         .foregroundColor(savedImages.contains(imageUrl) ? .green : .white)
                                                         .font(.system(size: 24))
@@ -366,15 +337,12 @@ struct Home: View {
                                                         .transition(.opacity)
                                                         .animation(.easeInOut(duration: 0.3), value: tappedImageUrl)
                                                 }
-                                                .disabled(savedImages.contains(imageUrl)) // Disable the button if the image is saved
+                                                .disabled(savedImages.contains(imageUrl))
                                             }
                                         }
-
-                                        //.clipped()
                                         .onTapGesture {
                                             guard canTap else { return }
                                             canTap = false
-
                                             let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
                                             impactFeedback.impactOccurred()
 
@@ -388,7 +356,6 @@ struct Home: View {
                                                     show = true
                                                     isScrollDisabled = true
 
-                                                    // Scroll adjustments
                                                     if imageUrls.first?.0 == imageUrl {
                                                         withAnimation {
                                                             scrollProxy.scrollTo(imageUrl, anchor: .top)
@@ -405,7 +372,6 @@ struct Home: View {
                                                 }
                                             }
                                             isFullCaptionVisible = tappedImageUrl != nil
-
                                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                                                 canTap = true
                                             }
@@ -440,7 +406,6 @@ struct Home: View {
                                 .id(imageUrl)
                             }
 
-                            // Overlay for caption and timestamp
                             VStack(alignment: .center, spacing: 5) {
                                 Text(formatDate(timestamp.dateValue()))
                                     .font(.system(size: 18, weight: .bold, design: .rounded))
@@ -466,31 +431,35 @@ struct Home: View {
         }
     }
 
+    // Helper to persist the saved images using UserDefaults
+    static func loadSavedImages() -> Set<String> {
+        if let savedData = UserDefaults.standard.array(forKey: "savedImages") as? [String] {
+            return Set(savedData)
+        }
+        return []
+    }
+
+    func saveImageUrlToUserDefaults(imageUrl: String) {
+        var savedImages = Home.loadSavedImages()
+        savedImages.insert(imageUrl)
+        UserDefaults.standard.set(Array(savedImages), forKey: "savedImages")
+    }
 
     func downloadAndSaveImage(from urlString: String, completion: @escaping () -> Void) {
         guard let url = URL(string: urlString) else { return }
 
-        // Fetch the image data
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let data = data, let image = UIImage(data: data) {
-                // Save the image to the photo library
                 UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
-
                 DispatchQueue.main.async {
-                    // Call the completion handler to indicate the save is done
                     completion()
-
-                    // Provide feedback to the user that the image was saved
                     print("Image successfully saved to Photos.")
-                    // You can also trigger a haptic feedback or show a toast here
                 }
             } else {
                 print("Error downloading image: \(error?.localizedDescription ?? "Unknown error")")
             }
         }.resume()
     }
-
-
     
     private func updateIconColors() {
         if showProfileView {
@@ -508,7 +477,6 @@ struct Home: View {
         imagesAppeared = true
         triggerHaptic()
     }
-
     
     private func fetchUsername() {
         guard let user = Auth.auth().currentUser else { return }
@@ -543,21 +511,20 @@ struct Home: View {
                     return nil
                 }
                 self.imageUrls.sort { $0.2.dateValue() > $1.2.dateValue() }
-                self.isLoadingImages = false // Set loading to false after fetching images
+                self.isLoadingImages = false
             } else {
                 print("Error fetching image URLs: \(error?.localizedDescription ?? "Unknown error")")
-                self.isLoadingImages = false // Ensure loading is set to false even on error
+                self.isLoadingImages = false
             }
         }
     }
-
     
     private func shortenCaption(_ caption: String) -> String {
         if isFullCaptionVisible {
             return caption
         } else {
             let words = caption.split(separator: " ")
-            let limitedWords = words.prefix(3) // Show only the first 3 words
+            let limitedWords = words.prefix(3)
             let shortCaption = limitedWords.joined(separator: " ")
             return shortCaption + (words.count > 3 ? "..." : "")
         }
@@ -595,7 +562,6 @@ struct Home: View {
             }
         }
     }
-    
 }
 
 struct Home_Previews: PreviewProvider {
