@@ -7,7 +7,7 @@ import FirebaseFirestore
 
 protocol CameraDelegate: AnyObject {
     func didTakePhoto()
-    func showMessageButton() // Add this delegate function to show the message button when necessary
+    func showMessageButton()
 }
 
 class Camera: UIViewController {
@@ -22,25 +22,26 @@ class Camera: UIViewController {
 
     // Shutter button
     private let shutterButton: UIButton = {
-        // Outer circle (stroked)
         let outerCircle = UIButton(frame: CGRect(x: 0, y: 0, width: 56, height: 56))
-        outerCircle.layer.cornerRadius = 56 / 2 // Make it circular
-        outerCircle.layer.borderWidth = 3 // Stroke width
-        outerCircle.layer.borderColor = UIColor.white.withAlphaComponent(0.5).cgColor // Stroke color with opacity
-        outerCircle.backgroundColor = .clear // Transparent background
+        outerCircle.layer.cornerRadius = 56 / 2
+        outerCircle.layer.borderWidth = 3
+        outerCircle.layer.borderColor = UIColor.white.withAlphaComponent(0.5).cgColor
+        outerCircle.backgroundColor = .clear
 
-        // Inner circle (filled)
-        let innerCircle = UIView(frame: CGRect(x: 9.5, y: 9.5, width: 37, height: 37)) // Positioned inside the outer circle with padding
-        innerCircle.layer.cornerRadius = 37 / 2 // Make it circular
-        innerCircle.backgroundColor = UIColor.white // Fill color
+        let innerCircle = UIView(frame: CGRect(x: 9.5, y: 9.5, width: 37, height: 37))
+        innerCircle.layer.cornerRadius = 37 / 2
+        innerCircle.backgroundColor = UIColor.white
 
-        // Add innerCircle to outerCircle
         outerCircle.addSubview(innerCircle)
 
         return outerCircle
     }()
-
     
+    // Camera position (default is back camera)
+    var currentCameraPosition: AVCaptureDevice.Position = .back
+    // Timer duration (default is 0, meaning no timer)
+    var selectedTimerDuration: Int = 0
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .black
@@ -51,7 +52,13 @@ class Camera: UIViewController {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(didTapTakePhoto))
         shutterButton.addGestureRecognizer(tapGesture)
 
-        // Set edgesForExtendedLayout to none
+        let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(didLongPressShutterButton))
+        shutterButton.addGestureRecognizer(longPressGesture)
+        
+        let doubleTapGesture = UITapGestureRecognizer(target: self, action: #selector(didDoubleTapScreen))
+        doubleTapGesture.numberOfTapsRequired = 2
+        view.addGestureRecognizer(doubleTapGesture)
+
         edgesForExtendedLayout = []
     }
 
@@ -67,74 +74,125 @@ class Camera: UIViewController {
         view.bringSubviewToFront(shutterButton)
     }
 
-    private func checkCameraPermissions() {
-        switch AVCaptureDevice.authorizationStatus(for: .video) {
-        case .notDetermined:
-            AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
-                guard granted else { return }
-                DispatchQueue.main.async {
-                    self?.setupCamera()
-                }
-            }
-        case .restricted, .denied:
-            break
-        case .authorized:
-            setupCamera()
-        @unknown default:
-            break
-        }
-    }
-
-    private func setupCamera() {
-        let session = AVCaptureSession()
-        if let device = AVCaptureDevice.default(for: .video) {
-            do {
-                let input = try AVCaptureDeviceInput(device: device)
-                if session.canAddInput(input) {
-                    session.addInput(input)
-                }
-
-                if session.canAddOutput(output) {
-                    session.addOutput(output)
-                }
-
-                previewLayer.videoGravity = .resizeAspectFill
-                previewLayer.session = session
-                view.layer.addSublayer(previewLayer)
-
-                session.startRunning()
-                self.session = session
-            } catch {
-                print(error)
-            }
-        }
+    // Long press gesture to display timer options
+    @objc private func didLongPressShutterButton() {
+        let alert = UIAlertController(title: "Set Timer", message: "Choose a timer duration", preferredStyle: .actionSheet)
+        
+        alert.addAction(UIAlertAction(title: "3 seconds", style: .default, handler: { _ in
+            self.selectedTimerDuration = 3
+        }))
+        
+        alert.addAction(UIAlertAction(title: "5 seconds", style: .default, handler: { _ in
+            self.selectedTimerDuration = 5
+        }))
+        
+        alert.addAction(UIAlertAction(title: "10 seconds", style: .default, handler: { _ in
+            self.selectedTimerDuration = 10
+        }))
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        
+        present(alert, animated: true, completion: nil)
     }
 
     @objc private func didTapTakePhoto() {
-        // Add haptic feedback
         let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
         impactFeedback.impactOccurred()
 
-        
-        // Check if the user has posted today before deciding what to do
         checkIfPostedToday { [weak self] hasPostedToday in
             guard let self = self else { return }
             
             if hasPostedToday {
-                // User has already posted today, show the MessageButton instead of taking the photo
-                print("User has posted today. Showing MessageButton instead of taking a photo.")
                 self.delegate?.showMessageButton()
             } else {
-                // User has not posted today, proceed with the photo-taking animation and capture
-                self.animateShutterButton()
-
-                self.output.capturePhoto(with: AVCapturePhotoSettings(), delegate: self)
+                if self.selectedTimerDuration > 0 {
+                    self.startCountdown()
+                } else {
+                    self.animateShutterButton()
+                    self.output.capturePhoto(with: AVCapturePhotoSettings(), delegate: self)
+                }
             }
         }
     }
 
+    // Double tap gesture to switch camera
+    @objc private func didDoubleTapScreen() {
+        toggleCamera()
+    }
+
+    // Toggle between front and back camera
+    private func toggleCamera() {
+        guard let session = session else { return }
+        session.beginConfiguration()
+        
+        // Remove existing input
+        if let currentInput = session.inputs.first as? AVCaptureDeviceInput {
+            session.removeInput(currentInput)
+        }
+        
+        // Toggle the camera
+        currentCameraPosition = (currentCameraPosition == .back) ? .front : .back
+        
+        // Add new input for the selected camera
+        guard let newDevice = camera(for: currentCameraPosition),
+              let newInput = try? AVCaptureDeviceInput(device: newDevice),
+              session.canAddInput(newInput) else {
+            return
+        }
+
+        session.addInput(newInput)
+        session.commitConfiguration()
+    }
+
+    // Helper function to get the camera for a given position
+    private func camera(for position: AVCaptureDevice.Position) -> AVCaptureDevice? {
+        let devices = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: .video, position: .unspecified).devices
+        return devices.first(where: { $0.position == position })
+    }
+
+    // Start countdown before taking a photo
+    private func startCountdown() {
+        var countdown = selectedTimerDuration
+        
+        let countdownLabel = UILabel()
+        countdownLabel.font = UIFont.systemFont(ofSize: 100, weight: .bold)
+        countdownLabel.textColor = .white
+        countdownLabel.textAlignment = .center
+        countdownLabel.frame = view.bounds
+        countdownLabel.alpha = 0
+        view.addSubview(countdownLabel)
+        
+        func animateCountdown() {
+            if countdown > 0 {
+                countdownLabel.text = "\(countdown)"
+                countdownLabel.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
+                UIView.animate(withDuration: 0.5,
+                               delay: 0,
+                               usingSpringWithDamping: 0.5,
+                               initialSpringVelocity: 1.5,
+                               options: [],
+                               animations: {
+                                   countdownLabel.alpha = 1
+                                   countdownLabel.transform = CGAffineTransform.identity
+                               }, completion: { _ in
+                                   UIView.animate(withDuration: 0.5, animations: {
+                                       countdownLabel.alpha = 0
+                                   }) { _ in
+                                       countdown -= 1
+                                       animateCountdown()
+                                   }
+                               })
+            } else {
+                countdownLabel.removeFromSuperview()
+                self.animateShutterButton()
+                self.output.capturePhoto(with: AVCapturePhotoSettings(), delegate: self)
+            }
+        }
+        
+        animateCountdown()
+    }
+
     private func animateShutterButton() {
-        // Shutter button animation
         UIView.animate(withDuration: 0.1,
                        animations: {
                            self.shutterButton.transform = CGAffineTransform(scaleX: 0.6, y: 0.6)
@@ -161,8 +219,50 @@ class Camera: UIViewController {
                        })
     }
 
+    private func checkCameraPermissions() {
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
+                guard granted else { return }
+                DispatchQueue.main.async {
+                    self?.setupCamera()
+                }
+            }
+        case .restricted, .denied:
+            break
+        case .authorized:
+            setupCamera()
+        @unknown default:
+            break
+        }
+    }
+
+    private func setupCamera() {
+        let session = AVCaptureSession()
+        if let device = camera(for: currentCameraPosition) {
+            do {
+                let input = try AVCaptureDeviceInput(device: device)
+                if session.canAddInput(input) {
+                    session.addInput(input)
+                }
+
+                if session.canAddOutput(output) {
+                    session.addOutput(output)
+                }
+
+                previewLayer.videoGravity = .resizeAspectFill
+                previewLayer.session = session
+                view.layer.addSublayer(previewLayer)
+
+                session.startRunning()
+                self.session = session
+            } catch {
+                print(error)
+            }
+        }
+    }
+
     private func checkIfPostedToday(completion: @escaping (Bool) -> Void) {
-        // This function checks Firestore to see if the user has posted today
         guard let user = Auth.auth().currentUser else {
             print("No user is currently authenticated.")
             completion(false)
@@ -194,7 +294,6 @@ class Camera: UIViewController {
         view.addSubview(hostingController.view)
         hostingController.didMove(toParent: self)
 
-        // Position the PostView
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
         hostingController.view.backgroundColor = .clear
 
@@ -224,10 +323,8 @@ extension Camera: AVCapturePhotoCaptureDelegate {
         }
         session?.stopRunning()
         
-        // Notify delegate that photo was taken
         delegate?.didTakePhoto()
         
-        // Show the PostView
         showPostView(with: image)
         shutterButton.isHidden = true
     }
