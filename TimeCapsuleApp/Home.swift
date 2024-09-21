@@ -334,7 +334,7 @@ struct Home: View {
                                                     }
                                                 } label: {
                                                     // Animate the button icon based on whether the image is saved
-                                                    Image(systemName: savedImages.contains(imageUrl) ? "checkmark.circle.fill" : "square.and.arrow.down")
+                                                    Image(systemName: savedImages.contains(imageUrl) ? "checkmark.circle" : "square.and.arrow.down")
                                                         .foregroundColor(savedImages.contains(imageUrl) ? .green : .white)
                                                         .font(.system(size: 24))
                                                         .padding(40)
