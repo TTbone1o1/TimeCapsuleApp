@@ -318,14 +318,9 @@ struct Home: View {
                                                     if !savedImages.contains(imageUrl) {
                                                         PHPhotoLibrary.requestAuthorization { status in
                                                             if status == .authorized {
+                                                                // Optimistically update the UI and start saving in background
                                                                 downloadAndSaveImage(from: imageUrl) {
-                                                                    DispatchQueue.main.async {
-                                                                        // Animate the save button scale effect
-                                                                        withAnimation(.spring(response: 0.4, dampingFraction: 0.6, blendDuration: 0.6)) {
-                                                                            savedImages.insert(imageUrl)
-                                                                            saveImageUrlToUserDefaults(imageUrl: imageUrl)
-                                                                        }
-                                                                    }
+                                                                    // You could trigger any additional success feedback here
                                                                 }
                                                             } else {
                                                                 print("Permission to access photo library is denied.")
@@ -333,14 +328,13 @@ struct Home: View {
                                                         }
                                                     }
                                                 } label: {
-                                                    // Animate the button icon based on whether the image is saved
                                                     Image(systemName: savedImages.contains(imageUrl) ? "checkmark.circle" : "square.and.arrow.down")
                                                         .foregroundColor(savedImages.contains(imageUrl) ? .green : .white)
                                                         .font(.system(size: 24))
                                                         .padding(40)
-                                                        .scaleEffect(savedImages.contains(imageUrl) ? 1.2 : 1) // Scale the checkmark when saved
-                                                        .animation(.spring(response: 0.4, dampingFraction: 0.6), value: savedImages.contains(imageUrl))
-                                                        .transition(.opacity) // Optional: Transition smoothly
+                                                        .scaleEffect(savedImages.contains(imageUrl) ? 1.2 : 1)
+                                                        .animation(.easeInOut(duration: 0.2), value: savedImages.contains(imageUrl)) // Reduced duration
+                                                        .transition(.opacity) // Smooth transition
                                                 }
                                                 .disabled(savedImages.contains(imageUrl)) // Disable the button if the image is saved
                                             }
@@ -454,17 +448,30 @@ struct Home: View {
     func downloadAndSaveImage(from urlString: String, completion: @escaping () -> Void) {
         guard let url = URL(string: urlString) else { return }
 
-        URLSession.shared.dataTask(with: url) { data, response, error in
-            if let data = data, let image = UIImage(data: data) {
-                UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
-                DispatchQueue.main.async {
-                    completion()
-                    print("Image successfully saved to Photos.")
+        // Show the checkmark immediately, before saving completes
+        DispatchQueue.main.async {
+            savedImages.insert(urlString)  // Optimistically insert the image into savedImages
+            saveImageUrlToUserDefaults(imageUrl: urlString)
+        }
+
+        // Perform the download and save on a background thread to avoid blocking the UI
+        DispatchQueue.global(qos: .background).async {
+            URLSession.shared.dataTask(with: url) { data, response, error in
+                if let data = data, let image = UIImage(data: data) {
+                    // Save the image in the background
+                    UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+
+                    DispatchQueue.main.async {
+                        // Completion handler to confirm save
+                        completion()
+                        print("Image successfully saved to Photos.")
+                    }
+                } else {
+                    print("Error downloading image: \(error?.localizedDescription ?? "Unknown error")")
+                    // Handle error case here if needed
                 }
-            } else {
-                print("Error downloading image: \(error?.localizedDescription ?? "Unknown error")")
-            }
-        }.resume()
+            }.resume()
+        }
     }
     
     private func updateIconColors() {
