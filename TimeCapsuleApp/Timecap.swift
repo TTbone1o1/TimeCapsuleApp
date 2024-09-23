@@ -12,7 +12,10 @@ struct Timecap: View {
     @State private var authError: String?
     @State private var navigateToHome = false
     @State private var isLoading = true // Added loading state
+    
     @Environment(\.horizontalSizeClass) var sizeClass
+    @Environment(\.colorScheme) var colorScheme
+    
     let db = Firestore.firestore() // Firestore reference
 
     var body: some View {
@@ -28,7 +31,7 @@ struct Timecap: View {
                 VStack {
                     Text("TimeCap")
                         .font(.system(size: 39, weight: .bold, design: .rounded))
-                        .foregroundColor(.black)
+                        .foregroundColor(.primary)
                     
                     Text("only one photo a day.")
                         .font(.system(size: 22, weight: .bold, design: .rounded))
@@ -145,7 +148,7 @@ struct Timecap: View {
                             print("Authorization failed: \(error.localizedDescription)")
                         }
                     }
-                    .signInWithAppleButtonStyle(.black)
+                    .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
                     .frame(width: sizeClass == .compact ? 291 : 400, height: sizeClass == .compact ? 62 : 70) // Adjust size for iPad
                     .cornerRadius(sizeClass == .compact ? 40 : 50) // Adjust corner radius for iPad
                     .shadow(radius: 24, x: 0, y: 14)
@@ -168,7 +171,7 @@ struct Timecap: View {
                 }
                 .frame(maxHeight: .infinity, alignment: .top)
                 .padding(.top, 134)
-                .background(Color.white)
+                //.background(Color.white)
                 .onAppear {
                     imagesAppeared = true
                     triggerHaptic()
