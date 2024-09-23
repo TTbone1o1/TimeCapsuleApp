@@ -12,6 +12,7 @@ struct Timecap: View {
     @State private var authError: String?
     @State private var navigateToHome = false
     @State private var isLoading = true // Added loading state
+    @Environment(\.horizontalSizeClass) var sizeClass
     let db = Firestore.firestore() // Firestore reference
 
     var body: some View {
@@ -38,7 +39,7 @@ struct Timecap: View {
                         HStack {
                             Image("1")
                                 .resizable()
-                                .frame(width: 116, height: 169.35)
+                                .frame(width: sizeClass == .regular ? 150 : 116, height: sizeClass == .regular ? 220 : 169.35) // Larger size for iPad
                                 .cornerRadius(19)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 19)
@@ -58,7 +59,7 @@ struct Timecap: View {
 
                             Image("2")
                                 .resizable()
-                                .frame(width: 116, height: 169.35)
+                                .frame(width: sizeClass == .regular ? 150 : 116, height: sizeClass == .regular ? 220 : 169.35) // Larger size for iPad
                                 .cornerRadius(19)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 19)
@@ -77,7 +78,7 @@ struct Timecap: View {
 
                             Image("3")
                                 .resizable()
-                                .frame(width: 116, height: 169.35)
+                                .frame(width: sizeClass == .regular ? 150 : 116, height: sizeClass == .regular ? 220 : 169.35) // Larger size for iPad
                                 .cornerRadius(19)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 19)
@@ -96,12 +97,12 @@ struct Timecap: View {
                                 }
                         }
                         .frame(maxHeight: .infinity, alignment: .top)
-                        .padding(.top, 118)
+                        .padding(.top, sizeClass == .compact ? 118 : 290)
 
                         Spacer()
                     }
 
-                    // Sign in button
+                    // Sign in with Apple button
                     SignInWithAppleButton { request in
                         request.requestedScopes = [.fullName, .email]
                     } onCompletion: { result in
@@ -109,7 +110,6 @@ struct Timecap: View {
                         case .success(let authResults):
                             switch authResults.credential {
                             case let appleIDCredential as ASAuthorizationAppleIDCredential:
-                                // Extract the token and authenticate with Firebase
                                 guard let identityToken = appleIDCredential.identityToken else {
                                     print("Unable to fetch identity token")
                                     return
@@ -119,11 +119,11 @@ struct Timecap: View {
 
                                 Auth.auth().signIn(with: firebaseCredential) { authResult, error in
                                     if let error = error {
-                                        print("Firebase sign in error: \(error.localizedDescription)")
+                                        print("Firebase sign-in error: \(error.localizedDescription)")
                                         self.authError = error.localizedDescription
                                         return
                                     }
-                                    // User is signed in
+
                                     if let user = authResult?.user {
                                         checkUserInFirestore(uid: user.uid) { exists in
                                             if exists {
@@ -146,11 +146,10 @@ struct Timecap: View {
                         }
                     }
                     .signInWithAppleButtonStyle(.black)
-                    .frame(width: 291, height: 62)
-                    .cornerRadius(40)
+                    .frame(width: sizeClass == .compact ? 291 : 400, height: sizeClass == .compact ? 62 : 70) // Adjust size for iPad
+                    .cornerRadius(sizeClass == .compact ? 40 : 50) // Adjust corner radius for iPad
                     .shadow(radius: 24, x: 0, y: 14)
-                    .padding(.bottom, 20)
-                    // End sign in button
+                    .padding(.bottom, sizeClass == .compact ? 20 : 30) // Adjust padding for iPads
 
                     if let authError = authError {
                     }
