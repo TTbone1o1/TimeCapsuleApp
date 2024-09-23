@@ -26,6 +26,7 @@ struct Create: View {
     @State private var username: String = ""
     @ObservedObject private var keyboardObserver = KeyboardObserver()
     @State private var navigateToHome = false
+    @Environment(\.horizontalSizeClass) var sizeClass // To detect the device's size class
 
     var body: some View {
         VStack {
@@ -42,7 +43,7 @@ struct Create: View {
             ZStack {
                 Rectangle()
                     .fill(Color(hex: "#EDEDED"))
-                    .frame(width: 270, height: 80)
+                    .frame(width: sizeClass == .compact ? 270 : 400, height: 80) // Adjust width for iPad
                     .cornerRadius(20)
                 
                 HStack {
@@ -50,9 +51,10 @@ struct Create: View {
                         if username.isEmpty {
                             Text("@username")
                                 .foregroundColor(.gray)
-                                .frame(width: 270, height: 60)
+                                .frame(width: sizeClass == .compact ? 270 : 400, height: 60) // Adjust width for iPad
                                 .cornerRadius(20)
                                 .font(.system(size: 24, weight: .bold))
+                                .offset(x: sizeClass == .regular ? 190 : 0, y: 0)
                         }
                         TextField("", text: $username)
                             .foregroundColor(.gray)
@@ -61,30 +63,30 @@ struct Create: View {
                             .textFieldStyle(PlainTextFieldStyle())
                             .multilineTextAlignment(.center)
                     }
-                    .padding(.horizontal, 90)
+                    .padding(.horizontal, sizeClass == .compact ? 90 : 120) // Adjust padding for iPad
                 }
             }
             .frame(maxHeight: .infinity, alignment: .top)
-            .padding(.top, 200)
+            .padding(.top, sizeClass == .compact ? 200 : 300) // Adjust padding for iPad
             
             if !keyboardObserver.isKeyboardVisible {
                 NavigationLink(destination: Home().navigationBarBackButtonHidden(true),
                                isActive: $navigateToHome) {
                     ZStack {
                         Rectangle()
-                            .frame(width: 291, height: 62)
-                            .cornerRadius(40)
+                            .frame(width: sizeClass == .compact ? 291 : 400, height: sizeClass == .compact ? 62 : 70) // Adjusted width and height for iPad
+                            .cornerRadius(sizeClass == .compact ? 40 : 50) // Larger corner radius for iPad
                             .foregroundColor(.black)
                             .shadow(radius: 24, x: 0, y: 14)
                         
                         HStack {
                             Text("Continue")
                                 .foregroundColor(.white)
-                                .font(.system(size: 16, weight: .semibold))
+                                .font(.system(size: sizeClass == .compact ? 16 : 20, weight: .semibold)) // Larger font size for iPad
                         }
                     }
                 }
-                .padding(.bottom, 20)
+                .padding(.bottom, sizeClass == .compact ? 20 : 30) // Add more padding at the bottom for iPads
                 .simultaneousGesture(TapGesture().onEnded {
                     if let user = Auth.auth().currentUser {
                         saveUsernameToFirestore(user: user, username: username) { success in
@@ -95,6 +97,7 @@ struct Create: View {
                     }
                 })
             }
+
         }
         .onAppear {
             if let user = Auth.auth().currentUser {
@@ -145,8 +148,6 @@ private func saveUsernameToFirestore(user: User, username: String, completion: @
     }
 }
 
-
-
 private func loadUsernameFromFirestore(user: User, completion: @escaping (String?) -> Void) {
     let db = Firestore.firestore()
     
@@ -166,8 +167,6 @@ private func loadUsernameFromFirestore(user: User, completion: @escaping (String
         }
     }
 }
-
-
 
 #Preview {
     Create()
