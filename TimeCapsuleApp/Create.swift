@@ -76,14 +76,16 @@ struct Create: View {
                         Rectangle()
                             .frame(width: sizeClass == .compact ? 291 : 400, height: sizeClass == .compact ? 62 : 70) // Adjusted width and height for iPad
                             .cornerRadius(sizeClass == .compact ? 40 : 50) // Larger corner radius for iPad
-                            .foregroundColor(.black)
+                            .foregroundColor(.primary)
                             .shadow(radius: 24, x: 0, y: 14)
                         
                         HStack {
-                            Text("Continue")
-                                .foregroundColor(.white)
-                                .font(.system(size: sizeClass == .compact ? 16 : 20, weight: .semibold)) // Larger font size for iPad
-                        }
+                                Text("Continue")
+                                    .foregroundColor(Color(UIColor { traitCollection in
+                                        return traitCollection.userInterfaceStyle == .dark ? UIColor.black : UIColor.white
+                                    }))
+                                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                            }
                     }
                 }
                 .padding(.bottom, sizeClass == .compact ? 20 : 30) // Add more padding at the bottom for iPads
