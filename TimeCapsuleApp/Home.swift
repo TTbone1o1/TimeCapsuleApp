@@ -47,6 +47,8 @@ struct Home: View {
     @State private var homeProfileScale: CGFloat = 1.0
     @State private var isLoadingImages = true
     @State private var savedImages: Set<String> = loadSavedImages() // Track saved image URLs
+    @State private var captionDragOffset: CGSize = .zero
+    @State private var finalCaptionOffset: CGSize = .zero // To store the final drag offset
 
     @Environment(\.colorScheme) var currentColorScheme
     @Namespace var namespace
@@ -312,68 +314,23 @@ struct Home: View {
                                                        height: tappedImageUrl == imageUrl ? UIScreen.main.bounds.height : 421)
                                                 .cornerRadius(tappedImageUrl == imageUrl ? 0 : 33)
                                                 .shadow(radius: 20, x: 0, y: 24)
+                                                .onTapGesture {
+                                                    handleImageTap(imageUrl: imageUrl, scrollProxy: scrollProxy)
+                                                }
 
                                             if tappedImageUrl == imageUrl {
                                                 Button {
-                                                    if !savedImages.contains(imageUrl) {
-                                                        PHPhotoLibrary.requestAuthorization { status in
-                                                            if status == .authorized {
-                                                                // Optimistically update the UI and start saving in background
-                                                                downloadAndSaveImage(from: imageUrl) {
-                                                                    // You could trigger any additional success feedback here
-                                                                }
-                                                            } else {
-                                                                print("Permission to access photo library is denied.")
-                                                            }
-                                                        }
-                                                    }
+                                                    saveImage(imageUrl: imageUrl)
                                                 } label: {
                                                     Image(systemName: savedImages.contains(imageUrl) ? "checkmark.circle" : "square.and.arrow.down")
                                                         .foregroundColor(savedImages.contains(imageUrl) ? .green : .white)
                                                         .font(.system(size: 24))
                                                         .padding(40)
                                                         .scaleEffect(savedImages.contains(imageUrl) ? 1.2 : 1)
-                                                        .animation(.easeInOut(duration: 0.2), value: savedImages.contains(imageUrl)) // Reduced duration
-                                                        .transition(.opacity) // Smooth transition
+                                                        .animation(.easeInOut(duration: 0.2), value: savedImages.contains(imageUrl))
+                                                        .transition(.opacity)
                                                 }
-                                                .disabled(savedImages.contains(imageUrl)) // Disable the button if the image is saved
-                                            }
-                                        }
-
-                                        .onTapGesture {
-                                            guard canTap else { return }
-                                            canTap = false
-                                            let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
-                                            impactFeedback.impactOccurred()
-
-                                            withAnimation(.spring(response: 0.5, dampingFraction: 0.95)) {
-                                                if tappedImageUrl == imageUrl {
-                                                    tappedImageUrl = nil
-                                                    show = false
-                                                    isScrollDisabled = false
-                                                } else {
-                                                    tappedImageUrl = imageUrl
-                                                    show = true
-                                                    isScrollDisabled = true
-
-                                                    if imageUrls.first?.0 == imageUrl {
-                                                        withAnimation {
-                                                            scrollProxy.scrollTo(imageUrl, anchor: .top)
-                                                        }
-                                                    } else if imageUrls.last?.0 == imageUrl {
-                                                        withAnimation {
-                                                            scrollProxy.scrollTo(imageUrl, anchor: .bottom)
-                                                        }
-                                                    } else {
-                                                        withAnimation {
-                                                            scrollProxy.scrollTo(imageUrl, anchor: .center)
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            isFullCaptionVisible = tappedImageUrl != nil
-                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                                canTap = true
+                                                .disabled(savedImages.contains(imageUrl))
                                             }
                                         }
                                         .overlay(
@@ -406,20 +363,8 @@ struct Home: View {
                                 .id(imageUrl)
                             }
 
-                            VStack(alignment: .center, spacing: 5) {
-                                Text(formatDate(timestamp.dateValue()))
-                                    .font(.system(size: 18, weight: .bold, design: .rounded))
-                                    .foregroundColor(.white)
-                                    .padding(.horizontal, 28)
-
-                                Text(isFullCaptionVisible ? caption : shortenCaption(caption))
-                                    .font(.system(size: 24, weight: .bold, design: .rounded))
-                                    .padding(.horizontal, 28)
-                                    .frame(maxWidth: .infinity, alignment: .center)
-                                    .foregroundColor(.white)
-                                    .cornerRadius(5)
-                                    .padding(.bottom, isFullCaptionVisible ? 50 : 26)
-                            }
+                            // Call the caption view function
+                            captionView(caption: caption, timestamp: timestamp, tappedImageUrl: tappedImageUrl, currentImageUrl: imageUrl)
                         }
                     }
                 }
@@ -428,6 +373,90 @@ struct Home: View {
             .scrollDisabled(isScrollDisabled)
             .ignoresSafeArea(edges: [.leading, .trailing])
             .scrollIndicators(.hidden)
+        }
+    }
+
+    private func captionView(caption: String, timestamp: Timestamp, tappedImageUrl: String?, currentImageUrl: String) -> some View {
+        VStack(alignment: .center, spacing: 5) {
+            Text(formatDate(timestamp.dateValue()))
+                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .foregroundColor(.white)
+                .padding(.horizontal, 28)
+
+            Text(isFullCaptionVisible ? caption : shortenCaption(caption))
+                .font(.system(size: 24, weight: .bold, design: .rounded))
+                .padding(.horizontal, 28)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .foregroundColor(.white)
+                .cornerRadius(5)
+                .padding(.bottom, isFullCaptionVisible ? 50 : 26)
+                // Apply the offset: when the image is expanded, use both final and current drag offset
+                .offset(tappedImageUrl != nil ? CGSize(width: finalCaptionOffset.width + captionDragOffset.width, height: finalCaptionOffset.height + captionDragOffset.height) : .zero)
+
+                // Only apply the gesture when the image is expanded
+                .gesture(
+                    tappedImageUrl != nil ? DragGesture()
+                        .onChanged { value in
+                            captionDragOffset = value.translation // Track current drag position
+                        }
+                        .onEnded { value in
+                            finalCaptionOffset.height += value.translation.height // Accumulate the drag offset
+                            finalCaptionOffset.width += value.translation.width
+                            captionDragOffset = .zero // Reset the temporary drag state
+                        }
+                    : nil
+                )
+        }
+    }
+
+    private func handleImageTap(imageUrl: String, scrollProxy: ScrollViewProxy) {
+        guard canTap else { return }
+        canTap = false
+        let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+        impactFeedback.impactOccurred()
+
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.95)) {
+            if tappedImageUrl == imageUrl {
+                tappedImageUrl = nil
+                show = false
+                isScrollDisabled = false
+            } else {
+                tappedImageUrl = imageUrl
+                show = true
+                isScrollDisabled = true
+
+                if imageUrls.first?.0 == imageUrl {
+                    withAnimation {
+                        scrollProxy.scrollTo(imageUrl, anchor: .top)
+                    }
+                } else if imageUrls.last?.0 == imageUrl {
+                    withAnimation {
+                        scrollProxy.scrollTo(imageUrl, anchor: .bottom)
+                    }
+                } else {
+                    withAnimation {
+                        scrollProxy.scrollTo(imageUrl, anchor: .center)
+                    }
+                }
+            }
+        }
+        isFullCaptionVisible = tappedImageUrl != nil
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            canTap = true
+        }
+    }
+
+    private func saveImage(imageUrl: String) {
+        if !savedImages.contains(imageUrl) {
+            PHPhotoLibrary.requestAuthorization { status in
+                if status == .authorized {
+                    downloadAndSaveImage(from: imageUrl) {
+                        print("Image successfully saved to Photos.")
+                    }
+                } else {
+                    print("Permission to access photo library is denied.")
+                }
+            }
         }
     }
 
@@ -473,7 +502,7 @@ struct Home: View {
             }.resume()
         }
     }
-    
+
     private func updateIconColors() {
         if showProfileView {
             homeIconColor = Color(.systemGray3)
