@@ -390,24 +390,24 @@ struct Home: View {
                 .foregroundColor(.white)
                 .cornerRadius(5)
                 .padding(.bottom, isFullCaptionVisible ? 50 : 26)
-                // Apply the offset: when the image is expanded, use both final and current drag offset
-                .offset(tappedImageUrl != nil ? CGSize(width: finalCaptionOffset.width + captionDragOffset.width, height: finalCaptionOffset.height + captionDragOffset.height) : .zero)
-
-                // Only apply the gesture when the image is expanded
-                .gesture(
-                    tappedImageUrl != nil ? DragGesture()
-                        .onChanged { value in
-                            captionDragOffset = value.translation // Track current drag position
-                        }
-                        .onEnded { value in
-                            finalCaptionOffset.height += value.translation.height // Accumulate the drag offset
-                            finalCaptionOffset.width += value.translation.width
-                            captionDragOffset = .zero // Reset the temporary drag state
-                        }
-                    : nil
-                )
         }
+        // Apply the offset: when the image is expanded, use both final and current drag offset
+        .offset(tappedImageUrl != nil ? CGSize(width: finalCaptionOffset.width + captionDragOffset.width, height: finalCaptionOffset.height + captionDragOffset.height) : .zero)
+        // Only apply the gesture when the image is expanded
+        .gesture(
+            tappedImageUrl != nil ? DragGesture()
+                .onChanged { value in
+                    captionDragOffset = value.translation // Track current drag position
+                }
+                .onEnded { value in
+                    finalCaptionOffset.height += value.translation.height // Accumulate the drag offset
+                    finalCaptionOffset.width += value.translation.width
+                    captionDragOffset = .zero // Reset the temporary drag state
+                }
+            : nil
+        )
     }
+
 
     private func handleImageTap(imageUrl: String, scrollProxy: ScrollViewProxy) {
         guard canTap else { return }
