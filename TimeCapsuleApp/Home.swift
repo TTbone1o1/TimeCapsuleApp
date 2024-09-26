@@ -181,112 +181,112 @@ struct Home: View {
     }
     
     private func mainContentView(geometry: GeometryProxy) -> some View {
-        ZStack {
-            imageGalleryView()
-                .zIndex(1)
+            ZStack {
+                imageGalleryView()
+                    .zIndex(1)
 
-            VStack {
-                Spacer().frame(height: 20)
+                VStack {
+                    Spacer().frame(height: 20)
 
-                if tappedImageUrl == nil {
-                    HStack {
-                        Text(username.isEmpty ? "" : username)
-                            .font(.system(size: 18, weight: .bold, design: .rounded))
-                            .fontWeight(.bold)
-                            .padding(.leading)
-                            .foregroundColor(Color.primary)
-                        Spacer()
-                    }
-                    .padding(.top, geometry.safeAreaInsets.top)
-                    .transition(.opacity)
-
-                    if !isLoadingImages && imageUrls.isEmpty {
-                        VStack {
-                            Spacer()
-
-                            Text("Take a photo to start")
+                    if tappedImageUrl == nil {
+                        HStack {
+                            Text(username.isEmpty ? "" : username)
                                 .font(.system(size: 18, weight: .bold, design: .rounded))
                                 .fontWeight(.bold)
-                                .padding(.bottom, 30)
+                                .padding(.leading)
+                                .foregroundColor(Color.primary)
+                            Spacer()
+                        }
+                        .padding(.top, geometry.safeAreaInsets.top)
+                        .transition(.opacity)
 
-                            HStack {
+                        if !isLoadingImages && imageUrls.isEmpty {
+                            VStack {
                                 Spacer()
+
+                                Text("Take a photo to start")
+                                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                                    .fontWeight(.bold)
+                                    .padding(.bottom, 30)
 
                                 HStack {
-                                    Image("1")
-                                        .resizable()
-                                        .frame(width: 82.37, height: 120.26)
-                                        .cornerRadius(19)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 19)
-                                                .stroke(Color.white, lineWidth: 4)
-                                        )
-                                        .rotationEffect(Angle(degrees: -16))
-                                        .offset(x: 25, y: 15)
-                                        .shadow(radius: 24, x: 0, y: 14)
-                                        .zIndex(3)
-                                        .scaleEffect(imagesAppeared ? 1 : 0)
-                                        .animation(.interpolatingSpring(stiffness: 60, damping: 7).delay(0.1), value: imagesAppeared)
-                                        .onAppear {
-                                            if imagesAppeared {
-                                                triggerHaptic()
-                                            }
-                                        }
+                                    Spacer()
 
-                                    Image("2")
-                                        .resizable()
-                                        .frame(width: 82.37, height: 120.26)
-                                        .cornerRadius(19)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 19)
-                                                .stroke(Color.white, lineWidth: 4)
-                                        )
-                                        .zIndex(2)
-                                        .rotationEffect(Angle(degrees: -2))
-                                        .shadow(radius: 24, x: 0, y: 14)
-                                        .scaleEffect(imagesAppeared ? 1 : 0)
-                                        .animation(.interpolatingSpring(stiffness: 60, damping: 7).delay(0.2), value: imagesAppeared)
-                                        .onAppear {
-                                            if imagesAppeared {
-                                                triggerHaptic()
+                                    HStack {
+                                        Image("1")
+                                            .resizable()
+                                            .frame(width: 82.37, height: 120.26)
+                                            .cornerRadius(19)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 19)
+                                                    .stroke(Color.white, lineWidth: 4)
+                                            )
+                                            .rotationEffect(Angle(degrees: -16))
+                                            .offset(x: 25, y: 15)
+                                            .shadow(radius: 24, x: 0, y: 14)
+                                            .zIndex(3)
+                                            .scaleEffect(imagesAppeared ? 1 : 0)
+                                            .animation(.interpolatingSpring(stiffness: 60, damping: 7).delay(0.1), value: imagesAppeared)
+                                            .onAppear {
+                                                if imagesAppeared {
+                                                    triggerHaptic()
+                                                }
                                             }
-                                        }
 
-                                    Image("3")
-                                        .resizable()
-                                        .frame(width: 82.37, height: 120.26)
-                                        .cornerRadius(19)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 19)
-                                                .stroke(Color.white, lineWidth: 4)
-                                        )
-                                        .zIndex(1)
-                                        .rotationEffect(Angle(degrees: 17))
-                                        .shadow(radius: 24, x: 0, y: 14)
-                                        .offset(x: -33, y: 15)
-                                        .scaleEffect(imagesAppeared ? 1 : 0)
-                                        .animation(.interpolatingSpring(stiffness: 60, damping: 7).delay(0.3), value: imagesAppeared)
-                                        .onAppear {
-                                            if imagesAppeared {
-                                                triggerHaptic()
+                                        Image("2")
+                                            .resizable()
+                                            .frame(width: 82.37, height: 120.26)
+                                            .cornerRadius(19)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 19)
+                                                    .stroke(Color.white, lineWidth: 4)
+                                            )
+                                            .zIndex(2)
+                                            .rotationEffect(Angle(degrees: -2))
+                                            .shadow(radius: 24, x: 0, y: 14)
+                                            .scaleEffect(imagesAppeared ? 1 : 0)
+                                            .animation(.interpolatingSpring(stiffness: 60, damping: 7).delay(0.2), value: imagesAppeared)
+                                            .onAppear {
+                                                if imagesAppeared {
+                                                    triggerHaptic()
+                                                }
                                             }
-                                        }
+
+                                        Image("3")
+                                            .resizable()
+                                            .frame(width: 82.37, height: 120.26)
+                                            .cornerRadius(19)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 19)
+                                                    .stroke(Color.white, lineWidth: 4)
+                                            )
+                                            .zIndex(1)
+                                            .rotationEffect(Angle(degrees: 17))
+                                            .shadow(radius: 24, x: 0, y: 14)
+                                            .offset(x: -33, y: 15)
+                                            .scaleEffect(imagesAppeared ? 1 : 0)
+                                            .animation(.interpolatingSpring(stiffness: 60, damping: 7).delay(0.3), value: imagesAppeared)
+                                            .onAppear {
+                                                if imagesAppeared {
+                                                    triggerHaptic()
+                                                }
+                                            }
+                                    }
+
+                                    Spacer()
                                 }
 
-                                Spacer()
+                                Spacer(minLength: 350)
                             }
-
-                            Spacer(minLength: 350)
                         }
                     }
+
+                    Spacer()
                 }
-
-                Spacer()
+                .zIndex(2)
             }
-            .zIndex(2)
         }
-    }
-
+    
     private func imageGalleryView() -> some View {
         ScrollViewReader { scrollProxy in
             ScrollView {
@@ -317,6 +317,8 @@ struct Home: View {
                                                 .onTapGesture {
                                                     handleImageTap(imageUrl: imageUrl, scrollProxy: scrollProxy)
                                                 }
+                                                // Apply the offset for the image when expanded and there's only one image
+                                                //.offset(y: tappedImageUrl == imageUrl && imageUrls.count == 1 ? -130 : 0)
 
                                             if tappedImageUrl == imageUrl {
                                                 Button {
@@ -349,6 +351,7 @@ struct Home: View {
                                             .animation(.spring(response: 0.5, dampingFraction: 0.95), value: tappedImageUrl)
                                             .allowsHitTesting(false)
                                         )
+                                        //.offset(y: tappedImageUrl == imageUrl && imageUrls.count == 1 ? -130 : 0)
 
                                     case .failure:
                                         Image(systemName: "xmark.circle")
@@ -366,6 +369,7 @@ struct Home: View {
                             // Call the caption view function
                             captionView(caption: caption, timestamp: timestamp, tappedImageUrl: tappedImageUrl, currentImageUrl: imageUrl)
                         }
+                        .offset(y: tappedImageUrl == imageUrl && imageUrls.count == 1 ? -130 : 0)
                     }
                 }
                 .padding(.vertical, 130)
@@ -391,9 +395,9 @@ struct Home: View {
                 .cornerRadius(5)
                 .padding(.bottom, isFullCaptionVisible ? 50 : 26)
         }
-        // Apply the offset: when the image is expanded, use both final and current drag offset
+        // Offset for when the image is expanded
         .offset(tappedImageUrl != nil ? CGSize(width: finalCaptionOffset.width + captionDragOffset.width, height: finalCaptionOffset.height + captionDragOffset.height) : .zero)
-        // Only apply the gesture when the image is expanded
+        // Gesture for dragging the caption when expanded
         .gesture(
             tappedImageUrl != nil ? DragGesture()
                 .onChanged { value in
@@ -406,7 +410,11 @@ struct Home: View {
                 }
             : nil
         )
+        // Padding when not expanded
+        .padding(.bottom, tappedImageUrl == nil ? 10 : 0)  // Adjust padding when not expanded
     }
+
+
 
 
     private func handleImageTap(imageUrl: String, scrollProxy: ScrollViewProxy) {
@@ -460,7 +468,6 @@ struct Home: View {
         }
     }
 
-    // Helper to persist the saved images using UserDefaults
     static func loadSavedImages() -> Set<String> {
         if let savedData = UserDefaults.standard.array(forKey: "savedImages") as? [String] {
             return Set(savedData)
@@ -477,27 +484,22 @@ struct Home: View {
     func downloadAndSaveImage(from urlString: String, completion: @escaping () -> Void) {
         guard let url = URL(string: urlString) else { return }
 
-        // Show the checkmark immediately, before saving completes
         DispatchQueue.main.async {
             savedImages.insert(urlString)  // Optimistically insert the image into savedImages
             saveImageUrlToUserDefaults(imageUrl: urlString)
         }
 
-        // Perform the download and save on a background thread to avoid blocking the UI
         DispatchQueue.global(qos: .background).async {
             URLSession.shared.dataTask(with: url) { data, response, error in
                 if let data = data, let image = UIImage(data: data) {
-                    // Save the image in the background
                     UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
 
                     DispatchQueue.main.async {
-                        // Completion handler to confirm save
                         completion()
                         print("Image successfully saved to Photos.")
                     }
                 } else {
                     print("Error downloading image: \(error?.localizedDescription ?? "Unknown error")")
-                    // Handle error case here if needed
                 }
             }.resume()
         }
