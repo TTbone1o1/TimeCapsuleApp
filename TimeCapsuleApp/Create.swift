@@ -25,8 +25,9 @@ class KeyboardObserver: ObservableObject {
 struct Create: View {
     @State private var username: String = ""
     @ObservedObject private var keyboardObserver = KeyboardObserver()
-    @State private var navigateToHome = false
     @Environment(\.horizontalSizeClass) var sizeClass // To detect the device's size class
+    @Environment(\.presentationMode) var presentationMode // Allows dismissing the view
+    @State private var showingHome = false // To trigger the transition to Home
 
     var body: some View {
         VStack {
@@ -70,8 +71,17 @@ struct Create: View {
             .padding(.top, sizeClass == .compact ? 200 : 300) // Adjust padding for iPad
             
             if !keyboardObserver.isKeyboardVisible {
-                NavigationLink(destination: Home().navigationBarBackButtonHidden(true),
-                               isActive: $navigateToHome) {
+                Button(action: {
+                    if let user = Auth.auth().currentUser {
+                        saveUsernameToFirestore(user: user, username: username) { success in
+                            if success {
+                                reloadUserSession {
+                                    self.showingHome = true // Trigger transition to Home
+                                }
+                            }
+                        }
+                    }
+                }) {
                     ZStack {
                         Rectangle()
                             .frame(width: sizeClass == .compact ? 291 : 400, height: sizeClass == .compact ? 62 : 70) // Adjusted width and height for iPad
@@ -79,28 +89,20 @@ struct Create: View {
                             .foregroundColor(.primary)
                             .shadow(radius: 24, x: 0, y: 14)
                         
-                        HStack {
-                                Text("Continue")
-                                    .foregroundColor(Color(UIColor { traitCollection in
-                                        return traitCollection.userInterfaceStyle == .dark ? UIColor.black : UIColor.white
-                                    }))
-                                    .font(.system(size: 16, weight: .bold, design: .rounded))
-                            }
+                        Text("Continue")
+                            .foregroundColor(Color(UIColor { traitCollection in
+                                return traitCollection.userInterfaceStyle == .dark ? UIColor.black : UIColor.white
+                            }))
+                            .font(.system(size: 16, weight: .bold, design: .rounded))
                     }
                 }
                 .padding(.bottom, sizeClass == .compact ? 20 : 30) // Add more padding at the bottom for iPads
-                .simultaneousGesture(TapGesture().onEnded {
-                    if let user = Auth.auth().currentUser {
-                        saveUsernameToFirestore(user: user, username: username) { success in
-                            if success {
-                                navigateToHome = true
-                            }
-                        }
-                    }
-                })
             }
 
         }
+        .fullScreenCover(isPresented: $showingHome, content: {
+            Home().navigationBarBackButtonHidden(true)
+        })
         .onAppear {
             if let user = Auth.auth().currentUser {
                 loadUsernameFromFirestore(user: user) { savedUsername in
@@ -112,7 +114,6 @@ struct Create: View {
         }
     }
 }
-
 
 extension Color {
     init(hex: String) {
@@ -166,6 +167,18 @@ private func loadUsernameFromFirestore(user: User, completion: @escaping (String
         } else {
             print("Username not found in Firestore")
             completion(nil)
+        }
+    }
+}
+
+// Reload Firebase Auth user to ensure the session is fully loaded
+private func reloadUserSession(completion: @escaping () -> Void) {
+    Auth.auth().currentUser?.reload { error in
+        if let error = error {
+            print("Error reloading Firebase user: \(error.localizedDescription)")
+        } else {
+            print("User session reloaded successfully")
+            completion()
         }
     }
 }
