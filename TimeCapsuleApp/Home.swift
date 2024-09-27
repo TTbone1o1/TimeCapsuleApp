@@ -317,7 +317,6 @@ struct Home: View {
                                                 .onTapGesture {
                                                     handleImageTap(imageUrl: imageUrl, scrollProxy: scrollProxy)
                                                 }
-                                                // Apply the offset for the image when expanded and there's only one image
 
                                             if tappedImageUrl == imageUrl {
                                                 Button {
@@ -351,6 +350,11 @@ struct Home: View {
                                             .allowsHitTesting(false)
                                         )
 
+                                        // Call the caption view when the image loads successfully
+                                        captionView(caption: caption, timestamp: timestamp, tappedImageUrl: tappedImageUrl, currentImageUrl: imageUrl)
+                                            .transition(.movingParts.filmExposure) // Apply transition when image is successfully loaded
+                                            .offset(y: tappedImageUrl == imageUrl ? 400 : 170)
+
                                     case .failure:
                                         Image(systemName: "xmark.circle")
                                             .resizable()
@@ -363,9 +367,6 @@ struct Home: View {
                                 .frame(maxWidth: .infinity)
                                 .id(imageUrl)
                             }
-
-                            // Call the caption view function
-                            captionView(caption: caption, timestamp: timestamp, tappedImageUrl: tappedImageUrl, currentImageUrl: imageUrl)
                         }
                         .offset(y: tappedImageUrl == imageUrl && imageUrls.count == 1 ? -130 : 0)
                     }
@@ -377,6 +378,7 @@ struct Home: View {
             .scrollIndicators(.hidden)
         }
     }
+
 
     private func captionView(caption: String, timestamp: Timestamp, tappedImageUrl: String?, currentImageUrl: String) -> some View {
         VStack(alignment: .center, spacing: 5) {
