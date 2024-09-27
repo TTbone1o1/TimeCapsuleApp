@@ -80,8 +80,10 @@ struct Profile: View {
                     Text(username.isEmpty ? "Loading..." : username)
                         .font(.system(size: 32, weight: .bold, design: .rounded))
                         .fontWeight(.bold)
-                        .padding(.leading)
                         .foregroundColor(Color.primary)
+                        .frame(maxWidth: .infinity) // Make the text take the full width
+                        .multilineTextAlignment(.center) // Center-align the text
+
 
                     CalendarView(
                         currentDate: $currentDate,
