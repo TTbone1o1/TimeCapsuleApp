@@ -351,9 +351,14 @@ struct Home: View {
                                         )
 
                                         // Call the caption view when the image loads successfully
-                                        captionView(caption: caption, timestamp: timestamp, tappedImageUrl: tappedImageUrl, currentImageUrl: imageUrl)
-                                            .transition(.movingParts.filmExposure) // Apply transition when image is successfully loaded
-                                            .offset(y: tappedImageUrl == imageUrl ? 400 : 170)
+                                        if currentColorScheme == .dark {
+                                            captionView(caption: caption, timestamp: timestamp, tappedImageUrl: tappedImageUrl, currentImageUrl: imageUrl)
+                                                .transition(.movingParts.filmExposure) // Apply transition only in dark mode
+                                                .offset(y: tappedImageUrl == imageUrl ? 400 : 170)
+                                        } else {
+                                            captionView(caption: caption, timestamp: timestamp, tappedImageUrl: tappedImageUrl, currentImageUrl: imageUrl)
+                                                .offset(y: tappedImageUrl == imageUrl ? 400 : 170) // No transition in light mode
+                                        }
 
                                     case .failure:
                                         Image(systemName: "xmark.circle")
