@@ -318,7 +318,6 @@ struct Home: View {
                                                     handleImageTap(imageUrl: imageUrl, scrollProxy: scrollProxy)
                                                 }
                                                 // Apply the offset for the image when expanded and there's only one image
-                                                //.offset(y: tappedImageUrl == imageUrl && imageUrls.count == 1 ? -130 : 0)
 
                                             if tappedImageUrl == imageUrl {
                                                 Button {
@@ -351,7 +350,6 @@ struct Home: View {
                                             .animation(.spring(response: 0.5, dampingFraction: 0.95), value: tappedImageUrl)
                                             .allowsHitTesting(false)
                                         )
-                                        //.offset(y: tappedImageUrl == imageUrl && imageUrls.count == 1 ? -130 : 0)
 
                                     case .failure:
                                         Image(systemName: "xmark.circle")
