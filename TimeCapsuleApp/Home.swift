@@ -107,14 +107,14 @@ struct Home: View {
                                             Circle()
                                                 .stroke(Color.secondary.opacity(0.9), lineWidth: 3)
                                                 .frame(width: 52, height: 52)
-                                            
+
                                             Circle()
                                                 .fill(Color.secondary.opacity(0.7))
                                                 .frame(width: 37, height: 37)
                                         }
                                         .scaleEffect(homeProfileScale)
                                     }
-
+                                    
                                     HStack {
                                         Image("Home")
                                             .withTintColor(showProfileView ? Color.secondary.opacity(0.9) : Color.primary)
@@ -159,6 +159,7 @@ struct Home: View {
                                     }
                                 }
                             }
+                            .disabled(tappedImageUrl != nil) // Add this here to disable buttons
                         }
 
                         if showCameraController {
