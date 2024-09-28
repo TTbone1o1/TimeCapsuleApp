@@ -401,11 +401,11 @@ struct Home: View {
                 .cornerRadius(5)
                 .padding(.bottom, isFullCaptionVisible ? 50 : 26)
         }
-        // Offset for when the image is expanded
-        .offset(tappedImageUrl != nil ? CGSize(width: finalCaptionOffset.width + captionDragOffset.width, height: finalCaptionOffset.height + captionDragOffset.height) : .zero)
+        // Offset for when the image is expanded, only apply drag gesture for the tapped image
+        .offset(tappedImageUrl == currentImageUrl ? CGSize(width: finalCaptionOffset.width + captionDragOffset.width, height: finalCaptionOffset.height + captionDragOffset.height) : .zero)
         // Gesture for dragging the caption when expanded
         .gesture(
-            tappedImageUrl != nil ? DragGesture()
+            tappedImageUrl == currentImageUrl ? DragGesture()
                 .onChanged { value in
                     captionDragOffset = value.translation // Track current drag position
                 }
@@ -417,8 +417,9 @@ struct Home: View {
             : nil
         )
         // Padding when not expanded
-        .padding(.bottom, tappedImageUrl == nil ? 10 : 0)  // Adjust padding when not expanded
+        .padding(.bottom, tappedImageUrl == currentImageUrl ? 10 : 0)  // Adjust padding when not expanded
     }
+
 
 
 
