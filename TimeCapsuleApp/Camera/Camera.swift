@@ -52,6 +52,10 @@ class Camera: UIViewController {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(didTapTakePhoto))
         shutterButton.addGestureRecognizer(tapGesture)
 
+        let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(didLongPressShutterButton))
+        longPressGesture.minimumPressDuration = 0.3
+        shutterButton.addGestureRecognizer(longPressGesture)
+
         let doubleTapGesture = UITapGestureRecognizer(target: self, action: #selector(didDoubleTapScreen))
         doubleTapGesture.numberOfTapsRequired = 2
         view.addGestureRecognizer(doubleTapGesture)
@@ -88,6 +92,21 @@ class Camera: UIViewController {
                     self.output.capturePhoto(with: AVCapturePhotoSettings(), delegate: self)
                 }
             }
+        }
+    }
+
+    // Long press gesture to animate the shutter button
+    @objc private func didLongPressShutterButton(_ gesture: UILongPressGestureRecognizer) {
+        if gesture.state == .began {
+            // Animate the button to become larger when the long press begins
+            UIView.animate(withDuration: 0.2, animations: {
+                self.shutterButton.transform = CGAffineTransform(scaleX: 1.5, y: 1.5)
+            })
+        } else if gesture.state == .ended || gesture.state == .cancelled {
+            // Animate the button back to its original size when the long press ends
+            UIView.animate(withDuration: 0.2, animations: {
+                self.shutterButton.transform = CGAffineTransform.identity
+            })
         }
     }
 
