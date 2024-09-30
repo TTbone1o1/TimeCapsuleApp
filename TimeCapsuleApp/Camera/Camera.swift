@@ -52,8 +52,8 @@ class Camera: UIViewController {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(didTapTakePhoto))
         shutterButton.addGestureRecognizer(tapGesture)
 
-        let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(didLongPressShutterButton))
-        shutterButton.addGestureRecognizer(longPressGesture)
+        //let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(didLongPressShutterButton))
+        //shutterButton.addGestureRecognizer(longPressGesture)
         
         let doubleTapGesture = UITapGestureRecognizer(target: self, action: #selector(didDoubleTapScreen))
         doubleTapGesture.numberOfTapsRequired = 2
@@ -75,25 +75,25 @@ class Camera: UIViewController {
     }
 
     // Long press gesture to display timer options
-    @objc private func didLongPressShutterButton() {
-        let alert = UIAlertController(title: "Set Timer", message: "Choose a timer duration", preferredStyle: .actionSheet)
-        
-        alert.addAction(UIAlertAction(title: "3 seconds", style: .default, handler: { _ in
-            self.selectedTimerDuration = 3
-        }))
-        
-        alert.addAction(UIAlertAction(title: "5 seconds", style: .default, handler: { _ in
-            self.selectedTimerDuration = 5
-        }))
-        
-        alert.addAction(UIAlertAction(title: "10 seconds", style: .default, handler: { _ in
-            self.selectedTimerDuration = 10
-        }))
-        
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-        
-        present(alert, animated: true, completion: nil)
-    }
+//    @objc private func didLongPressShutterButton() {
+//        let alert = UIAlertController(title: "Set Timer", message: "Choose a timer duration", preferredStyle: .actionSheet)
+//        
+//        alert.addAction(UIAlertAction(title: "3 seconds", style: .default, handler: { _ in
+//            self.selectedTimerDuration = 3
+//        }))
+//        
+//        alert.addAction(UIAlertAction(title: "5 seconds", style: .default, handler: { _ in
+//            self.selectedTimerDuration = 5
+//        }))
+//        
+//        alert.addAction(UIAlertAction(title: "10 seconds", style: .default, handler: { _ in
+//            self.selectedTimerDuration = 10
+//        }))
+//        
+//        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+//        
+//        present(alert, animated: true, completion: nil)
+//    }
 
     @objc private func didTapTakePhoto() {
         let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
