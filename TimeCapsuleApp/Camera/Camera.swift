@@ -8,6 +8,7 @@ import FirebaseFirestore
 protocol CameraDelegate: AnyObject {
     func didTakePhoto()
     func showMessageButton()
+    func didFinishRecordingVideo() // New method to notify when video recording is finished
 }
 
 class Camera: UIViewController {
@@ -15,6 +16,8 @@ class Camera: UIViewController {
     var session: AVCaptureSession?
     // Photo Output
     let output = AVCapturePhotoOutput()
+    // Video Output
+    let movieOutput = AVCaptureMovieFileOutput()
     // Video Preview
     let previewLayer = AVCaptureVideoPreviewLayer()
 
@@ -41,6 +44,13 @@ class Camera: UIViewController {
     var currentCameraPosition: AVCaptureDevice.Position = .back
     // Timer duration (default is 0, meaning no timer)
     var selectedTimerDuration: Int = 0
+    
+    // Temporary URL for saving video
+    private var videoFileURL: URL {
+        let tempDirectory = NSTemporaryDirectory()
+        let filePath = "\(tempDirectory)\(UUID().uuidString).mov"
+        return URL(fileURLWithPath: filePath)
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -95,18 +105,45 @@ class Camera: UIViewController {
         }
     }
 
-    // Long press gesture to animate the shutter button
+    // Long press gesture to record video
     @objc private func didLongPressShutterButton(_ gesture: UILongPressGestureRecognizer) {
         if gesture.state == .began {
+            // Start video recording
+            startRecording()
+            
             // Animate the button to become larger when the long press begins
             UIView.animate(withDuration: 0.2, animations: {
                 self.shutterButton.transform = CGAffineTransform(scaleX: 1.5, y: 1.5)
             })
         } else if gesture.state == .ended || gesture.state == .cancelled {
+            // Stop video recording and navigate to PostButton.swift
+            stopRecording()
+            
             // Animate the button back to its original size when the long press ends
             UIView.animate(withDuration: 0.2, animations: {
                 self.shutterButton.transform = CGAffineTransform.identity
             })
+        }
+    }
+
+    // Start video recording
+    private func startRecording() {
+        guard let session = session, !movieOutput.isRecording else { return }
+        
+        let connection = movieOutput.connection(with: .video)
+        connection?.videoOrientation = .portrait
+        
+        let outputURL = videoFileURL
+        movieOutput.startRecording(to: outputURL, recordingDelegate: self)
+        
+        // Hide shutter button when video recording starts
+        shutterButton.isHidden = true
+    }
+
+    // Stop video recording
+    private func stopRecording() {
+        if movieOutput.isRecording {
+            movieOutput.stopRecording()
         }
     }
 
@@ -242,7 +279,11 @@ class Camera: UIViewController {
                 }
 
                 if session.canAddOutput(output) {
-                    session.addOutput(output)
+                    session.addOutput(output) // Photo output
+                }
+
+                if session.canAddOutput(movieOutput) {
+                    session.addOutput(movieOutput) // Video output
                 }
 
                 previewLayer.videoGravity = .resizeAspectFill
@@ -308,6 +349,39 @@ class Camera: UIViewController {
                 hostingController.removeFromParent()
             }
         }
+    }
+}
+
+// Handle video recording completion
+extension Camera: AVCaptureFileOutputRecordingDelegate {
+    func fileOutput(_ output: AVCaptureFileOutput, didFinishRecordingTo outputFileURL: URL, from connections: [AVCaptureConnection], error: Error?) {
+        if let error = error {
+            print("Error recording video: \(error)")
+            return
+        }
+
+        // Notify that recording is finished
+        delegate?.didFinishRecordingVideo()
+
+        // Proceed with navigation to the PostView
+        navigateToPostView(with: outputFileURL)
+    }
+
+    private func navigateToPostView(with videoURL: URL) {
+        let postView = PostView(videoURL: videoURL)
+        let hostingController = UIHostingController(rootView: postView)
+
+        addChild(hostingController)
+        view.addSubview(hostingController.view)
+        hostingController.didMove(toParent: self)
+
+        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            hostingController.view.topAnchor.constraint(equalTo: view.topAnchor)
+        ])
     }
 }
 
