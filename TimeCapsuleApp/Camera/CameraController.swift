@@ -8,10 +8,11 @@ struct CameraView: UIViewControllerRepresentable {
     @Binding var isShowingMessage: Bool
     @Binding var isPresented: Bool
     @Binding var isPhotoTaken: Bool
+    @Binding var isRecordingFinished: Bool // New state to track recording completion
 
     func makeUIViewController(context: Context) -> Camera {
         let camera = Camera()
-        camera.delegate = context.coordinator // Set the delegate to the Coordinator
+        camera.delegate = context.coordinator
         return camera
     }
 
@@ -30,43 +31,49 @@ struct CameraView: UIViewControllerRepresentable {
             self.parent = parent
         }
 
-        // Delegate method to handle when a photo is taken
         func didTakePhoto() {
             DispatchQueue.main.async {
-                self.parent.isPhotoTaken = true // Mark the photo as taken
+                self.parent.isPhotoTaken = true
             }
         }
 
-        // Delegate method to show the message button if the user has already posted today
         func showMessageButton() {
             DispatchQueue.main.async {
-                print("Showing MessageButton")
-                self.parent.isShowingMessage = true // Trigger showing the MessageButton
+                self.parent.isShowingMessage = true
+            }
+        }
+
+        func didFinishRecordingVideo() {
+            DispatchQueue.main.async {
+                self.parent.isRecordingFinished = true // Mark that recording finished
             }
         }
     }
 }
+
 
 struct CameraController: View {
     @Binding var isPresented: Bool
     @State private var isShowingMessage = false
     @State private var isPhotoTaken = false
     @State private var navigateToHome = false
+    @State private var isRecordingFinished = false // Track recording state
 
     var body: some View {
         NavigationView {
             ZStack {
-                CameraView(isShowingMessage: $isShowingMessage, isPresented: $isPresented, isPhotoTaken: $isPhotoTaken)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity) // Ensures the camera view fills the available space
-                    .background(Color.black.edgesIgnoringSafeArea(.all)) // Optional background to fill space if needed
+                CameraView(isShowingMessage: $isShowingMessage, isPresented: $isPresented, isPhotoTaken: $isPhotoTaken, isRecordingFinished: $isRecordingFinished)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.black.edgesIgnoringSafeArea(.all))
 
                 if isShowingMessage {
                     MessageButton(isShowing: $isShowingMessage)
-                        .transition(.opacity) // Transition for the message button appearance
-                        .animation(.linear(duration: 0.05)) // Fast animation
+                        .transition(.opacity)
+                        .animation(.linear(duration: 0.05))
                 }
 
-                if !isPhotoTaken {
+                // Only show back button if recording is not finished and photo hasn't been taken
+                if !isRecordingFinished && !isPhotoTaken {
                     Button(action: {
                         withAnimation {
                             let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
@@ -80,20 +87,23 @@ struct CameraController: View {
                             .foregroundColor(.white)
                             .padding()
                     }
-                    .position(x: 40, y: 80) // Fixed position for the back button
+                    .position(x: 40, y: 80) // Adjust position as needed
                 }
 
-                // Add the hidden NavigationLink here
+
+
+                // Navigation link to home
                 NavigationLink(destination: Home().navigationBarBackButtonHidden(true), isActive: $navigateToHome) {
-                    EmptyView() // Hidden NavigationLink
+                    EmptyView()
                 }
             }
             .navigationBarHidden(true)
             .edgesIgnoringSafeArea(.all)
         }
-        .navigationViewStyle(StackNavigationViewStyle()) // Ensures stack style navigation on iPads
+        .navigationViewStyle(StackNavigationViewStyle())
     }
 }
+
 
 struct CameraController_Previews: PreviewProvider {
     static var previews: some View {
