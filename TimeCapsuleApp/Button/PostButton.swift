@@ -1,4 +1,5 @@
 import SwiftUI
+import AVKit
 import Firebase
 import FirebaseStorage
 import FirebaseAuth
@@ -21,6 +22,7 @@ struct PostView: View {
     @Environment(\.colorScheme) var currentColorScheme
     
     var selectedImage: UIImage?
+    var videoURL: URL? // Video URL passed in
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -32,7 +34,7 @@ struct PostView: View {
                         VStack {
                             Spacer()
                                 .frame(height: moveToTop ? 55 : 315)
-                            
+
                             ZStack {
                                 if showBlurView {
                                     Color.clear
@@ -51,7 +53,7 @@ struct PostView: View {
                                         )
                                         .offset(y: -110)
                                 }
-                                
+
                                 if !timestamp.isEmpty {
                                     Text(timestamp)
                                         .font(.system(size: 18))
@@ -62,7 +64,7 @@ struct PostView: View {
                                         .offset(y: -100)
                                         .zIndex(2)
                                 }
-                                
+
                                 ZStack(alignment: .leading) {
                                     MultilineTextField(text: $caption, isEditing: $isEditing, moveToTop: $moveToTop, showBlurView: $showBlurView, timestamp: $timestamp)
                                         .frame(minHeight: 50, maxHeight: .infinity)
@@ -77,6 +79,16 @@ struct PostView: View {
                                         }
                                 }
                                 .padding()
+
+                                // Show the video player if there is a video URL
+                                if let videoURL = videoURL {
+                                    VideoPlayerView(videoURL: videoURL)
+                                        .frame(width: geometry.size.width, height: geometry.size.height)
+                                        .offset(y: -300)
+                                        .onAppear {
+                                            // This will make the video play automatically on appear
+                                        }
+                                }
                                 Spacer()
                             }
                             .frame(width: geometry.size.width)
@@ -101,7 +113,7 @@ struct PostView: View {
                                 .cornerRadius(40)
                                 .foregroundColor(.black)
                                 .shadow(radius: 24, x: 0, y: 14)
-                            
+
                             HStack {
                                 Text("Post")
                                     .foregroundColor(.white)
@@ -111,7 +123,7 @@ struct PostView: View {
                     }
                     .padding(.bottom, 20)
                 }
-                
+
                 VStack {
                     HStack {
                         Button(action: {
@@ -136,6 +148,7 @@ struct PostView: View {
         }
         .background(Color.clear)
     }
+
 
     // Helper function to format the date
     private func formatDate(date: Date) -> String {
@@ -304,6 +317,34 @@ struct MultilineTextField: View {
         return formatter.string(from: date)
     }
 }
+
+// Custom Video Player View for playing video in full screen
+struct VideoPlayerView: UIViewControllerRepresentable {
+    var videoURL: URL
+
+    func makeUIViewController(context: Context) -> AVPlayerViewController {
+        let player = AVPlayer(url: videoURL)
+        let playerViewController = AVPlayerViewController()
+        playerViewController.player = player
+        playerViewController.showsPlaybackControls = false
+        
+        // Set video gravity to resize aspect fill (similar to the photo preview)
+        playerViewController.videoGravity = .resizeAspectFill
+
+        NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: player.currentItem, queue: .main) { _ in
+            player.seek(to: .zero)
+            player.play()
+        }
+        
+        player.play()
+        return playerViewController
+    }
+
+    func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) {
+        // No need for updates right now
+    }
+}
+
 
 #Preview {
     PostView(selectedImage: UIImage(systemName: "photo")!)
