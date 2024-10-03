@@ -83,12 +83,11 @@ struct PostView: View {
                                 // Show the video player if there is a video URL
                                 if let videoURL = videoURL {
                                     VideoPlayerView(videoURL: videoURL)
-                                        .frame(width: geometry.size.width, height: geometry.size.height)
-                                        .offset(y: -300)
-                                        .onAppear {
-                                            // This will make the video play automatically on appear
-                                        }
+                                        .frame(width: geometry.size.width, height: geometry.size.height * 1.5) // Stretch height by 1.5x of screen height
+                                        .offset(y: -400)  // Adjust offset as needed
+                                        .edgesIgnoringSafeArea(.all)  // Ignore safe areas to make video full screen
                                 }
+
                                 Spacer()
                             }
                             .frame(width: geometry.size.width)
@@ -326,24 +325,27 @@ struct VideoPlayerView: UIViewControllerRepresentable {
         let player = AVPlayer(url: videoURL)
         let playerViewController = AVPlayerViewController()
         playerViewController.player = player
-        playerViewController.showsPlaybackControls = false
-        
-        // Set video gravity to resize aspect fill (similar to the photo preview)
-        playerViewController.videoGravity = .resizeAspectFill
 
+        // Set video gravity to resize (stretches the video to fit without maintaining aspect ratio)
+        playerViewController.videoGravity = .resize
+        
+        // Ensure video plays repeatedly
         NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: player.currentItem, queue: .main) { _ in
             player.seek(to: .zero)
             player.play()
         }
-        
+
+        // Play the video automatically
         player.play()
         return playerViewController
     }
 
     func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) {
-        // No need for updates right now
+        // No updates needed for now
     }
 }
+
+
 
 
 #Preview {
