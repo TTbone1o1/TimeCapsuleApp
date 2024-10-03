@@ -111,20 +111,24 @@ class Camera: UIViewController {
             // Start video recording
             startRecording()
             
-            // Animate the button to become larger when the long press begins
+            // Animate the button to scale out while recording
             UIView.animate(withDuration: 0.2, animations: {
-                self.shutterButton.transform = CGAffineTransform(scaleX: 1.5, y: 1.5)
+                self.shutterButton.transform = CGAffineTransform(scaleX: 1.5, y: 1.5) // Scale out
             })
+            
         } else if gesture.state == .ended || gesture.state == .cancelled {
-            // Stop video recording and navigate to PostButton.swift
+            // Stop video recording
             stopRecording()
             
-            // Animate the button back to its original size when the long press ends
+            // Animate the button back to its original size when recording ends, then hide it
             UIView.animate(withDuration: 0.2, animations: {
-                self.shutterButton.transform = CGAffineTransform.identity
+                self.shutterButton.transform = CGAffineTransform(scaleX: 1.0, y: 1.0) // Back to normal size
+            }, completion: { _ in
+                self.shutterButton.isHidden = true // Hide after recording ends
             })
         }
     }
+
 
     // Start video recording
     private func startRecording() {
@@ -136,8 +140,7 @@ class Camera: UIViewController {
         let outputURL = videoFileURL
         movieOutput.startRecording(to: outputURL, recordingDelegate: self)
         
-        // Hide shutter button when video recording starts
-        shutterButton.isHidden = true
+        // Do not hide the shutter button yet, we just scale it while recording
     }
 
     // Stop video recording
