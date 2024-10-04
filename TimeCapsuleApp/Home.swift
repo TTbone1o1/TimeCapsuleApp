@@ -3,6 +3,7 @@ import Firebase
 import FirebaseAuth
 import FirebaseFirestore
 import FirebaseStorage
+import AVKit
 import Pow
 import Photos
 
@@ -21,13 +22,13 @@ struct Home: View {
     @State private var username: String = ""
     @State private var imagesAppeared = false
     @State private var hasPostedPhoto = false
-    @State private var imageUrls: [(String, String, Timestamp)] = [] // Store (URL, Caption, Timestamp) tuples
+    @State private var mediaUrls: [(String, String, Timestamp, String)] = [] // Store (URL, Caption, Timestamp, Type) tuples ("photo" or "video")
     @State private var photoCount: Int = 0
     @State private var isShowingMessage = false
     @State private var isCaptionVisible: Bool = false
     @State private var isImageLoaded: Bool = false
-    @State private var highlightedImageUrl: String? = nil
-    @State private var tappedImageUrl: String? = nil
+    @State private var highlightedMediaUrl: String? = nil
+    @State private var tappedMediaUrl: String? = nil
     @State private var scaleAmount: CGFloat = 1.0
     @State private var isSignedOut: Bool = false
     @State var show = false
@@ -37,7 +38,7 @@ struct Home: View {
     @State private var homeIconColor: Color = .black
     @State private var profileIconColor = Color(.systemGray3)
     @State private var showCameraController = false
-    @State private var isImageExpanded = false
+    @State private var isMediaExpanded = false
     @State private var areButtonsVisible = true
     @State private var isSettingsOpen = false  // State for settings
     @State private var isShowingSetting = false
@@ -45,13 +46,48 @@ struct Home: View {
     @State private var preloadedProfileImage: UIImage? = nil // State to store the preloaded profile image
     @State private var canTap: Bool = true // Add this to control tapping
     @State private var homeProfileScale: CGFloat = 1.0
-    @State private var isLoadingImages = true
+    @State private var isLoadingMedia = true
     @State private var savedImages: Set<String> = loadSavedImages() // Track saved image URLs
     @State private var captionDragOffset: CGSize = .zero
     @State private var finalCaptionOffset: CGSize = .zero // To store the final drag offset
 
     @Environment(\.colorScheme) var currentColorScheme
     @Namespace var namespace
+    
+    // Custom Video Player View to hide the play button and the skip controls
+    struct CustomVideoPlayerView: UIViewControllerRepresentable {
+        var videoURL: URL
+        
+        func makeUIViewController(context: Context) -> AVPlayerViewController {
+            let player = AVPlayer(url: videoURL)
+            let controller = AVPlayerViewController()
+            
+            // Hide all playback controls
+            controller.showsPlaybackControls = false
+            
+            // Set video gravity to fill the screen
+            controller.videoGravity = .resizeAspectFill
+            
+            // Ensure the video plays automatically
+            player.play()
+            
+            // Listen for when the video ends to loop it
+            NotificationCenter.default.addObserver(
+                forName: .AVPlayerItemDidPlayToEndTime,
+                object: player.currentItem,
+                queue: .main
+            ) { _ in
+                player.seek(to: .zero) // Restart video
+                player.play() // Play again
+            }
+            
+            return controller
+        }
+        
+        func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) {
+            // Handle updates here if needed
+        }
+    }
 
     var body: some View {
         if isSignedOut {
@@ -60,7 +96,7 @@ struct Home: View {
             NavigationView {
                 GeometryReader { geometry in
                     ZStack {
-                        Profile(isImageExpanded: $isImageExpanded,
+                        Profile(isImageExpanded: $isMediaExpanded,
                                 isShowingSetting: $isShowingSetting,
                                 selectedImage: $preloadedProfileImage,
                                 homeProfileScale: $homeProfileScale)
@@ -70,7 +106,7 @@ struct Home: View {
                         mainContentView(geometry: geometry)
                             .offset(x: dragOffset)
                             .gesture(
-                                tappedImageUrl == nil ?
+                                tappedMediaUrl == nil ?
                                 DragGesture()
                                     .onChanged { value in
                                         let translationWidth = value.translation.width
@@ -94,7 +130,7 @@ struct Home: View {
                             )
                             .zIndex(2)
                         
-                        if !isImageExpanded && !isSettingsOpen && !isShowingSetting && !isSignedOut {
+                        if !isMediaExpanded && !isSettingsOpen && !isShowingSetting && !isSignedOut {
                             VStack(spacing: 20) {
                                 Spacer()
                                 ZStack {
@@ -148,8 +184,8 @@ struct Home: View {
                             .padding(.horizontal, 60)
                             .padding(.bottom, 40)
                             .zIndex(3)
-                            .onChange(of: tappedImageUrl) { newValue in
-                                if tappedImageUrl != nil {
+                            .onChange(of: tappedMediaUrl) { newValue in
+                                if tappedMediaUrl != nil {
                                     withAnimation(.easeInOut(duration: 0.2)) {
                                         homeProfileScale = 0.0
                                     }
@@ -159,7 +195,7 @@ struct Home: View {
                                     }
                                 }
                             }
-                            .disabled(tappedImageUrl != nil) // Add this here to disable buttons
+                            .disabled(tappedMediaUrl != nil) // Add this here to disable buttons
                         }
 
                         if showCameraController {
@@ -183,13 +219,13 @@ struct Home: View {
     
     private func mainContentView(geometry: GeometryProxy) -> some View {
             ZStack {
-                imageGalleryView()
+                mediaGalleryView()
                     .zIndex(1)
 
                 VStack {
                     Spacer().frame(height: 20)
 
-                    if tappedImageUrl == nil {
+                    if tappedMediaUrl == nil {
                         HStack {
                             Text(username.isEmpty ? "" : username)
                                 .font(.system(size: 18, weight: .bold, design: .rounded))
@@ -201,11 +237,11 @@ struct Home: View {
                         .padding(.top, geometry.safeAreaInsets.top)
                         .transition(.opacity)
 
-                        if !isLoadingImages && imageUrls.isEmpty {
+                        if !isLoadingMedia && mediaUrls.isEmpty {
                             VStack {
                                 Spacer()
 
-                                Text("Take a photo to start")
+                                Text("Take a photo or video to start")
                                     .font(.system(size: 18, weight: .bold, design: .rounded))
                                     .fontWeight(.bold)
                                     .padding(.bottom, 30)
@@ -288,93 +324,104 @@ struct Home: View {
             }
         }
     
-    private func imageGalleryView() -> some View {
+    private func mediaGalleryView() -> some View {
         ScrollViewReader { scrollProxy in
             ScrollView {
                 VStack(spacing: 45) {
-                    ForEach(imageUrls, id: \.0) { imageUrl, caption, timestamp in
+                    ForEach(mediaUrls, id: \.0) { mediaUrl, caption, timestamp, mediaType in
                         ZStack(alignment: .bottom) {
-                            AsyncImage(
-                                url: URL(string: imageUrl),
-                                transaction: .init(animation: .easeInOut(duration: 1.8))
-                            ) { phase in
-                                ZStack {
-                                    switch phase {
-                                    case .empty:
-                                        Color.clear
-                                            .frame(width: 313, height: 421)
-                                            .transition(.movingParts.filmExposure)
+                            if mediaType == "photo" {
+                                AsyncImage(
+                                    url: URL(string: mediaUrl),
+                                    transaction: .init(animation: .easeInOut(duration: 1.8))
+                                ) { phase in
+                                    ZStack {
+                                        switch phase {
+                                        case .empty:
+                                            Color.clear
+                                                .frame(width: 313, height: 421)
+                                                .transition(.movingParts.filmExposure)
 
-                                    case .success(let image):
-                                        ZStack(alignment: .topTrailing) {
-                                            image
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fill)
-                                                .matchedGeometryEffect(id: imageUrl, in: namespace)
-                                                .frame(width: tappedImageUrl == imageUrl ? UIScreen.main.bounds.width : 313,
-                                                       height: tappedImageUrl == imageUrl ? UIScreen.main.bounds.height : 421)
-                                                .cornerRadius(tappedImageUrl == imageUrl ? 0 : 33)
-                                                .shadow(radius: 20, x: 0, y: 24)
-                                                .onTapGesture {
-                                                    handleImageTap(imageUrl: imageUrl, scrollProxy: scrollProxy)
-                                                }
+                                        case .success(let image):
+                                            ZStack(alignment: .topTrailing) {
+                                                image
+                                                    .resizable()
+                                                    .aspectRatio(contentMode: .fill)
+                                                    .matchedGeometryEffect(id: mediaUrl, in: namespace)
+                                                    .frame(width: tappedMediaUrl == mediaUrl ? UIScreen.main.bounds.width : 313,
+                                                           height: tappedMediaUrl == mediaUrl ? UIScreen.main.bounds.height : 421)
+                                                    .cornerRadius(tappedMediaUrl == mediaUrl ? 0 : 33)
+                                                    .shadow(radius: 20, x: 0, y: 24)
+                                                    .onTapGesture {
+                                                        handleMediaTap(mediaUrl: mediaUrl, mediaType: mediaType, scrollProxy: scrollProxy)
+                                                    }
 
-                                            if tappedImageUrl == imageUrl {
-                                                Button {
-                                                    saveImage(imageUrl: imageUrl)
-                                                } label: {
-                                                    Image(systemName: savedImages.contains(imageUrl) ? "checkmark.circle" : "square.and.arrow.down")
-                                                        .foregroundColor(savedImages.contains(imageUrl) ? .green : .white)
-                                                        .font(.system(size: 24))
-                                                        .padding(40)
-                                                        .scaleEffect(savedImages.contains(imageUrl) ? 1.2 : 1)
-                                                        .animation(.easeInOut(duration: 0.2), value: savedImages.contains(imageUrl))
-                                                        .transition(.opacity)
+                                                if tappedMediaUrl == mediaUrl {
+                                                    Button {
+                                                        saveMedia(mediaUrl: mediaUrl)
+                                                    } label: {
+                                                        Image(systemName: savedImages.contains(mediaUrl) ? "checkmark.circle" : "square.and.arrow.down")
+                                                            .foregroundColor(savedImages.contains(mediaUrl) ? .green : .white)
+                                                            .font(.system(size: 24))
+                                                            .padding(40)
+                                                            .scaleEffect(savedImages.contains(mediaUrl) ? 1.2 : 1)
+                                                            .animation(.easeInOut(duration: 0.2), value: savedImages.contains(mediaUrl))
+                                                            .transition(.opacity)
+                                                    }
+                                                    .disabled(savedImages.contains(mediaUrl))
                                                 }
-                                                .disabled(savedImages.contains(imageUrl))
                                             }
-                                        }
-                                        .overlay(
-                                            LinearGradient(
-                                                gradient: Gradient(stops: [
-                                                    .init(color: currentColorScheme == .dark ? Color.black.opacity(0.8) : Color.black.opacity(1.0), location: 0.0),
-                                                    .init(color: Color.black.opacity(0.0), location: 0.2),
-                                                    .init(color: Color.clear, location: 1.0)
-                                                ]),
-                                                startPoint: .bottom,
-                                                endPoint: .top
+                                            .overlay(
+                                                LinearGradient(
+                                                    gradient: Gradient(stops: [
+                                                        .init(color: currentColorScheme == .dark ? Color.black.opacity(0.8) : Color.black.opacity(1.0), location: 0.0),
+                                                        .init(color: Color.black.opacity(0.0), location: 0.2),
+                                                        .init(color: Color.clear, location: 1.0)
+                                                    ]),
+                                                    startPoint: .bottom,
+                                                    endPoint: .top
+                                                )
+                                                .frame(width: tappedMediaUrl == mediaUrl ? UIScreen.main.bounds.width : 313,
+                                                       height: tappedMediaUrl == mediaUrl ? UIScreen.main.bounds.height : 421)
+                                                .clipShape(RoundedRectangle(cornerRadius: tappedMediaUrl == mediaUrl ? 0 : 33, style: .continuous))
+                                                .animation(.spring(response: 0.5, dampingFraction: 0.95), value: tappedMediaUrl)
+                                                .allowsHitTesting(false)
                                             )
-                                            .frame(width: tappedImageUrl == imageUrl ? UIScreen.main.bounds.width : 313,
-                                                   height: tappedImageUrl == imageUrl ? UIScreen.main.bounds.height : 421)
-                                            .clipShape(RoundedRectangle(cornerRadius: tappedImageUrl == imageUrl ? 0 : 33, style: .continuous))
-                                            .animation(.spring(response: 0.5, dampingFraction: 0.95), value: tappedImageUrl)
-                                            .allowsHitTesting(false)
-                                        )
 
-                                        // Call the caption view when the image loads successfully
-                                        if currentColorScheme == .dark {
-                                            captionView(caption: caption, timestamp: timestamp, tappedImageUrl: tappedImageUrl, currentImageUrl: imageUrl)
-                                                .transition(.movingParts.filmExposure) // Apply transition only in dark mode
-                                                .offset(y: tappedImageUrl == imageUrl ? 400 : 170)
-                                        } else {
-                                            captionView(caption: caption, timestamp: timestamp, tappedImageUrl: tappedImageUrl, currentImageUrl: imageUrl)
-                                                .offset(y: tappedImageUrl == imageUrl ? 400 : 170) // No transition in light mode
+                                            // Call the caption view when the image loads successfully
+                                            if currentColorScheme == .dark {
+                                                captionView(caption: caption, timestamp: timestamp, tappedMediaUrl: tappedMediaUrl, currentMediaUrl: mediaUrl)
+                                                    .transition(.movingParts.filmExposure) // Apply transition only in dark mode
+                                                    .offset(y: tappedMediaUrl == mediaUrl ? 400 : 170)
+                                            } else {
+                                                captionView(caption: caption, timestamp: timestamp, tappedMediaUrl: tappedMediaUrl, currentMediaUrl: mediaUrl)
+                                                    .offset(y: tappedMediaUrl == mediaUrl ? 400 : 170) // No transition in light mode
+                                            }
+
+                                        case .failure:
+                                            Image(systemName: "xmark.circle")
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fit)
+                                                .frame(width: 100, height: 100)
+                                        @unknown default:
+                                            EmptyView()
                                         }
-
-                                    case .failure:
-                                        Image(systemName: "xmark.circle")
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                            .frame(width: 100, height: 100)
-                                    @unknown default:
-                                        EmptyView()
                                     }
+                                    .frame(maxWidth: .infinity)
+                                    .id(mediaUrl)
                                 }
-                                .frame(maxWidth: .infinity)
-                                .id(imageUrl)
+                            } else if mediaType == "video" {
+                                CustomVideoPlayerView(videoURL: URL(string: mediaUrl)!)
+                                    .frame(width: tappedMediaUrl == mediaUrl ? UIScreen.main.bounds.width : 313,
+                                           height: tappedMediaUrl == mediaUrl ? UIScreen.main.bounds.height : 421)
+                                    .cornerRadius(tappedMediaUrl == mediaUrl ? 0 : 33)
+                                    .shadow(radius: 20, x: 0, y: 24)
+                                    .onTapGesture {
+                                        handleMediaTap(mediaUrl: mediaUrl, mediaType: mediaType, scrollProxy: scrollProxy)
+                                    }
                             }
                         }
-                        .offset(y: tappedImageUrl == imageUrl && imageUrls.count == 1 ? -130 : 0)
+                        .offset(y: tappedMediaUrl == mediaUrl && mediaUrls.count == 1 ? -130 : 0)
                     }
                 }
                 .padding(.vertical, 130)
@@ -385,8 +432,7 @@ struct Home: View {
         }
     }
 
-
-    private func captionView(caption: String, timestamp: Timestamp, tappedImageUrl: String?, currentImageUrl: String) -> some View {
+    private func captionView(caption: String, timestamp: Timestamp, tappedMediaUrl: String?, currentMediaUrl: String) -> some View {
         VStack(alignment: .center, spacing: 5) {
             Text(formatDate(timestamp.dateValue()))
                 .font(.system(size: 18, weight: .bold, design: .rounded))
@@ -401,11 +447,11 @@ struct Home: View {
                 .cornerRadius(5)
                 .padding(.bottom, isFullCaptionVisible ? 50 : 26)
         }
-        // Offset for when the image is expanded, only apply drag gesture for the tapped image
-        .offset(tappedImageUrl == currentImageUrl ? CGSize(width: finalCaptionOffset.width + captionDragOffset.width, height: finalCaptionOffset.height + captionDragOffset.height) : .zero)
+        // Offset for when the media is expanded, only apply drag gesture for the tapped media
+        .offset(tappedMediaUrl == currentMediaUrl ? CGSize(width: finalCaptionOffset.width + captionDragOffset.width, height: finalCaptionOffset.height + captionDragOffset.height) : .zero)
         // Gesture for dragging the caption when expanded
         .gesture(
-            tappedImageUrl == currentImageUrl ? DragGesture()
+            tappedMediaUrl == currentMediaUrl ? DragGesture()
                 .onChanged { value in
                     captionDragOffset = value.translation // Track current drag position
                 }
@@ -417,56 +463,52 @@ struct Home: View {
             : nil
         )
         // Padding when not expanded
-        .padding(.bottom, tappedImageUrl == currentImageUrl ? 10 : 0)  // Adjust padding when not expanded
+        .padding(.bottom, tappedMediaUrl == currentMediaUrl ? 10 : 0)  // Adjust padding when not expanded
     }
 
-
-
-
-
-    private func handleImageTap(imageUrl: String, scrollProxy: ScrollViewProxy) {
+    private func handleMediaTap(mediaUrl: String, mediaType: String, scrollProxy: ScrollViewProxy) {
         guard canTap else { return }
         canTap = false
         let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
         impactFeedback.impactOccurred()
 
         withAnimation(.spring(response: 0.5, dampingFraction: 0.95)) {
-            if tappedImageUrl == imageUrl {
-                tappedImageUrl = nil
+            if tappedMediaUrl == mediaUrl {
+                tappedMediaUrl = nil
                 show = false
                 isScrollDisabled = false
             } else {
-                tappedImageUrl = imageUrl
+                tappedMediaUrl = mediaUrl
                 show = true
                 isScrollDisabled = true
 
-                if imageUrls.first?.0 == imageUrl {
+                if mediaUrls.first?.0 == mediaUrl {
                     withAnimation {
-                        scrollProxy.scrollTo(imageUrl, anchor: .top)
+                        scrollProxy.scrollTo(mediaUrl, anchor: .top)
                     }
-                } else if imageUrls.last?.0 == imageUrl {
+                } else if mediaUrls.last?.0 == mediaUrl {
                     withAnimation {
-                        scrollProxy.scrollTo(imageUrl, anchor: .bottom)
+                        scrollProxy.scrollTo(mediaUrl, anchor: .bottom)
                     }
                 } else {
                     withAnimation {
-                        scrollProxy.scrollTo(imageUrl, anchor: .center)
+                        scrollProxy.scrollTo(mediaUrl, anchor: .center)
                     }
                 }
             }
         }
-        isFullCaptionVisible = tappedImageUrl != nil
+        isFullCaptionVisible = tappedMediaUrl != nil
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             canTap = true
         }
     }
 
-    private func saveImage(imageUrl: String) {
-        if !savedImages.contains(imageUrl) {
+    private func saveMedia(mediaUrl: String) {
+        if !savedImages.contains(mediaUrl) {
             PHPhotoLibrary.requestAuthorization { status in
                 if status == .authorized {
-                    downloadAndSaveImage(from: imageUrl) {
-                        print("Image successfully saved to Photos.")
+                    downloadAndSaveMedia(from: mediaUrl) {
+                        print("Media successfully saved to Photos.")
                     }
                 } else {
                     print("Permission to access photo library is denied.")
@@ -482,18 +524,18 @@ struct Home: View {
         return []
     }
 
-    func saveImageUrlToUserDefaults(imageUrl: String) {
+    func saveMediaUrlToUserDefaults(mediaUrl: String) {
         var savedImages = Home.loadSavedImages()
-        savedImages.insert(imageUrl)
+        savedImages.insert(mediaUrl)
         UserDefaults.standard.set(Array(savedImages), forKey: "savedImages")
     }
 
-    func downloadAndSaveImage(from urlString: String, completion: @escaping () -> Void) {
+    func downloadAndSaveMedia(from urlString: String, completion: @escaping () -> Void) {
         guard let url = URL(string: urlString) else { return }
 
         DispatchQueue.main.async {
-            savedImages.insert(urlString)  // Optimistically insert the image into savedImages
-            saveImageUrlToUserDefaults(imageUrl: urlString)
+            savedImages.insert(urlString)  // Optimistically insert the media into savedImages
+            saveMediaUrlToUserDefaults(mediaUrl: urlString)
         }
 
         DispatchQueue.global(qos: .background).async {
@@ -503,10 +545,10 @@ struct Home: View {
 
                     DispatchQueue.main.async {
                         completion()
-                        print("Image successfully saved to Photos.")
+                        print("Media successfully saved to Photos.")
                     }
                 } else {
-                    print("Error downloading image: \(error?.localizedDescription ?? "Unknown error")")
+                    print("Error downloading media: \(error?.localizedDescription ?? "Unknown error")")
                 }
             }.resume()
         }
@@ -524,7 +566,7 @@ struct Home: View {
     
     private func onAppearLogic() {
         fetchUsername()
-        fetchAllPhotos()
+        fetchAllMedia()
         imagesAppeared = true
         triggerHaptic()
     }
@@ -543,33 +585,48 @@ struct Home: View {
             }
         }
     }
-    
-    private func fetchAllPhotos() {
+
+    private func fetchAllMedia() {
         guard let user = Auth.auth().currentUser else { return }
         let db = Firestore.firestore()
-        let photosCollectionRef = db.collection("users").document(user.uid).collection("photos")
         
-        photosCollectionRef.getDocuments { snapshot, error in
-            if let snapshot = snapshot {
-                self.photoCount = snapshot.count
-                self.imageUrls = snapshot.documents.compactMap { document in
+        // Fetch both photos and videos, combine them
+        let photosCollectionRef = db.collection("users").document(user.uid).collection("photos")
+        let videosCollectionRef = db.collection("users").document(user.uid).collection("videos")
+
+        photosCollectionRef.getDocuments { photoSnapshot, error in
+            if let photoSnapshot = photoSnapshot {
+                let photoUrls = photoSnapshot.documents.compactMap { document in
                     let data = document.data()
                     if let url = data["photoURL"] as? String,
                        let caption = data["caption"] as? String,
                        let timestamp = data["timestamp"] as? Timestamp {
-                        return (url, caption, timestamp)
+                        return (url, caption, timestamp, "photo")
                     }
                     return nil
                 }
-                self.imageUrls.sort { $0.2.dateValue() > $1.2.dateValue() }
-                self.isLoadingImages = false
-            } else {
-                print("Error fetching image URLs: \(error?.localizedDescription ?? "Unknown error")")
-                self.isLoadingImages = false
+
+                videosCollectionRef.getDocuments { videoSnapshot, error in
+                    if let videoSnapshot = videoSnapshot {
+                        let videoUrls = videoSnapshot.documents.compactMap { document in
+                            let data = document.data()
+                            if let url = data["videoURL"] as? String,
+                               let caption = data["caption"] as? String,
+                               let timestamp = data["timestamp"] as? Timestamp {
+                                return (url, caption, timestamp, "video")
+                            }
+                            return nil
+                        }
+
+                        // Combine photo and video URLs
+                        self.mediaUrls = (photoUrls + videoUrls).sorted { $0.2.dateValue() > $1.2.dateValue() }
+                        self.isLoadingMedia = false
+                    }
+                }
             }
         }
     }
-    
+
     private func shortenCaption(_ caption: String) -> String {
         if isFullCaptionVisible {
             return caption
@@ -586,11 +643,11 @@ struct Home: View {
         formatter.dateFormat = "MMM d"
         return formatter.string(from: date)
     }
-    
+
     private func triggerHaptic() {
         // Implement haptic feedback here
     }
-    
+
     private func loadProfileImage() {
         let db = Firestore.firestore()
         let userRef = db.collection("users").document(Auth.auth().currentUser?.uid ?? "")
