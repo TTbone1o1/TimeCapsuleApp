@@ -83,11 +83,11 @@ struct PostView: View {
                                 // Show the video player if there is a video URL
                                 if let videoURL = videoURL {
                                     VideoPlayerView(videoURL: videoURL)
-                                        .frame(width: geometry.size.width, height: geometry.size.height * 1.5) // Stretch height by 1.5x of screen height
-                                        .offset(y: -400)  // Adjust offset as needed
-                                        .edgesIgnoringSafeArea(.all)  // Ignore safe areas to make video full screen
+                                        .frame(width: geometry.size.width, height: geometry.size.height) // Full screen frame
+                                        .scaleEffect(1.2)
+                                        .offset(y: -(geometry.size.height * 0.45))  // Dynamically adjust offset based on screen
+                                        .edgesIgnoringSafeArea(.all)  // Ignore safe areas for full-screen effect
                                 }
-
                                 Spacer()
                             }
                             .frame(width: geometry.size.width)
@@ -326,8 +326,8 @@ struct VideoPlayerView: UIViewControllerRepresentable {
         let playerViewController = AVPlayerViewController()
         playerViewController.player = player
 
-        // Set video gravity to resize (stretches the video to fit without maintaining aspect ratio)
-        playerViewController.videoGravity = .resize
+        // Set video gravity to resizeAspectFill (fill the screen without stretching)
+        playerViewController.videoGravity = .resizeAspectFill
         
         // Ensure video plays repeatedly
         NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: player.currentItem, queue: .main) { _ in
@@ -344,7 +344,6 @@ struct VideoPlayerView: UIViewControllerRepresentable {
         // No updates needed for now
     }
 }
-
 
 
 
