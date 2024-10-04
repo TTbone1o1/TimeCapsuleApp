@@ -104,6 +104,9 @@ struct PostView: View {
                         if let image = selectedImage {
                             isUploading = true
                             uploadPhoto(image: image)
+                        } else if let videoURL = videoURL {
+                            isUploading = true
+                            uploadVideo(videoURL: videoURL) // Upload the video if a video URL is present
                         }
                     }) {
                         ZStack {
@@ -148,7 +151,6 @@ struct PostView: View {
         .background(Color.clear)
     }
 
-
     // Helper function to format the date
     private func formatDate(date: Date) -> String {
         let formatter = DateFormatter()
@@ -169,6 +171,7 @@ struct PostView: View {
         }
     }
 
+    // Upload photo to Firestore and Storage
     private func uploadPhoto(image: UIImage) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
 
@@ -195,6 +198,7 @@ struct PostView: View {
             }
     }
     
+    // Perform the actual photo upload
     private func performUpload(image: UIImage) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
 
@@ -243,6 +247,88 @@ struct PostView: View {
                 isUploading = false
             } else {
                 print("Photo metadata successfully saved")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    isUploading = false
+                    navigateToHome = true // Navigate to Home after post
+                }
+            }
+        }
+    }
+
+    // Upload video to Firestore and Storage
+    private func uploadVideo(videoURL: URL) {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+
+        let db = Firestore.firestore()
+        let videosCollectionRef = db.collection("users").document(uid).collection("videos")
+
+        let startOfToday = Calendar.current.startOfDay(for: Date())
+        videosCollectionRef
+            .whereField("timestamp", isGreaterThanOrEqualTo: Timestamp(date: startOfToday))
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("Error checking today's post: \(error.localizedDescription)")
+                    isUploading = false
+                    return
+                }
+
+                if let snapshot = snapshot, !snapshot.isEmpty {
+                    print("User has already posted today")
+                    isUploading = false
+                    return
+                } else {
+                    performVideoUpload(videoURL: videoURL)
+                }
+            }
+    }
+
+    // Perform the actual video upload
+    private func performVideoUpload(videoURL: URL) {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+
+        let videoID = UUID().uuidString
+        let storageRef = Storage.storage().reference().child("users/\(uid)/videos/\(videoID).mp4")
+
+        // Upload the video file to Firebase Storage
+        if let videoData = try? Data(contentsOf: videoURL) {
+            storageRef.putData(videoData, metadata: nil) { metadata, error in
+                if let error = error {
+                    print("Error uploading video: \(error.localizedDescription)")
+                    isUploading = false
+                    return
+                }
+
+                storageRef.downloadURL { url, error in
+                    if let error = error {
+                        print("Error getting video download URL: \(error.localizedDescription)")
+                        isUploading = false
+                        return
+                    }
+
+                    if let downloadURL = url {
+                        saveVideoMetadata(videoURL: downloadURL.absoluteString, caption: caption)
+                    }
+                }
+            }
+        }
+    }
+
+    private func saveVideoMetadata(videoURL: String, caption: String) {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+
+        let db = Firestore.firestore()
+        let videoData: [String: Any] = [
+            "videoURL": videoURL,
+            "caption": caption,
+            "timestamp": Timestamp(date: Date())
+        ]
+
+        db.collection("users").document(uid).collection("videos").addDocument(data: videoData) { error in
+            if let error = error {
+                print("Error saving video metadata: \(error.localizedDescription)")
+                isUploading = false
+            } else {
+                print("Video metadata successfully saved")
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     isUploading = false
                     navigateToHome = true // Navigate to Home after post
@@ -344,8 +430,6 @@ struct VideoPlayerView: UIViewControllerRepresentable {
         // No updates needed for now
     }
 }
-
-
 
 #Preview {
     PostView(selectedImage: UIImage(systemName: "photo")!)
