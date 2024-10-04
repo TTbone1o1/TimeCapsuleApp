@@ -84,8 +84,8 @@ struct PostView: View {
                                 if let videoURL = videoURL {
                                     VideoPlayerView(videoURL: videoURL)
                                         .frame(width: geometry.size.width, height: geometry.size.height) // Full screen frame
-                                        .scaleEffect(1.2)
-                                        .offset(y: -(geometry.size.height * 0.45))  // Dynamically adjust offset based on screen
+                                        .scaleEffect(1.11)
+                                        .offset(y: -(geometry.size.height * 0.40))  // Dynamically adjust offset based on screen
                                         .edgesIgnoringSafeArea(.all)  // Ignore safe areas for full-screen effect
                                 }
                                 Spacer()
