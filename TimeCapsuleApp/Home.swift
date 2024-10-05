@@ -81,6 +81,7 @@ struct Home: View {
                 player.play() // Play again
             }
             
+            controller.player = player // Set the player
             return controller
         }
         
@@ -246,73 +247,6 @@ struct Home: View {
                                     .fontWeight(.bold)
                                     .padding(.bottom, 30)
 
-                                HStack {
-                                    Spacer()
-
-                                    HStack {
-                                        Image("1")
-                                            .resizable()
-                                            .frame(width: 82.37, height: 120.26)
-                                            .cornerRadius(19)
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: 19)
-                                                    .stroke(Color.white, lineWidth: 4)
-                                            )
-                                            .rotationEffect(Angle(degrees: -16))
-                                            .offset(x: 25, y: 15)
-                                            .shadow(radius: 24, x: 0, y: 14)
-                                            .zIndex(3)
-                                            .scaleEffect(imagesAppeared ? 1 : 0)
-                                            .animation(.interpolatingSpring(stiffness: 60, damping: 7).delay(0.1), value: imagesAppeared)
-                                            .onAppear {
-                                                if imagesAppeared {
-                                                    triggerHaptic()
-                                                }
-                                            }
-
-                                        Image("2")
-                                            .resizable()
-                                            .frame(width: 82.37, height: 120.26)
-                                            .cornerRadius(19)
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: 19)
-                                                    .stroke(Color.white, lineWidth: 4)
-                                            )
-                                            .zIndex(2)
-                                            .rotationEffect(Angle(degrees: -2))
-                                            .shadow(radius: 24, x: 0, y: 14)
-                                            .scaleEffect(imagesAppeared ? 1 : 0)
-                                            .animation(.interpolatingSpring(stiffness: 60, damping: 7).delay(0.2), value: imagesAppeared)
-                                            .onAppear {
-                                                if imagesAppeared {
-                                                    triggerHaptic()
-                                                }
-                                            }
-
-                                        Image("3")
-                                            .resizable()
-                                            .frame(width: 82.37, height: 120.26)
-                                            .cornerRadius(19)
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: 19)
-                                                    .stroke(Color.white, lineWidth: 4)
-                                            )
-                                            .zIndex(1)
-                                            .rotationEffect(Angle(degrees: 17))
-                                            .shadow(radius: 24, x: 0, y: 14)
-                                            .offset(x: -33, y: 15)
-                                            .scaleEffect(imagesAppeared ? 1 : 0)
-                                            .animation(.interpolatingSpring(stiffness: 60, damping: 7).delay(0.3), value: imagesAppeared)
-                                            .onAppear {
-                                                if imagesAppeared {
-                                                    triggerHaptic()
-                                                }
-                                            }
-                                    }
-
-                                    Spacer()
-                                }
-
                                 Spacer(minLength: 350)
                             }
                         }
@@ -355,21 +289,6 @@ struct Home: View {
                                                     .onTapGesture {
                                                         handleMediaTap(mediaUrl: mediaUrl, mediaType: mediaType, scrollProxy: scrollProxy)
                                                     }
-
-                                                if tappedMediaUrl == mediaUrl {
-                                                    Button {
-                                                        saveMedia(mediaUrl: mediaUrl)
-                                                    } label: {
-                                                        Image(systemName: savedImages.contains(mediaUrl) ? "checkmark.circle" : "square.and.arrow.down")
-                                                            .foregroundColor(savedImages.contains(mediaUrl) ? .green : .white)
-                                                            .font(.system(size: 24))
-                                                            .padding(40)
-                                                            .scaleEffect(savedImages.contains(mediaUrl) ? 1.2 : 1)
-                                                            .animation(.easeInOut(duration: 0.2), value: savedImages.contains(mediaUrl))
-                                                            .transition(.opacity)
-                                                    }
-                                                    .disabled(savedImages.contains(mediaUrl))
-                                                }
                                             }
                                             .overlay(
                                                 LinearGradient(
@@ -419,6 +338,7 @@ struct Home: View {
                                     .onTapGesture {
                                         handleMediaTap(mediaUrl: mediaUrl, mediaType: mediaType, scrollProxy: scrollProxy)
                                     }
+                                    .transition(.movingParts.filmExposure)  // Add the transition here for videos
                             }
                         }
                         .offset(y: tappedMediaUrl == mediaUrl && mediaUrls.count == 1 ? -130 : 0)
