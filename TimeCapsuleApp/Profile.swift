@@ -109,6 +109,8 @@ struct Profile: View {
                                    height: isImageExpanded ? UIScreen.main.bounds.height : 0)
                             .cornerRadius(isImageExpanded ? 33 : 33)
                             .opacity(isImageExpanded ? 1 : isFadingOut ? 0 : 1)
+                            .scaleEffect(isImageExpanded ? 1 : 0.001)
+                            .animation(.spring(response: 0.5, dampingFraction: 0.85, blendDuration: 0.4), value: isImageExpanded)
                             .transition(isImageExpanded ? .scale : .asymmetric(insertion: .scale, removal: .opacity))
                             .onTapGesture {
                                 let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
@@ -378,6 +380,7 @@ struct CustomVideoPlayerView: UIViewControllerRepresentable {
         // Hide all playback controls
         controller.showsPlaybackControls = false
         controller.videoGravity = .resizeAspectFill
+        controller.view.backgroundColor = .clear
 
         // Ensure video plays automatically and loops
         player.play()
