@@ -3,6 +3,7 @@ import Firebase
 import FirebaseStorage
 import FirebaseFirestore
 import FirebaseAuth
+import AVKit
 
 struct Profile: View {
     @Binding var isImageExpanded: Bool
@@ -19,9 +20,9 @@ struct Profile: View {
     @State private var navigateToTimeCap = false
     @State private var showingImagePicker = false
     @State private var username: String = ""
-    @State private var photos: [(String, String, Timestamp)] = [] // Store (URL, Caption, Timestamp) tuples
-    @State private var photosForSelectedDate: [(String, String, Timestamp)] = [] // Filtered photos for the selected date
-    @State private var tappedImageUrl: String? = nil // To track the tapped image URL
+    @State private var media: [(String, String, Timestamp, String)] = [] // Store (URL, Caption, Timestamp, Type: "photo"/"video")
+    @State private var mediaForSelectedDate: [(String, String, Timestamp, String)] = [] // Filtered media (photos/videos) for the selected date
+    @State private var tappedMediaUrl: String? = nil // To track the tapped media URL
     @Namespace private var namespace
 
     @State private var isFadingOut: Bool = false // New state for managing opacity
@@ -54,7 +55,7 @@ struct Profile: View {
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 125, height: 125)
-                                .foregroundColor(.gray) // Optional: Set a placeholder color
+                                .foregroundColor(.gray)
                                 .scaleEffect(isShowingSetting ? 0.8 : 1.0)
                                 .animation(.interpolatingSpring(stiffness: 130, damping: 5), value: isShowingSetting)
                         }
@@ -67,7 +68,6 @@ struct Profile: View {
                                     impactFeedback.impactOccurred()
                                     isShowingSetting = true
 
-                                    // Scale down buttons when settings are shown
                                     withAnimation(.easeInOut(duration: 0.2)) {
                                         homeProfileScale = 0.0
                                     }
@@ -81,19 +81,18 @@ struct Profile: View {
                         .font(.system(size: 32, weight: .bold, design: .rounded))
                         .fontWeight(.bold)
                         .foregroundColor(Color.primary)
-                        .frame(maxWidth: .infinity) // Make the text take the full width
-                        .multilineTextAlignment(.center) // Center-align the text
-
+                        .frame(maxWidth: .infinity)
+                        .multilineTextAlignment(.center)
 
                     CalendarView(
                         currentDate: $currentDate,
                         selectedDate: $selectedDate,
                         displayedMonth: $displayedMonth,
                         displayedYear: $displayedYear,
-                        photosForSelectedDate: $photosForSelectedDate,
-                        tappedImageUrl: $tappedImageUrl,
-                        filterPhotos: filterPhotosForSelectedDate,
-                        photos: photos // Pass the photos array here
+                        mediaForSelectedDate: $mediaForSelectedDate,
+                        tappedMediaUrl: $tappedMediaUrl,
+                        filterMedia: filterMediaForSelectedDate,
+                        media: media // Pass the media array here
                     )
                     .offset(y: -80)
                     
@@ -102,57 +101,90 @@ struct Profile: View {
                 .edgesIgnoringSafeArea(.top)
             }
 
-            if let tappedImageUrl = tappedImageUrl {
+            if let tappedMediaUrl = tappedMediaUrl {
                 ZStack {
-                    AsyncImage(url: URL(string: tappedImageUrl)) { phase in
-                        switch phase {
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .matchedGeometryEffect(id: tappedImageUrl, in: namespace)
-                                .frame(width: isImageExpanded ? UIScreen.main.bounds.width : 0,
-                                       height: isImageExpanded ? UIScreen.main.bounds.height : 0)
-                                .cornerRadius(isImageExpanded ? 33 : 33)
-                                .opacity(isImageExpanded ? 1 : isFadingOut ? 0 : 1) // Handle opacity based on image state
-                                .transition(isImageExpanded ? .scale : .asymmetric(insertion: .scale, removal: .opacity)) // Use scale for expansion and opacity for removal
-                                .onTapGesture {
-                                    let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
-                                    impactFeedback.impactOccurred()
+                    if let mediaType = mediaForSelectedDate.first(where: { $0.0 == tappedMediaUrl })?.3, mediaType == "video" {
+                        CustomVideoPlayerView(videoURL: URL(string: tappedMediaUrl)!)
+                            .frame(width: isImageExpanded ? UIScreen.main.bounds.width : 0,
+                                   height: isImageExpanded ? UIScreen.main.bounds.height : 0)
+                            .cornerRadius(isImageExpanded ? 33 : 33)
+                            .opacity(isImageExpanded ? 1 : isFadingOut ? 0 : 1)
+                            .transition(isImageExpanded ? .scale : .asymmetric(insertion: .scale, removal: .opacity))
+                            .onTapGesture {
+                                let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                                impactFeedback.impactOccurred()
 
-                                    if isImageExpanded {
-                                        withAnimation(.spring(response: 0.5, dampingFraction: 0.9, blendDuration: 0.4)) {
-                                            isImageExpanded.toggle()
-                                            isFadingOut = true // Start fading out on collapse
-                                        }
+                                if isImageExpanded {
+                                    withAnimation(.spring(response: 0.5, dampingFraction: 0.9, blendDuration: 0.4)) {
+                                        isImageExpanded.toggle()
+                                        isFadingOut = true
+                                    }
 
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                                            self.tappedImageUrl = nil
-                                            withAnimation(.easeInOut(duration: 0.15)) {
-                                                homeProfileScale = 1.0 // Scale buttons back up smoothly
-                                            }
-                                        }
-
-                                    } else {
-                                        withAnimation(.spring(response: 0.5, dampingFraction: 0.85, blendDuration: 0.4)) {
-                                            isImageExpanded.toggle()
-                                            isFadingOut = false // Reset fading out state when expanding
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                                        self.tappedMediaUrl = nil
+                                        withAnimation(.easeInOut(duration: 0.15)) {
+                                            homeProfileScale = 1.0
                                         }
                                     }
-                                }
 
-                        case .failure:
-                            Image(systemName: "xmark.circle")
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 100, height: 100)
-                        @unknown default:
-                            EmptyView()
+                                } else {
+                                    withAnimation(.spring(response: 0.5, dampingFraction: 0.85, blendDuration: 0.4)) {
+                                        isImageExpanded.toggle()
+                                        isFadingOut = false
+                                    }
+                                }
+                            }
+                    } else {
+                        AsyncImage(url: URL(string: tappedMediaUrl)) { phase in
+                            switch phase {
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .matchedGeometryEffect(id: tappedMediaUrl, in: namespace)
+                                    .frame(width: isImageExpanded ? UIScreen.main.bounds.width : 0,
+                                           height: isImageExpanded ? UIScreen.main.bounds.height : 0)
+                                    .cornerRadius(isImageExpanded ? 33 : 33)
+                                    .opacity(isImageExpanded ? 1 : isFadingOut ? 0 : 1)
+                                    .transition(isImageExpanded ? .scale : .asymmetric(insertion: .scale, removal: .opacity))
+                                    .onTapGesture {
+                                        let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                                        impactFeedback.impactOccurred()
+
+                                        if isImageExpanded {
+                                            withAnimation(.spring(response: 0.5, dampingFraction: 0.9, blendDuration: 0.4)) {
+                                                isImageExpanded.toggle()
+                                                isFadingOut = true
+                                            }
+
+                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                                                self.tappedMediaUrl = nil
+                                                withAnimation(.easeInOut(duration: 0.15)) {
+                                                    homeProfileScale = 1.0
+                                                }
+                                            }
+
+                                        } else {
+                                            withAnimation(.spring(response: 0.5, dampingFraction: 0.85, blendDuration: 0.4)) {
+                                                isImageExpanded.toggle()
+                                                isFadingOut = false
+                                            }
+                                        }
+                                    }
+
+                            case .failure:
+                                Image(systemName: "xmark.circle")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 100, height: 100)
+                            @unknown default:
+                                EmptyView()
+                            }
                         }
+                        .frame(maxWidth: isImageExpanded ? UIScreen.main.bounds.width : 0,
+                               maxHeight: isImageExpanded ? UIScreen.main.bounds.height : 0)
+                        .animation(.spring(response: 0.6, dampingFraction: 0.75, blendDuration: 0.6))
                     }
-                    .frame(maxWidth: isImageExpanded ? UIScreen.main.bounds.width : 0,
-                           maxHeight: isImageExpanded ? UIScreen.main.bounds.height : 0)
-                    .animation(.spring(response: 0.6, dampingFraction: 0.75, blendDuration: 0.6))
                 }
                 .zIndex(2)
             }
@@ -175,13 +207,13 @@ struct Profile: View {
         .onChange(of: isShowingSetting) { isShowing in
             withAnimation(.easeInOut(duration: 0.2)) {
                 if !isShowing {
-                    homeProfileScale = 1.0 // Scale buttons back up
+                    homeProfileScale = 1.0
                 }
             }
         }
         .onAppear {
             fetchProfileData()
-            fetchAllPhotos()
+            fetchAllMedia() // Fetch both photos and videos
         }
         .sheet(isPresented: $showingImagePicker) {
             ImagePicker(image: $selectedImage) {
@@ -190,7 +222,6 @@ struct Profile: View {
             }
         }
     }
-
 
     private func fetchProfileData() {
         if selectedImage == nil {
@@ -280,77 +311,108 @@ struct Profile: View {
         }
     }
 
-    private func fetchAllPhotos() {
+    private func fetchAllMedia() {
         guard let user = Auth.auth().currentUser else { return }
         let db = Firestore.firestore()
+        
         let photosCollectionRef = db.collection("users").document(user.uid).collection("photos")
+        let videosCollectionRef = db.collection("users").document(user.uid).collection("videos")
 
-        photosCollectionRef.getDocuments { snapshot, error in
-            if let snapshot = snapshot {
-                self.photos = snapshot.documents.compactMap { document in
+        photosCollectionRef.getDocuments { photoSnapshot, error in
+            if let photoSnapshot = photoSnapshot {
+                let photoUrls = photoSnapshot.documents.compactMap { document in
                     let data = document.data()
                     if let url = data["photoURL"] as? String,
                        let caption = data["caption"] as? String,
                        let timestamp = data["timestamp"] as? Timestamp {
-                        return (url, caption, timestamp)
+                        return (url, caption, timestamp, "photo")
                     }
                     return nil
                 }
-            } else {
-                print("Error fetching image URLs: \(error?.localizedDescription ?? "Unknown error")")
+
+                videosCollectionRef.getDocuments { videoSnapshot, error in
+                    if let videoSnapshot = videoSnapshot {
+                        let videoUrls = videoSnapshot.documents.compactMap { document in
+                            let data = document.data()
+                            if let url = data["videoURL"] as? String,
+                               let caption = data["caption"] as? String,
+                               let timestamp = data["timestamp"] as? Timestamp {
+                                return (url, caption, timestamp, "video")
+                            }
+                            return nil
+                        }
+
+                        self.media = (photoUrls + videoUrls).sorted { $0.2.dateValue() > $1.2.dateValue() }
+                    }
+                }
             }
         }
     }
 
-    private func filterPhotosForSelectedDate(selectedDate: Date) {
+    private func filterMediaForSelectedDate(selectedDate: Date) {
         let calendar = Calendar.current
-        photosForSelectedDate = photos.filter { photo in
-            let photoDate = photo.2.dateValue()
-            return calendar.isDate(photoDate, inSameDayAs: selectedDate)
+        mediaForSelectedDate = media.filter { mediaItem in
+            let mediaDate = mediaItem.2.dateValue()
+            return calendar.isDate(mediaDate, inSameDayAs: selectedDate)
         }
 
-        if let firstPhoto = photosForSelectedDate.first {
-            tappedImageUrl = firstPhoto.0
+        if let firstMedia = mediaForSelectedDate.first {
+            tappedMediaUrl = firstMedia.0
             isImageExpanded = true
 
-            // Step 1: Scale down the buttons quickly when an image is tapped
-            withAnimation(.easeInOut(duration: 0.1)) {  // Reduce the duration to 0.1 for faster scaling
-                homeProfileScale = 0.0  // Scale buttons down quickly
+            withAnimation(.easeInOut(duration: 0.1)) {
+                homeProfileScale = 0.0
             }
         }
-    }
-
-
-
-
-    private func formatDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMM d"
-        return formatter.string(from: date)
-    }
-
-    private func shortenCaption(_ caption: String) -> String {
-        let words = caption.split(separator: " ")
-        let limitedWords = words.prefix(8)
-        let shortCaption = limitedWords.joined(separator: " ")
-        return shortCaption
     }
 }
 
+// Custom Video Player to play videos in a loop and hide controls
+struct CustomVideoPlayerView: UIViewControllerRepresentable {
+    var videoURL: URL
+
+    func makeUIViewController(context: Context) -> AVPlayerViewController {
+        let player = AVPlayer(url: videoURL)
+        let controller = AVPlayerViewController()
+
+        // Hide all playback controls
+        controller.showsPlaybackControls = false
+        controller.videoGravity = .resizeAspectFill
+
+        // Ensure video plays automatically and loops
+        player.play()
+
+        NotificationCenter.default.addObserver(
+            forName: .AVPlayerItemDidPlayToEndTime,
+            object: player.currentItem,
+            queue: .main
+        ) { _ in
+            player.seek(to: .zero)
+            player.play() // Loop the video
+        }
+
+        controller.player = player
+        return controller
+    }
+
+    func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) {
+        // Handle updates if needed
+    }
+}
 
 struct CalendarView: View {
     @Binding var currentDate: Date
     @Binding var selectedDate: Date
     @Binding var displayedMonth: Int
     @Binding var displayedYear: Int
-    @Binding var photosForSelectedDate: [(String, String, Timestamp)]
-    @Binding var tappedImageUrl: String?
-    var filterPhotos: (Date) -> Void
-    
+    @Binding var mediaForSelectedDate: [(String, String, Timestamp, String)]
+    @Binding var tappedMediaUrl: String?
+    var filterMedia: (Date) -> Void
+
     @State private var isLeftButtonPressed = false
     @State private var isRightButtonPressed = false
-    
-    let photos: [(String, String, Timestamp)] // Add this to hold all the photos
+
+    let media: [(String, String, Timestamp, String)] // Photos and Videos
     let calendar = Calendar.current
     let dateFormatter = DateFormatter()
     let yearFormatter: NumberFormatter = {
@@ -361,7 +423,7 @@ struct CalendarView: View {
 
     var body: some View {
         Spacer()
-        
+
         VStack {
             HStack {
                 Button(action: {
@@ -447,7 +509,7 @@ struct CalendarView: View {
         let today = Date()
         let currentDay = calendar.component(.day, from: today)
         
-        if hasPhotoForDay(day) {
+        if hasMediaForDay(day) {
             return Color.primary
         } else if isCurrentMonth() && day == currentDay {
             return Color.primary
@@ -456,28 +518,26 @@ struct CalendarView: View {
         }
     }
 
-    private func hasPhotoForDay(_ day: Int) -> Bool {
+    private func hasMediaForDay(_ day: Int) -> Bool {
         let dateComponents = DateComponents(year: displayedYear, month: displayedMonth, day: day)
         if let date = calendar.date(from: dateComponents) {
-            return photos.contains { calendar.isDate($0.2.dateValue(), inSameDayAs: date) }
+            return media.contains { calendar.isDate($0.2.dateValue(), inSameDayAs: date) }
         }
         return false
     }
 
     private func selectDay(_ day: Int) {
-        // Trigger haptic feedback
         let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
         impactFeedback.impactOccurred()
 
         let dateComponents = DateComponents(year: displayedYear, month: displayedMonth, day: day)
         if let date = calendar.date(from: dateComponents) {
             selectedDate = date
-            
-            // Filter photos based on the selected date
-            filterPhotos(selectedDate)
+
+            filterMedia(selectedDate)
         }
     }
-    
+
     private var formattedYear: String {
         return yearFormatter.string(from: NSNumber(value: displayedYear)) ?? "\(displayedYear)"
     }
@@ -485,7 +545,6 @@ struct CalendarView: View {
 
 struct Profile_Previews: PreviewProvider {
     static var previews: some View {
-        // For preview purposes, pass sample data and default values to bindings
         Profile(
             isImageExpanded: .constant(false),
             isShowingSetting: .constant(false),
