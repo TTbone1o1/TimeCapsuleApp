@@ -68,6 +68,8 @@ struct Home: View {
             // Set video gravity to fill the screen
             controller.videoGravity = .resizeAspectFill
             
+            controller.view.backgroundColor = .clear
+            
             // Ensure the video plays automatically
             player.play()
             
