@@ -134,32 +134,16 @@ struct Home: View {
                             .zIndex(2)
                         
                         if !isMediaExpanded && !isSettingsOpen && !isShowingSetting && !isSignedOut {
-                            VStack(spacing: 20) {
-                                Spacer()
-                                ZStack {
-                                    Button(action: {
-                                        let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
-                                        impactFeedback.impactOccurred()
-                                        showCameraController = true
-                                    }) {
-                                        ZStack {
-                                            Circle()
-                                                .stroke(Color.secondary.opacity(0.9), lineWidth: 3)
-                                                .frame(width: 52, height: 52)
-
-                                            Circle()
-                                                .fill(Color.secondary.opacity(0.7))
-                                                .frame(width: 37, height: 37)
-                                        }
-                                        .scaleEffect(homeProfileScale)
-                                    }
-                                    
-                                    HStack {
+                            VStack {
+                                Spacer() // This pushes the content below to the bottom of the view
+                                
+                                GeometryReader { geo in
+                                    HStack(spacing: 30) { // Reduce the spacing to bring the buttons closer to the center
+                                        // Home button
                                         Image("Home")
                                             .withTintColor(showProfileView ? Color.secondary.opacity(0.9) : Color.primary)
                                             .frame(width: 34, height: 34)
                                             .scaleEffect(homeProfileScale)
-                                            .padding(.leading, geometry.safeAreaInsets.leading) // Add safe area padding here
                                             .onTapGesture {
                                                 withAnimation {
                                                     dragOffset = 0
@@ -167,26 +151,50 @@ struct Home: View {
                                                     updateIconColors()
                                                 }
                                             }
-
+                                        
                                         Spacer()
+                                        
+                                        // Camera button
+                                        Button(action: {
+                                            let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                                            impactFeedback.impactOccurred()
+                                            showCameraController = true
+                                        }) {
+                                            ZStack {
+                                                Circle()
+                                                    .stroke(Color.secondary.opacity(0.9), lineWidth: 3)
+                                                    .frame(width: 52, height: 52)
 
+                                                Circle()
+                                                    .fill(Color.secondary.opacity(0.7))
+                                                    .frame(width: 37, height: 37)
+                                            }
+                                            .scaleEffect(homeProfileScale)
+                                        }
+                                        
+                                        Spacer()
+                                        
+                                        // Profile button
                                         Image("Profile")
                                             .withTintColor(showProfileView ? Color.primary : Color.secondary.opacity(0.9))
                                             .frame(width: 34, height: 34)
                                             .scaleEffect(homeProfileScale)
                                             .onTapGesture {
                                                 withAnimation {
-                                                    dragOffset = -UIScreen.main.bounds.width
+                                                    dragOffset = -geometry.size.width
                                                     showProfileView = true
                                                     updateIconColors()
                                                 }
                                             }
                                     }
-                                    .frame(width: 290)
+                                    .padding(.horizontal, 40) // Adjust horizontal padding to move elements closer
+                                    .frame(maxWidth: geo.size.width, maxHeight: 80)
                                 }
+                                .frame(height: 80)
+                                .padding(.bottom, geometry.safeAreaInsets.bottom + 0) // Dynamically accounts for safe area insets
                             }
-                            .padding(.horizontal, 60)
-                            .padding(.bottom, 40)
+
+
                             .zIndex(3)
                             .onChange(of: tappedMediaUrl) { newValue in
                                 if tappedMediaUrl != nil {
@@ -201,6 +209,7 @@ struct Home: View {
                             }
                             .disabled(tappedMediaUrl != nil) // Add this here to disable buttons
                         }
+
 
                         if showCameraController {
                             CameraController(isPresented: $showCameraController)
