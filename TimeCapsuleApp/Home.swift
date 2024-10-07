@@ -107,7 +107,7 @@ struct Home: View {
                         .zIndex(1)
                         
                         mainContentView(geometry: geometry)
-                            .offset(x: dragOffset)
+                            .offset(x: min(0, max(-geometry.size.width, dragOffset + geometry.safeAreaInsets.leading)))
                             .gesture(
                                 tappedMediaUrl == nil ?
                                 DragGesture()
@@ -159,6 +159,7 @@ struct Home: View {
                                             .withTintColor(showProfileView ? Color.secondary.opacity(0.9) : Color.primary)
                                             .frame(width: 34, height: 34)
                                             .scaleEffect(homeProfileScale)
+                                            .padding(.leading, geometry.safeAreaInsets.leading) // Add safe area padding here
                                             .onTapGesture {
                                                 withAnimation {
                                                     dragOffset = 0
@@ -208,6 +209,7 @@ struct Home: View {
                         }
                     }
                     .edgesIgnoringSafeArea(.all)
+                    .padding(.leading, geometry.safeAreaInsets.leading)
                     .onAppear {
                         dragOffset = showProfileView ? -UIScreen.main.bounds.width : 0
                         onAppearLogic()
