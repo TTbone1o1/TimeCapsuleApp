@@ -35,7 +35,8 @@ struct Profile: View {
         ZStack {
             GeometryReader { geometry in
                 VStack {
-                    Spacer().frame(height: 128)
+                    // Dynamically calculated space for the top section
+                    Spacer().frame(height: geometry.size.height * 0.15)
 
                     ZStack {
                         Circle()
@@ -94,8 +95,8 @@ struct Profile: View {
                         filterMedia: filterMediaForSelectedDate,
                         media: media // Pass the media array here
                     )
-                    .offset(y: -80)
-                    
+                    .frame(maxHeight: geometry.size.height * 0.5) // Limit the height of the calendar to avoid cutoff issues
+                    .offset(y: -230)
                     Spacer()
                 }
                 .edgesIgnoringSafeArea(.top)
@@ -368,6 +369,7 @@ struct Profile: View {
         }
     }
 }
+
 
 // Custom Video Player to play videos in a loop and hide controls
 struct CustomVideoPlayerView: UIViewControllerRepresentable {
