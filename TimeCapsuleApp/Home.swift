@@ -50,6 +50,7 @@ struct Home: View {
     @State private var savedImages: Set<String> = loadSavedImages() // Track saved image URLs
     @State private var captionDragOffset: CGSize = .zero
     @State private var finalCaptionOffset: CGSize = .zero // To store the final drag offset
+    @State private var isVideoLoading: Bool = true // State for tracking video loading
 
     @Environment(\.colorScheme) var currentColorScheme
     @Namespace var namespace
@@ -57,6 +58,7 @@ struct Home: View {
     // Custom Video Player View to hide the play button and the skip controls
     struct CustomVideoPlayerView: UIViewControllerRepresentable {
         var videoURL: URL
+        @Binding var isVideoLoading: Bool // Binding to track if the video is loading
         
         func makeUIViewController(context: Context) -> AVPlayerViewController {
             let player = AVPlayer(url: videoURL)
@@ -72,6 +74,9 @@ struct Home: View {
             
             // Ensure the video plays automatically
             player.play()
+            
+            // Listen for buffering/loading events
+            player.currentItem?.addObserver(context.coordinator, forKeyPath: "status", options: [.new, .initial], context: nil)
             
             // Listen for when the video ends to loop it
             NotificationCenter.default.addObserver(
@@ -89,6 +94,37 @@ struct Home: View {
         
         func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) {
             // Handle updates here if needed
+        }
+        
+        func makeCoordinator() -> Coordinator {
+            Coordinator(parent: self)
+        }
+
+        class Coordinator: NSObject {
+            var parent: CustomVideoPlayerView
+            
+            init(parent: CustomVideoPlayerView) {
+                self.parent = parent
+            }
+            
+            override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+                if keyPath == "status" {
+                    if let playerItem = object as? AVPlayerItem {
+                        switch playerItem.status {
+                        case .readyToPlay:
+                            DispatchQueue.main.async {
+                                self.parent.isVideoLoading = false // Hide loading indicator when ready
+                            }
+                        case .failed, .unknown:
+                            DispatchQueue.main.async {
+                                self.parent.isVideoLoading = false // Hide loading even if failed or unknown
+                            }
+                        @unknown default:
+                            break
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -232,44 +268,44 @@ struct Home: View {
     }
     
     private func mainContentView(geometry: GeometryProxy) -> some View {
-            ZStack {
-                mediaGalleryView()
-                    .zIndex(1)
+        ZStack {
+            mediaGalleryView()
+                .zIndex(1)
 
-                VStack {
-                    Spacer().frame(height: 20)
+            VStack {
+                Spacer().frame(height: 20)
 
-                    if tappedMediaUrl == nil {
-                        HStack {
-                            Text(username.isEmpty ? "" : username)
+                if tappedMediaUrl == nil {
+                    HStack {
+                        Text(username.isEmpty ? "" : username)
+                            .font(.system(size: 18, weight: .bold, design: .rounded))
+                            .fontWeight(.bold)
+                            .padding(.leading)
+                            .foregroundColor(Color.primary)
+                        Spacer()
+                    }
+                    .padding(.top, geometry.safeAreaInsets.top)
+                    .transition(.opacity)
+
+                    if !isLoadingMedia && mediaUrls.isEmpty {
+                        VStack {
+                            Spacer()
+
+                            Text("Take a photo or video to start")
                                 .font(.system(size: 18, weight: .bold, design: .rounded))
                                 .fontWeight(.bold)
-                                .padding(.leading)
-                                .foregroundColor(Color.primary)
-                            Spacer()
-                        }
-                        .padding(.top, geometry.safeAreaInsets.top)
-                        .transition(.opacity)
+                                .padding(.bottom, 30)
 
-                        if !isLoadingMedia && mediaUrls.isEmpty {
-                            VStack {
-                                Spacer()
-
-                                Text("Take a photo or video to start")
-                                    .font(.system(size: 18, weight: .bold, design: .rounded))
-                                    .fontWeight(.bold)
-                                    .padding(.bottom, 30)
-
-                                Spacer(minLength: 350)
-                            }
+                            Spacer(minLength: 350)
                         }
                     }
-
-                    Spacer()
                 }
-                .zIndex(2)
+
+                Spacer()
             }
+            .zIndex(2)
         }
+    }
     
     private func mediaGalleryView() -> some View {
         ScrollViewReader { scrollProxy in
@@ -343,15 +379,24 @@ struct Home: View {
                                     .id(mediaUrl)
                                 }
                             } else if mediaType == "video" {
-                                CustomVideoPlayerView(videoURL: URL(string: mediaUrl)!)
-                                    .frame(width: tappedMediaUrl == mediaUrl ? UIScreen.main.bounds.width : 313,
-                                           height: tappedMediaUrl == mediaUrl ? UIScreen.main.bounds.height : 421)
-                                    .cornerRadius(tappedMediaUrl == mediaUrl ? 0 : 33)
-                                    .shadow(radius: 20, x: 0, y: 24)
-                                    .onTapGesture {
-                                        handleMediaTap(mediaUrl: mediaUrl, mediaType: mediaType, scrollProxy: scrollProxy)
+                                VStack {
+                                    if isVideoLoading {
+                                        ProgressView()
+                                            .progressViewStyle(CircularProgressViewStyle())
+                                            .frame(width: 50, height: 50)
+                                            .zIndex(1) // Show the loading indicator on top of the video
                                     }
-                                    .transition(.movingParts.filmExposure)  // Add the transition here for videos
+
+                                    CustomVideoPlayerView(videoURL: URL(string: mediaUrl)!, isVideoLoading: $isVideoLoading)
+                                        .frame(width: tappedMediaUrl == mediaUrl ? UIScreen.main.bounds.width : 313,
+                                               height: tappedMediaUrl == mediaUrl ? UIScreen.main.bounds.height : 421)
+                                        .cornerRadius(tappedMediaUrl == mediaUrl ? 0 : 33)
+                                        .shadow(radius: 20, x: 0, y: 24)
+                                        .onTapGesture {
+                                            handleMediaTap(mediaUrl: mediaUrl, mediaType: mediaType, scrollProxy: scrollProxy)
+                                        }
+                                        .transition(.movingParts.filmExposure)  // Add the transition here for videos
+                                }
                             }
                         }
                         .offset(y: tappedMediaUrl == mediaUrl && mediaUrls.count == 1 ? -130 : 0)
