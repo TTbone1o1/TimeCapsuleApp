@@ -58,8 +58,7 @@ struct Home: View {
     // Custom Video Player View to hide the play button and the skip controls
     struct CustomVideoPlayerView: UIViewControllerRepresentable {
         var videoURL: URL
-        @Binding var isVideoLoading: Bool // Binding to track if the video is loading
-        
+
         func makeUIViewController(context: Context) -> AVPlayerViewController {
             let player = AVPlayer(url: videoURL)
             let controller = AVPlayerViewController()
@@ -74,9 +73,6 @@ struct Home: View {
             
             // Ensure the video plays automatically
             player.play()
-            
-            // Listen for buffering/loading events
-            player.currentItem?.addObserver(context.coordinator, forKeyPath: "status", options: [.new, .initial], context: nil)
             
             // Listen for when the video ends to loop it
             NotificationCenter.default.addObserver(
@@ -95,38 +91,8 @@ struct Home: View {
         func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) {
             // Handle updates here if needed
         }
-        
-        func makeCoordinator() -> Coordinator {
-            Coordinator(parent: self)
-        }
-
-        class Coordinator: NSObject {
-            var parent: CustomVideoPlayerView
-            
-            init(parent: CustomVideoPlayerView) {
-                self.parent = parent
-            }
-            
-            override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-                if keyPath == "status" {
-                    if let playerItem = object as? AVPlayerItem {
-                        switch playerItem.status {
-                        case .readyToPlay:
-                            DispatchQueue.main.async {
-                                self.parent.isVideoLoading = false // Hide loading indicator when ready
-                            }
-                        case .failed, .unknown:
-                            DispatchQueue.main.async {
-                                self.parent.isVideoLoading = false // Hide loading even if failed or unknown
-                            }
-                        @unknown default:
-                            break
-                        }
-                    }
-                }
-            }
-        }
     }
+
 
     var body: some View {
         if isSignedOut {
@@ -379,15 +345,8 @@ struct Home: View {
                                     .id(mediaUrl)
                                 }
                             } else if mediaType == "video" {
-                                VStack {
-                                    if isVideoLoading {
-                                        ProgressView()
-                                            .progressViewStyle(CircularProgressViewStyle())
-                                            .frame(width: 50, height: 50)
-                                            .zIndex(1) // Show the loading indicator on top of the video
-                                    }
-
-                                    CustomVideoPlayerView(videoURL: URL(string: mediaUrl)!, isVideoLoading: $isVideoLoading)
+                                ZStack {
+                                    CustomVideoPlayerView(videoURL: URL(string: mediaUrl)!)
                                         .frame(width: tappedMediaUrl == mediaUrl ? UIScreen.main.bounds.width : 313,
                                                height: tappedMediaUrl == mediaUrl ? UIScreen.main.bounds.height : 421)
                                         .cornerRadius(tappedMediaUrl == mediaUrl ? 0 : 33)
@@ -395,7 +354,6 @@ struct Home: View {
                                         .onTapGesture {
                                             handleMediaTap(mediaUrl: mediaUrl, mediaType: mediaType, scrollProxy: scrollProxy)
                                         }
-                                        .transition(.movingParts.filmExposure)  // Add the transition here for videos
                                 }
                             }
                         }
@@ -409,6 +367,7 @@ struct Home: View {
             .scrollIndicators(.hidden)
         }
     }
+
 
     private func captionView(caption: String, timestamp: Timestamp, tappedMediaUrl: String?, currentMediaUrl: String) -> some View {
         VStack(alignment: .center, spacing: 5) {
