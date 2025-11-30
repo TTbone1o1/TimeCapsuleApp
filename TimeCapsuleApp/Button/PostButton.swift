@@ -1,10 +1,10 @@
-import SwiftUI
 import AVKit
+import AuthenticationServices
 import Firebase
-import FirebaseStorage
 import FirebaseAuth
 import FirebaseFirestore
-import AuthenticationServices
+import FirebaseStorage
+import SwiftUI
 import UserNotifications
 
 struct PostView: View {
@@ -17,86 +17,235 @@ struct PostView: View {
     @State private var showBlurView: Bool = false
     @State private var isEditing = false
     @State private var showCameraController = false
-    @State private var navigateToHome = false // Use @State to manage navigation
-    
+    @State private var navigateToHome = false
+
     @Environment(\.colorScheme) var currentColorScheme
-    
+
     var selectedImage: UIImage?
-    var videoURL: URL? // Video URL passed in
-    
+    var videoURL: URL?
+
     var body: some View {
         ZStack(alignment: .bottom) {
-            if navigateToHome { // Conditional navigation
-                Home() // Show Home view
+            if navigateToHome {
+                Home()
             } else {
                 GeometryReader { geometry in
-                    ScrollView {
-                        VStack {
-                            Spacer()
-                                .frame(height: moveToTop ? 55 : 315)
+                    ZStack {
+                        // Video layer - Full screen, no scrolling
+                        if let videoURL = videoURL {
+                            VideoFillView(url: videoURL)
+                                .ignoresSafeArea()  // ✅ redundant but fine
+                                .frame(
+                                    maxWidth: .infinity,
+                                    maxHeight: .infinity
+                                )
+                                .background(Color.black)
+                        }
 
-                            ZStack {
-                                if showBlurView {
-                                    Color.clear
-                                        .frame(height: 200)
-                                        .edgesIgnoringSafeArea(.top)
-                                        .overlay(
+                        // Content layer - Only this scrolls if needed (for photo view)
+                        if selectedImage != nil || videoURL != nil {
+                            ScrollView {
+                                VStack {
+                                    Spacer()
+                                        .frame(
+                                            height: moveToTop
+                                                ? UIScreen.main.bounds.height
+                                                    * 0.05
+                                                : UIScreen.main.bounds.height
+                                                    * 0.40
+                                        )
+
+                                    ZStack {
+                                        if showBlurView {
+                                            Color.clear
+                                                .frame(height: 200)
+                                                .edgesIgnoringSafeArea(.top)
+                                                .overlay(
+                                                    LinearGradient(
+                                                        gradient: Gradient(
+                                                            stops: [
+                                                                .init(
+                                                                    color:
+                                                                        currentColorScheme
+                                                                        == .dark
+                                                                        ? Color
+                                                                            .black
+                                                                            .opacity(
+                                                                                0.9
+                                                                            )
+                                                                        : Color
+                                                                            .black
+                                                                            .opacity(
+                                                                                1.0
+                                                                            ),
+                                                                    location:
+                                                                        0.0
+                                                                ),
+                                                                .init(
+                                                                    color: Color
+                                                                        .black
+                                                                        .opacity(
+                                                                            0.0
+                                                                        ),
+                                                                    location:
+                                                                        0.9
+                                                                ),
+                                                                .init(
+                                                                    color: Color
+                                                                        .clear,
+                                                                    location:
+                                                                        1.0
+                                                                ),
+                                                            ]
+                                                        ),
+                                                        startPoint: .top,
+                                                        endPoint: .bottom
+                                                    )
+                                                )
+                                                .offset(y: -110)
+                                        }
+
+                                        if !timestamp.isEmpty {
+                                            Text(timestamp)
+                                                .font(.system(size: 18))
+                                                .foregroundColor(.white)
+                                                .padding(.horizontal, 28)
+                                                .frame(
+                                                    width: 348,
+                                                    height: 30,
+                                                    alignment: .center
+                                                )
+                                                .background(
+                                                    showBlurView
+                                                        ? Color.clear
+                                                        : Color.black.opacity(
+                                                            0.3
+                                                        )
+                                                )
+                                                .offset(y: -100)
+                                                .zIndex(2)
+                                        }
+
+                                        ZStack(alignment: .leading) {
+                                            MultilineTextField(
+                                                text: $caption,
+                                                isEditing: $isEditing,
+                                                moveToTop: $moveToTop,
+                                                showBlurView: $showBlurView,
+                                                timestamp: $timestamp
+                                            )
+                                            .frame(
+                                                minHeight: 50,
+                                                maxHeight: .infinity
+                                            )
+                                            .multilineTextAlignment(.center)
+                                            .padding(.horizontal, 24)
+                                            .background(Color.clear)
+                                            .cornerRadius(10)
+                                            .offset(y: moveToTop ? -65 : 0)
+                                            .zIndex(3)
+                                            .onTapGesture {
+                                                isEditing = true
+                                            }
+                                        }
+                                        .padding()
+
+                                        Spacer()
+                                    }
+                                    .frame(width: geometry.size.width)
+                                }
+                            }
+                            // 👇 photo can scroll, video cannot
+                            .scrollDisabled(videoURL != nil)
+                        } else {
+                            // For video: No ScrollView, just the caption overlay
+                            VStack {
+                                Spacer()
+
+                                ZStack {
+
+                                    // --- MOVING CONTAINER (gradient + timestamp + caption) ---
+                                    VStack(spacing: 0) {
+
+                                        // GRADIENT behind everything
+                                        if showBlurView {
                                             LinearGradient(
                                                 gradient: Gradient(stops: [
-                                                    .init(color: currentColorScheme == .dark ? Color.black.opacity(0.9) : Color.black.opacity(1.0), location: 0.0),
-                                                    .init(color: Color.black.opacity(0.0), location: 0.9),
-                                                    .init(color: Color.clear, location: 1.0)
+                                                    .init(
+                                                        color:
+                                                            currentColorScheme
+                                                            == .dark
+                                                            ? Color.black
+                                                                .opacity(0.9)
+                                                            : Color.black
+                                                                .opacity(1.0),
+                                                        location: 0.0
+                                                    ),
+                                                    .init(
+                                                        color: Color.black
+                                                            .opacity(0.0),
+                                                        location: 0.9
+                                                    ),
+                                                    .init(
+                                                        color: Color.clear,
+                                                        location: 1.0
+                                                    ),
                                                 ]),
                                                 startPoint: .top,
                                                 endPoint: .bottom
                                             )
-                                        )
-                                        .offset(y: -110)
-                                }
-
-                                if !timestamp.isEmpty {
-                                    Text(timestamp)
-                                        .font(.system(size: 18))
-                                        .foregroundColor(.white)
-                                        .padding(.horizontal, 28)
-                                        .frame(width: 348, height: 30, alignment: .center)
-                                        .background(showBlurView ? Color.clear : Color.black.opacity(0.3))
-                                        .offset(y: -100)
-                                        .zIndex(2)
-                                }
-
-                                ZStack(alignment: .leading) {
-                                    MultilineTextField(text: $caption, isEditing: $isEditing, moveToTop: $moveToTop, showBlurView: $showBlurView, timestamp: $timestamp)
-                                        .frame(minHeight: 50, maxHeight: .infinity)
-                                        .multilineTextAlignment(.center)
-                                        .padding(.horizontal, 24)
-                                        .background(isEditing ? Color.clear : Color.clear)
-                                        .cornerRadius(10)
-                                        .offset(y: moveToTop ? -65 : 0)
-                                        .zIndex(3)
-                                        .onTapGesture {
-                                            isEditing = true
+                                            //                                            .frame(height: 200)
+                                            .allowsHitTesting(false)
                                         }
-                                }
-                                .padding()
 
-                                // Show the video player if there is a video URL
-                                if let videoURL = videoURL {
-                                    VideoPlayerView(videoURL: videoURL)
-                                        .frame(width: geometry.size.width, height: geometry.size.height) // Full screen frame
-                                        .scaleEffect(1.11)
-                                        .offset(y: -(geometry.size.height * 0.40))  // Dynamically adjust offset based on screen
-                                        .edgesIgnoringSafeArea(.all)  // Ignore safe areas for full-screen effect
+                                        VStack {
+                                            // 5pt between timestamp + caption
+                                            // TIMESTAMP (35pt from top when moved)
+                                            if !timestamp.isEmpty {
+                                                Text(timestamp)
+                                                    .font(.system(size: 18))
+                                                    .foregroundColor(.white)
+                                                //                                                    .frame(height: 30)
+                                                /*.padding(.top, 35)*/
+                                                // ← EXACT 35 GAP FROM TOP
+                                            }
+
+                                            // CAPTION FIELD
+                                            MultilineTextField(
+                                                text: $caption,
+                                                isEditing: $isEditing,
+                                                moveToTop: $moveToTop,
+                                                showBlurView: $showBlurView,
+                                                timestamp: $timestamp
+                                            )
+                                            .multilineTextAlignment(.center)
+                                            //                                            .padding(.horizontal, 24)
+                                        }
+                                    }
+                                    // --- CENTER → TOP ANIMATION ---
+                                    .frame(maxWidth: .infinity)
+                                    //                                    .position(
+                                    //                                        x: UIScreen.main.bounds.width / 2,
+                                    //                                        y: moveToTop
+                                    //                                            ? UIScreen.main.bounds.height * 0.18   // ← TOP POSITION
+                                    //                                            : UIScreen.main.bounds.height * 0.50    // ← CENTERED
+                                    //                                    )
+                                    //                                    .animation(.spring(response: 0.35, dampingFraction: 0.85), value: moveToTop)
                                 }
+
                                 Spacer()
                             }
-                            .frame(width: geometry.size.width)
+
                         }
                     }
-                }
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    dismissKeyboardAndMoveContentUp()
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        dismissKeyboardAndMoveContentUp()
+                    }
+                    // Disable scrolling gesture for video
+                    .simultaneousGesture(
+                        videoURL != nil ? DragGesture().onChanged { _ in } : nil
+                    )
                 }
 
                 if !keyboardObserver.isKeyboardVisible && !isUploading {
@@ -106,7 +255,7 @@ struct PostView: View {
                             uploadPhoto(image: image)
                         } else if let videoURL = videoURL {
                             isUploading = true
-                            uploadVideo(videoURL: videoURL) // Upload the video if a video URL is present
+                            uploadVideo(videoURL: videoURL)
                         }
                     }) {
                         ZStack {
@@ -119,7 +268,13 @@ struct PostView: View {
                             HStack {
                                 Text("Post")
                                     .foregroundColor(.white)
-                                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                                    .font(
+                                        .system(
+                                            size: 16,
+                                            weight: .bold,
+                                            design: .rounded
+                                        )
+                                    )
                             }
                         }
                     }
@@ -131,18 +286,23 @@ struct PostView: View {
                         Button(action: {
                             showCameraController = true
                         }) {
-                            Image(systemName: "arrow.triangle.2.circlepath.camera")
-                                .font(.system(size: 24))
-                                .foregroundColor(.black)
-                                .padding(20)
+                            Image(
+                                systemName: "arrow.triangle.2.circlepath.camera"
+                            )
+                            .font(.system(size: 24))
+                            .foregroundColor(.white)
+                            .padding(20)
                         }
                         Spacer()
                     }
                     Spacer()
                 }
-                .fullScreenCover(isPresented: $showCameraController, onDismiss: {
-                    // Reset any relevant state here
-                }) {
+                .fullScreenCover(
+                    isPresented: $showCameraController,
+                    onDismiss: {
+                        // Reset any relevant state here
+                    }
+                ) {
                     CameraController(isPresented: $showCameraController)
                         .edgesIgnoringSafeArea(.all)
                 }
@@ -151,14 +311,12 @@ struct PostView: View {
         .background(Color.clear)
     }
 
-    // Helper function to format the date
     private func formatDate(date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMM d"
         return formatter.string(from: date)
     }
 
-    // Helper function to dismiss keyboard and move the content up
     private func dismissKeyboardAndMoveContentUp() {
         if isEditing && !caption.isEmpty {
             withAnimation {
@@ -167,23 +325,33 @@ struct PostView: View {
                 showBlurView = true
             }
             isEditing = false
-            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+            UIApplication.shared.sendAction(
+                #selector(UIResponder.resignFirstResponder),
+                to: nil,
+                from: nil,
+                for: nil
+            )
         }
     }
 
-    // Upload photo to Firestore and Storage
     private func uploadPhoto(image: UIImage) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
 
         let db = Firestore.firestore()
-        let photosCollectionRef = db.collection("users").document(uid).collection("photos")
+        let photosCollectionRef = db.collection("users").document(uid)
+            .collection("photos")
 
         let startOfToday = Calendar.current.startOfDay(for: Date())
         photosCollectionRef
-            .whereField("timestamp", isGreaterThanOrEqualTo: Timestamp(date: startOfToday))
+            .whereField(
+                "timestamp",
+                isGreaterThanOrEqualTo: Timestamp(date: startOfToday)
+            )
             .getDocuments { snapshot, error in
                 if let error = error {
-                    print("Error checking today's post: \(error.localizedDescription)")
+                    print(
+                        "Error checking today's post: \(error.localizedDescription)"
+                    )
                     isUploading = false
                     return
                 }
@@ -197,13 +365,14 @@ struct PostView: View {
                 }
             }
     }
-    
-    // Perform the actual photo upload
+
     private func performUpload(image: UIImage) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
 
         let photoID = UUID().uuidString
-        let storageRef = Storage.storage().reference().child("users/\(uid)/photos/\(photoID).jpg")
+        let storageRef = Storage.storage().reference().child(
+            "users/\(uid)/photos/\(photoID).jpg"
+        )
 
         guard let imageData = image.jpegData(compressionQuality: 0.75) else {
             isUploading = false
@@ -219,13 +388,18 @@ struct PostView: View {
 
             storageRef.downloadURL { url, error in
                 if let error = error {
-                    print("Error getting download URL: \(error.localizedDescription)")
+                    print(
+                        "Error getting download URL: \(error.localizedDescription)"
+                    )
                     isUploading = false
                     return
                 }
 
                 if let downloadURL = url {
-                    savePhotoMetadata(photoURL: downloadURL.absoluteString, caption: caption)
+                    savePhotoMetadata(
+                        photoURL: downloadURL.absoluteString,
+                        caption: caption
+                    )
                 }
             }
         }
@@ -238,36 +412,45 @@ struct PostView: View {
         let photoData: [String: Any] = [
             "photoURL": photoURL,
             "caption": caption,
-            "timestamp": Timestamp(date: Date())
+            "timestamp": Timestamp(date: Date()),
         ]
 
-        db.collection("users").document(uid).collection("photos").addDocument(data: photoData) { error in
+        db.collection("users").document(uid).collection("photos").addDocument(
+            data: photoData
+        ) { error in
             if let error = error {
-                print("Error saving photo metadata: \(error.localizedDescription)")
+                print(
+                    "Error saving photo metadata: \(error.localizedDescription)"
+                )
                 isUploading = false
             } else {
                 print("Photo metadata successfully saved")
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     isUploading = false
-                    navigateToHome = true // Navigate to Home after post
+                    navigateToHome = true
                 }
             }
         }
     }
 
-    // Upload video to Firestore and Storage
     private func uploadVideo(videoURL: URL) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
 
         let db = Firestore.firestore()
-        let videosCollectionRef = db.collection("users").document(uid).collection("videos")
+        let videosCollectionRef = db.collection("users").document(uid)
+            .collection("videos")
 
         let startOfToday = Calendar.current.startOfDay(for: Date())
         videosCollectionRef
-            .whereField("timestamp", isGreaterThanOrEqualTo: Timestamp(date: startOfToday))
+            .whereField(
+                "timestamp",
+                isGreaterThanOrEqualTo: Timestamp(date: startOfToday)
+            )
             .getDocuments { snapshot, error in
                 if let error = error {
-                    print("Error checking today's post: \(error.localizedDescription)")
+                    print(
+                        "Error checking today's post: \(error.localizedDescription)"
+                    )
                     isUploading = false
                     return
                 }
@@ -282,31 +465,38 @@ struct PostView: View {
             }
     }
 
-    // Perform the actual video upload
     private func performVideoUpload(videoURL: URL) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
 
         let videoID = UUID().uuidString
-        let storageRef = Storage.storage().reference().child("users/\(uid)/videos/\(videoID).mp4")
+        let storageRef = Storage.storage().reference().child(
+            "users/\(uid)/videos/\(videoID).mp4"
+        )
 
-        // Upload the video file to Firebase Storage
         if let videoData = try? Data(contentsOf: videoURL) {
             storageRef.putData(videoData, metadata: nil) { metadata, error in
                 if let error = error {
-                    print("Error uploading video: \(error.localizedDescription)")
+                    print(
+                        "Error uploading video: \(error.localizedDescription)"
+                    )
                     isUploading = false
                     return
                 }
 
                 storageRef.downloadURL { url, error in
                     if let error = error {
-                        print("Error getting video download URL: \(error.localizedDescription)")
+                        print(
+                            "Error getting video download URL: \(error.localizedDescription)"
+                        )
                         isUploading = false
                         return
                     }
 
                     if let downloadURL = url {
-                        saveVideoMetadata(videoURL: downloadURL.absoluteString, caption: caption)
+                        saveVideoMetadata(
+                            videoURL: downloadURL.absoluteString,
+                            caption: caption
+                        )
                     }
                 }
             }
@@ -320,44 +510,59 @@ struct PostView: View {
         let videoData: [String: Any] = [
             "videoURL": videoURL,
             "caption": caption,
-            "timestamp": Timestamp(date: Date())
+            "timestamp": Timestamp(date: Date()),
         ]
 
-        db.collection("users").document(uid).collection("videos").addDocument(data: videoData) { error in
+        db.collection("users").document(uid).collection("videos").addDocument(
+            data: videoData
+        ) { error in
             if let error = error {
-                print("Error saving video metadata: \(error.localizedDescription)")
+                print(
+                    "Error saving video metadata: \(error.localizedDescription)"
+                )
                 isUploading = false
             } else {
                 print("Video metadata successfully saved")
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     isUploading = false
-                    navigateToHome = true // Navigate to Home after post
+                    navigateToHome = true
                 }
             }
         }
     }
 }
 
-// Custom MultilineTextField with keyboard dismissal and move content up
 struct MultilineTextField: View {
     @Binding var text: String
     @Binding var isEditing: Bool
     @Binding var moveToTop: Bool
     @Binding var showBlurView: Bool
     @Binding var timestamp: String
-    
+
     var body: some View {
         VStack {
             ZStack(alignment: .leading) {
                 if text.isEmpty && !isEditing {
                     VStack {
                         Text("Say something about")
-                            .font(.system(size: 24, weight: .bold, design: .rounded))
+                            .font(
+                                .system(
+                                    size: 24,
+                                    weight: .bold,
+                                    design: .rounded
+                                )
+                            )
                             .foregroundColor(.white)
                             .multilineTextAlignment(.center)
 
                         Text("this day...")
-                            .font(.system(size: 24, weight: .bold, design: .rounded))
+                            .font(
+                                .system(
+                                    size: 24,
+                                    weight: .bold,
+                                    design: .rounded
+                                )
+                            )
                             .foregroundColor(.white)
                             .multilineTextAlignment(.center)
                     }
@@ -368,9 +573,13 @@ struct MultilineTextField: View {
                     }
                 }
 
-                TextField("", text: $text, onEditingChanged: { editing in
-                    isEditing = editing
-                })
+                TextField(
+                    "",
+                    text: $text,
+                    onEditingChanged: { editing in
+                        isEditing = editing
+                    }
+                )
                 .submitLabel(.done)
                 .onSubmit {
                     if !text.isEmpty {
@@ -380,7 +589,12 @@ struct MultilineTextField: View {
                             showBlurView = true
                         }
                         isEditing = false
-                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                        UIApplication.shared.sendAction(
+                            #selector(UIResponder.resignFirstResponder),
+                            to: nil,
+                            from: nil,
+                            for: nil
+                        )
                     }
                 }
                 .font(.system(size: 24, weight: .bold, design: .rounded))
@@ -403,31 +617,48 @@ struct MultilineTextField: View {
     }
 }
 
-// Custom Video Player View for playing video in full screen
-struct VideoPlayerView: UIViewControllerRepresentable {
-    var videoURL: URL
+struct VideoFillView: UIViewRepresentable {
+    var url: URL
 
-    func makeUIViewController(context: Context) -> AVPlayerViewController {
-        let player = AVPlayer(url: videoURL)
-        let playerViewController = AVPlayerViewController()
-        playerViewController.player = player
+    func makeUIView(context: Context) -> PlayerView {
+        let v = PlayerView()
+        let player = AVPlayer(url: url)
 
-        // Set video gravity to resizeAspectFill (fill the screen without stretching)
-        playerViewController.videoGravity = .resizeAspectFill
-        
-        // Ensure video plays repeatedly
-        NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: player.currentItem, queue: .main) { _ in
+        v.player = player
+        v.playerLayer.videoGravity = .resizeAspectFill
+        v.backgroundColor = .black
+
+        // Loop
+        NotificationCenter.default.addObserver(
+            forName: .AVPlayerItemDidPlayToEndTime,
+            object: player.currentItem,
+            queue: .main
+        ) { _ in
             player.seek(to: .zero)
             player.play()
         }
 
-        // Play the video automatically
         player.play()
-        return playerViewController
+        return v
     }
 
-    func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) {
-        // No updates needed for now
+    func updateUIView(_ uiView: PlayerView, context: Context) {}
+}
+
+/// A UIView whose backing layer is AVPlayerLayer.
+final class PlayerView: UIView {
+    override class var layerClass: AnyClass { AVPlayerLayer.self }
+    var playerLayer: AVPlayerLayer { layer as! AVPlayerLayer }
+
+    var player: AVPlayer? {
+        get { playerLayer.player }
+        set { playerLayer.player = newValue }
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        // ✅ guarantee full-screen coverage
+        playerLayer.frame = UIScreen.main.bounds
     }
 }
 

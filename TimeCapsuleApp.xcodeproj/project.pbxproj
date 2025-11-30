@@ -7,9 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7405CBC52EBE8850004A2319 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 7405CBC42EBE8850004A2319 /* GoogleService-Info.plist */; };
 		CD1E8CAC2C5EB66700C01341 /* CameraController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1E8CAB2C5EB66700C01341 /* CameraController.swift */; };
 		CD1E8CB02C5EE1CE00C01341 /* Home.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1E8CAF2C5EE1CE00C01341 /* Home.swift */; };
-		CD1E8CBE2C6000F200C01341 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = CD1E8CBD2C6000F200C01341 /* GoogleService-Info.plist */; };
 		CD1E8CC12C6001E800C01341 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = CD1E8CC02C6001E800C01341 /* FirebaseAnalytics */; };
 		CD1E8CC42C60090900C01341 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = CD1E8CC32C60090900C01341 /* FirebaseAuth */; };
 		CD3671B62C5C3AC1002DA9F2 /* TimeCapsuleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD3671B52C5C3AC1002DA9F2 /* TimeCapsuleApp.swift */; };
@@ -41,9 +41,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		7405CBC42EBE8850004A2319 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		CD1E8CAB2C5EB66700C01341 /* CameraController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraController.swift; sourceTree = "<group>"; };
 		CD1E8CAF2C5EE1CE00C01341 /* Home.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Home.swift; sourceTree = "<group>"; };
-		CD1E8CBD2C6000F200C01341 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../../../Downloads/GoogleService-Info.plist"; sourceTree = "<group>"; };
 		CD1E8CC52C600A9500C01341 /* TimeCapsuleApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TimeCapsuleApp.entitlements; sourceTree = "<group>"; };
 		CD3671B22C5C3AC1002DA9F2 /* TimeCapsuleApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TimeCapsuleApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CD3671B52C5C3AC1002DA9F2 /* TimeCapsuleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeCapsuleApp.swift; sourceTree = "<group>"; };
@@ -144,7 +144,7 @@
 				CDA00CC42C66BAFB002C0B50 /* TransparentBlurView.swift */,
 				CD1E8CAE2C5EB7C400C01341 /* Camera */,
 				CD3671B92C5C3AC7002DA9F2 /* Assets.xcassets */,
-				CD1E8CBD2C6000F200C01341 /* GoogleService-Info.plist */,
+				7405CBC42EBE8850004A2319 /* GoogleService-Info.plist */,
 				CDA2DF822C61B5430005FB4E /* Info.plist */,
 				CD3671BB2C5C3AC7002DA9F2 /* Preview Content */,
 			);
@@ -251,7 +251,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CD3671BD2C5C3AC7002DA9F2 /* Preview Assets.xcassets in Resources */,
-				CD1E8CBE2C6000F200C01341 /* GoogleService-Info.plist in Resources */,
+				7405CBC52EBE8850004A2319 /* GoogleService-Info.plist in Resources */,
 				CD3671BA2C5C3AC7002DA9F2 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -415,7 +415,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = TimeCapsuleApp/TimeCapsuleApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 33;
+				CURRENT_PROJECT_VERSION = 34;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_ASSET_PATHS = "\"TimeCapsuleApp/Preview Content\"";
 				DEVELOPMENT_TEAM = MZGVVRYJXL;
@@ -435,7 +435,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = abraham.TimeCapsuleApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -451,7 +451,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = TimeCapsuleApp/TimeCapsuleApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 33;
+				CURRENT_PROJECT_VERSION = 34;
 				DEVELOPMENT_ASSET_PATHS = "\"TimeCapsuleApp/Preview Content\"";
 				DEVELOPMENT_TEAM = MZGVVRYJXL;
 				ENABLE_PREVIEWS = YES;
@@ -470,7 +470,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = abraham.TimeCapsuleApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

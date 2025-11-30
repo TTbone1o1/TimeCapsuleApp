@@ -1,14 +1,14 @@
 import AVFoundation
+import Firebase
+import FirebaseAuth
+import FirebaseFirestore
 import SwiftUI
 import UIKit
-import FirebaseAuth
-import Firebase
-import FirebaseFirestore
 
 protocol CameraDelegate: AnyObject {
     func didTakePhoto()
     func showMessageButton()
-    func didFinishRecordingVideo() // New method to notify when video recording is finished
+    func didFinishRecordingVideo()  // New method to notify when video recording is finished
 }
 
 class Camera: UIViewController {
@@ -25,13 +25,18 @@ class Camera: UIViewController {
 
     // Shutter button
     private let shutterButton: UIButton = {
-        let outerCircle = UIButton(frame: CGRect(x: 0, y: 0, width: 56, height: 56))
+        let outerCircle = UIButton(
+            frame: CGRect(x: 0, y: 0, width: 56, height: 56)
+        )
         outerCircle.layer.cornerRadius = 56 / 2
         outerCircle.layer.borderWidth = 3
-        outerCircle.layer.borderColor = UIColor.white.withAlphaComponent(0.5).cgColor
+        outerCircle.layer.borderColor =
+            UIColor.white.withAlphaComponent(0.5).cgColor
         outerCircle.backgroundColor = .clear
 
-        let innerCircle = UIView(frame: CGRect(x: 9.5, y: 9.5, width: 37, height: 37))
+        let innerCircle = UIView(
+            frame: CGRect(x: 9.5, y: 9.5, width: 37, height: 37)
+        )
         innerCircle.layer.cornerRadius = 37 / 2
         innerCircle.backgroundColor = UIColor.white
 
@@ -39,12 +44,12 @@ class Camera: UIViewController {
 
         return outerCircle
     }()
-    
+
     // Camera position (default is back camera)
     var currentCameraPosition: AVCaptureDevice.Position = .back
     // Timer duration (default is 0, meaning no timer)
     var selectedTimerDuration: Int = 0
-    
+
     // Temporary URL for saving video
     private var videoFileURL: URL {
         let tempDirectory = NSTemporaryDirectory()
@@ -59,29 +64,57 @@ class Camera: UIViewController {
         view.addSubview(shutterButton)
         checkCameraPermissions()
 
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(didTapTakePhoto))
+        let tapGesture = UITapGestureRecognizer(
+            target: self,
+            action: #selector(didTapTakePhoto)
+        )
         shutterButton.addGestureRecognizer(tapGesture)
 
-        let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(didLongPressShutterButton))
+        let longPressGesture = UILongPressGestureRecognizer(
+            target: self,
+            action: #selector(didLongPressShutterButton)
+        )
         longPressGesture.minimumPressDuration = 0.3
         shutterButton.addGestureRecognizer(longPressGesture)
 
-        let doubleTapGesture = UITapGestureRecognizer(target: self, action: #selector(didDoubleTapScreen))
+        let doubleTapGesture = UITapGestureRecognizer(
+            target: self,
+            action: #selector(didDoubleTapScreen)
+        )
         doubleTapGesture.numberOfTapsRequired = 2
         view.addGestureRecognizer(doubleTapGesture)
 
         edgesForExtendedLayout = []
+
+        view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        view.translatesAutoresizingMaskIntoConstraints = true
     }
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        previewLayer.frame = view.bounds
-        previewLayer.videoGravity = .resizeAspectFill
 
+        // ✅ Make the preview layer fill the full device screen, ignoring safe area
+        if let windowScene = UIApplication.shared.connectedScenes.first
+            as? UIWindowScene,
+            let window = windowScene.windows.first
+        {
+            previewLayer.frame = window.bounds
+        } else {
+            previewLayer.frame = UIScreen.main.bounds
+        }
+
+        previewLayer.videoGravity = .resizeAspectFill
+        previewLayer.backgroundColor = UIColor.black.cgColor
+
+        // ✅ Position the shutter button correctly at the bottom of the screen
         let safeAreaInsets = view.safeAreaInsets
-        let shutterButtonY = view.frame.size.height - safeAreaInsets.bottom - 65 / 2
-        shutterButton.center = CGPoint(x: view.frame.size.width / 2, y: shutterButtonY)
-        
+        let shutterButtonY =
+            UIScreen.main.bounds.height - safeAreaInsets.bottom - 65 / 2
+        shutterButton.center = CGPoint(
+            x: UIScreen.main.bounds.width / 2,
+            y: shutterButtonY
+        )
+
         view.bringSubviewToFront(shutterButton)
     }
 
@@ -91,7 +124,7 @@ class Camera: UIViewController {
 
         checkIfPostedToday { [weak self] hasPostedToday in
             guard let self = self else { return }
-            
+
             if hasPostedToday {
                 self.delegate?.showMessageButton()
             } else {
@@ -99,47 +132,64 @@ class Camera: UIViewController {
                     self.startCountdown()
                 } else {
                     self.animateShutterButton()
-                    self.output.capturePhoto(with: AVCapturePhotoSettings(), delegate: self)
+                    self.output.capturePhoto(
+                        with: AVCapturePhotoSettings(),
+                        delegate: self
+                    )
                 }
             }
         }
     }
 
     // Long press gesture to record video
-    @objc private func didLongPressShutterButton(_ gesture: UILongPressGestureRecognizer) {
+    @objc private func didLongPressShutterButton(
+        _ gesture: UILongPressGestureRecognizer
+    ) {
         if gesture.state == .began {
             // Start video recording
             startRecording()
-            
+
             // Animate the button to scale out while recording
-            UIView.animate(withDuration: 0.2, animations: {
-                self.shutterButton.transform = CGAffineTransform(scaleX: 1.5, y: 1.5) // Scale out
-            })
-            
+            UIView.animate(
+                withDuration: 0.2,
+                animations: {
+                    self.shutterButton.transform = CGAffineTransform(
+                        scaleX: 1.5,
+                        y: 1.5
+                    )  // Scale out
+                }
+            )
+
         } else if gesture.state == .ended || gesture.state == .cancelled {
             // Stop video recording
             stopRecording()
-            
+
             // Animate the button back to its original size when recording ends, then hide it
-            UIView.animate(withDuration: 0.2, animations: {
-                self.shutterButton.transform = CGAffineTransform(scaleX: 1.0, y: 1.0) // Back to normal size
-            }, completion: { _ in
-                self.shutterButton.isHidden = true // Hide after recording ends
-            })
+            UIView.animate(
+                withDuration: 0.2,
+                animations: {
+                    self.shutterButton.transform = CGAffineTransform(
+                        scaleX: 1.0,
+                        y: 1.0
+                    )  // Back to normal size
+                },
+                completion: { _ in
+                    self.shutterButton.isHidden = true  // Hide after recording ends
+                }
+            )
         }
     }
-
 
     // Start video recording
     private func startRecording() {
         guard let session = session, !movieOutput.isRecording else { return }
-        
+
         let connection = movieOutput.connection(with: .video)
         connection?.videoOrientation = .portrait
-        
+
         let outputURL = videoFileURL
         movieOutput.startRecording(to: outputURL, recordingDelegate: self)
-        
+
         // Do not hide the shutter button yet, we just scale it while recording
     }
 
@@ -159,19 +209,21 @@ class Camera: UIViewController {
     private func toggleCamera() {
         guard let session = session else { return }
         session.beginConfiguration()
-        
+
         // Remove existing input
         if let currentInput = session.inputs.first as? AVCaptureDeviceInput {
             session.removeInput(currentInput)
         }
-        
+
         // Toggle the camera
-        currentCameraPosition = (currentCameraPosition == .back) ? .front : .back
-        
+        currentCameraPosition =
+            (currentCameraPosition == .back) ? .front : .back
+
         // Add new input for the selected camera
         guard let newDevice = camera(for: currentCameraPosition),
-              let newInput = try? AVCaptureDeviceInput(device: newDevice),
-              session.canAddInput(newInput) else {
+            let newInput = try? AVCaptureDeviceInput(device: newDevice),
+            session.canAddInput(newInput)
+        else {
             return
         }
 
@@ -180,15 +232,21 @@ class Camera: UIViewController {
     }
 
     // Helper function to get the camera for a given position
-    private func camera(for position: AVCaptureDevice.Position) -> AVCaptureDevice? {
-        let devices = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: .video, position: .unspecified).devices
+    private func camera(for position: AVCaptureDevice.Position)
+        -> AVCaptureDevice?
+    {
+        let devices = AVCaptureDevice.DiscoverySession(
+            deviceTypes: [.builtInWideAngleCamera],
+            mediaType: .video,
+            position: .unspecified
+        ).devices
         return devices.first(where: { $0.position == position })
     }
 
     // Start countdown before taking a photo
     private func startCountdown() {
         var countdown = selectedTimerDuration
-        
+
         let countdownLabel = UILabel()
         countdownLabel.font = UIFont.systemFont(ofSize: 100, weight: .bold)
         countdownLabel.textColor = .white
@@ -196,62 +254,87 @@ class Camera: UIViewController {
         countdownLabel.frame = view.bounds
         countdownLabel.alpha = 0
         view.addSubview(countdownLabel)
-        
+
         func animateCountdown() {
             if countdown > 0 {
                 countdownLabel.text = "\(countdown)"
-                countdownLabel.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
-                UIView.animate(withDuration: 0.5,
-                               delay: 0,
-                               usingSpringWithDamping: 0.5,
-                               initialSpringVelocity: 1.5,
-                               options: [],
-                               animations: {
-                                   countdownLabel.alpha = 1
-                                   countdownLabel.transform = CGAffineTransform.identity
-                               }, completion: { _ in
-                                   UIView.animate(withDuration: 0.5, animations: {
-                                       countdownLabel.alpha = 0
-                                   }) { _ in
-                                       countdown -= 1
-                                       animateCountdown()
-                                   }
-                               })
+                countdownLabel.transform = CGAffineTransform(
+                    scaleX: 0.5,
+                    y: 0.5
+                )
+                UIView.animate(
+                    withDuration: 0.5,
+                    delay: 0,
+                    usingSpringWithDamping: 0.5,
+                    initialSpringVelocity: 1.5,
+                    options: [],
+                    animations: {
+                        countdownLabel.alpha = 1
+                        countdownLabel.transform = CGAffineTransform.identity
+                    },
+                    completion: { _ in
+                        UIView.animate(
+                            withDuration: 0.5,
+                            animations: {
+                                countdownLabel.alpha = 0
+                            }
+                        ) { _ in
+                            countdown -= 1
+                            animateCountdown()
+                        }
+                    }
+                )
             } else {
                 countdownLabel.removeFromSuperview()
                 self.animateShutterButton()
-                self.output.capturePhoto(with: AVCapturePhotoSettings(), delegate: self)
+                self.output.capturePhoto(
+                    with: AVCapturePhotoSettings(),
+                    delegate: self
+                )
             }
         }
-        
+
         animateCountdown()
     }
 
     private func animateShutterButton() {
-        UIView.animate(withDuration: 0.1,
-                       animations: {
-                           self.shutterButton.transform = CGAffineTransform(scaleX: 0.6, y: 0.6)
-                       },
-                       completion: { _ in
-                           UIView.animate(withDuration: 0.2,
-                                          delay: 0,
-                                          usingSpringWithDamping: 0.5,
-                                          initialSpringVelocity: 1.5,
-                                          options: .allowUserInteraction,
-                                          animations: {
-                                              self.shutterButton.transform = CGAffineTransform(scaleX: 1.1, y: 1.1)
-                                          },
-                                          completion: { _ in
-                                              UIView.animate(withDuration: 0.1,
-                                                             animations: {
-                                                                 self.shutterButton.transform = CGAffineTransform.identity
-                                                                 self.shutterButton.alpha = 0
-                                                             },
-                                                             completion: { _ in
-                                                                 self.shutterButton.isHidden = true
-                                                             })
-                                          })
-                       })
+        UIView.animate(
+            withDuration: 0.1,
+            animations: {
+                self.shutterButton.transform = CGAffineTransform(
+                    scaleX: 0.6,
+                    y: 0.6
+                )
+            },
+            completion: { _ in
+                UIView.animate(
+                    withDuration: 0.2,
+                    delay: 0,
+                    usingSpringWithDamping: 0.5,
+                    initialSpringVelocity: 1.5,
+                    options: .allowUserInteraction,
+                    animations: {
+                        self.shutterButton.transform = CGAffineTransform(
+                            scaleX: 1.1,
+                            y: 1.1
+                        )
+                    },
+                    completion: { _ in
+                        UIView.animate(
+                            withDuration: 0.1,
+                            animations: {
+                                self.shutterButton.transform =
+                                    CGAffineTransform.identity
+                                self.shutterButton.alpha = 0
+                            },
+                            completion: { _ in
+                                self.shutterButton.isHidden = true
+                            }
+                        )
+                    }
+                )
+            }
+        )
     }
 
     private func checkCameraPermissions() {
@@ -282,11 +365,11 @@ class Camera: UIViewController {
                 }
 
                 if session.canAddOutput(output) {
-                    session.addOutput(output) // Photo output
+                    session.addOutput(output)  // Photo output
                 }
 
                 if session.canAddOutput(movieOutput) {
-                    session.addOutput(movieOutput) // Video output
+                    session.addOutput(movieOutput)  // Video output
                 }
 
                 previewLayer.videoGravity = .resizeAspectFill
@@ -307,20 +390,33 @@ class Camera: UIViewController {
             completion(false)
             return
         }
-        
+
         let db = Firestore.firestore()
-        let photosCollectionRef = db.collection("users").document(user.uid).collection("photos")
-        
+        let photosCollectionRef = db.collection("users").document(user.uid)
+            .collection("photos")
+
         let today = Calendar.current.startOfDay(for: Date())
-        let query = photosCollectionRef.whereField("timestamp", isGreaterThanOrEqualTo: today)
-            .whereField("timestamp", isLessThan: Calendar.current.date(byAdding: .day, value: 1, to: today)!)
-        
+        let query = photosCollectionRef.whereField(
+            "timestamp",
+            isGreaterThanOrEqualTo: today
+        )
+        .whereField(
+            "timestamp",
+            isLessThan: Calendar.current.date(
+                byAdding: .day,
+                value: 1,
+                to: today
+            )!
+        )
+
         query.getDocuments { snapshot, error in
             if let snapshot = snapshot {
                 let hasPosted = !snapshot.isEmpty
                 completion(hasPosted)
             } else {
-                print("Error checking if posted today: \(error?.localizedDescription ?? "Unknown error")")
+                print(
+                    "Error checking if posted today: \(error?.localizedDescription ?? "Unknown error")"
+                )
                 completion(false)
             }
         }
@@ -337,16 +433,26 @@ class Camera: UIViewController {
         hostingController.view.backgroundColor = .clear
 
         NSLayoutConstraint.activate([
-            hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            hostingController.view.topAnchor.constraint(equalTo: view.topAnchor)
+            hostingController.view.leadingAnchor.constraint(
+                equalTo: view.leadingAnchor
+            ),
+            hostingController.view.trailingAnchor.constraint(
+                equalTo: view.trailingAnchor
+            ),
+            hostingController.view.bottomAnchor.constraint(
+                equalTo: view.bottomAnchor
+            ),
+            hostingController.view.topAnchor.constraint(
+                equalTo: view.topAnchor
+            ),
         ])
     }
 
     private func removePostView() {
         for subview in view.subviews {
-            if let hostingController = subview.next as? UIHostingController<AnyView> {
+            if let hostingController = subview.next
+                as? UIHostingController<AnyView>
+            {
                 hostingController.willMove(toParent: nil)
                 hostingController.view.removeFromSuperview()
                 hostingController.removeFromParent()
@@ -357,7 +463,12 @@ class Camera: UIViewController {
 
 // Handle video recording completion
 extension Camera: AVCaptureFileOutputRecordingDelegate {
-    func fileOutput(_ output: AVCaptureFileOutput, didFinishRecordingTo outputFileURL: URL, from connections: [AVCaptureConnection], error: Error?) {
+    func fileOutput(
+        _ output: AVCaptureFileOutput,
+        didFinishRecordingTo outputFileURL: URL,
+        from connections: [AVCaptureConnection],
+        error: Error?
+    ) {
         if let error = error {
             print("Error recording video: \(error)")
             return
@@ -380,23 +491,37 @@ extension Camera: AVCaptureFileOutputRecordingDelegate {
 
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            hostingController.view.topAnchor.constraint(equalTo: view.topAnchor)
+            hostingController.view.leadingAnchor.constraint(
+                equalTo: view.leadingAnchor
+            ),
+            hostingController.view.trailingAnchor.constraint(
+                equalTo: view.trailingAnchor
+            ),
+            hostingController.view.bottomAnchor.constraint(
+                equalTo: view.bottomAnchor
+            ),
+            hostingController.view.topAnchor.constraint(
+                equalTo: view.topAnchor
+            ),
         ])
     }
 }
 
 extension Camera: AVCapturePhotoCaptureDelegate {
-    func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
-        guard let data = photo.fileDataRepresentation(), let image = UIImage(data: data) else {
+    func photoOutput(
+        _ output: AVCapturePhotoOutput,
+        didFinishProcessingPhoto photo: AVCapturePhoto,
+        error: Error?
+    ) {
+        guard let data = photo.fileDataRepresentation(),
+            let image = UIImage(data: data)
+        else {
             return
         }
         session?.stopRunning()
-        
+
         delegate?.didTakePhoto()
-        
+
         showPostView(with: image)
         shutterButton.isHidden = true
     }

@@ -1,14 +1,14 @@
-import SwiftUI
 import Firebase
 import FirebaseAuth
 import FirebaseFirestore
 import FirebaseStorage
+import SwiftUI
 
 struct CameraView: UIViewControllerRepresentable {
     @Binding var isShowingMessage: Bool
     @Binding var isPresented: Bool
     @Binding var isPhotoTaken: Bool
-    @Binding var isRecordingFinished: Bool // New state to track recording completion
+    @Binding var isRecordingFinished: Bool  // New state to track recording completion
 
     func makeUIViewController(context: Context) -> Camera {
         let camera = Camera()
@@ -45,26 +45,34 @@ struct CameraView: UIViewControllerRepresentable {
 
         func didFinishRecordingVideo() {
             DispatchQueue.main.async {
-                self.parent.isRecordingFinished = true // Mark that recording finished
+                self.parent.isRecordingFinished = true  // Mark that recording finished
             }
         }
     }
 }
-
 
 struct CameraController: View {
     @Binding var isPresented: Bool
     @State private var isShowingMessage = false
     @State private var isPhotoTaken = false
     @State private var navigateToHome = false
-    @State private var isRecordingFinished = false // Track recording state
+    @State private var isRecordingFinished = false  // Track recording state
 
     var body: some View {
         NavigationView {
             ZStack {
-                CameraView(isShowingMessage: $isShowingMessage, isPresented: $isPresented, isPhotoTaken: $isPhotoTaken, isRecordingFinished: $isRecordingFinished)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.black.edgesIgnoringSafeArea(.all))
+                CameraView(
+                    isShowingMessage: $isShowingMessage,
+                    isPresented: $isPresented,
+                    isPhotoTaken: $isPhotoTaken,
+                    isRecordingFinished: $isRecordingFinished
+                )
+                .ignoresSafeArea()  // ✅ no safe area padding
+                .frame(
+                    width: UIScreen.main.bounds.width,
+                    height: UIScreen.main.bounds.height
+                )  // ✅ fixed size
+                .background(Color.black)
 
                 if isShowingMessage {
                     MessageButton(isShowing: $isShowingMessage)
@@ -76,7 +84,9 @@ struct CameraController: View {
                 if !isRecordingFinished && !isPhotoTaken {
                     Button(action: {
                         withAnimation {
-                            let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                            let impactFeedback = UIImpactFeedbackGenerator(
+                                style: .medium
+                            )
                             impactFeedback.impactOccurred()
                             navigateToHome = true
                         }
@@ -87,23 +97,26 @@ struct CameraController: View {
                             .foregroundColor(.white)
                             .padding()
                     }
-                    .position(x: 40, y: 80) // Adjust position as needed
+                    .position(x: 40, y: 80)  // Adjust position as needed
                 }
 
-
-
                 // Navigation link to home
-                NavigationLink(destination: Home().navigationBarBackButtonHidden(true), isActive: $navigateToHome) {
+                NavigationLink(
+                    destination: Home().navigationBarBackButtonHidden(true),
+                    isActive: $navigateToHome
+                ) {
                     EmptyView()
                 }
             }
             .navigationBarHidden(true)
+            .ignoresSafeArea()
             .edgesIgnoringSafeArea(.all)
         }
         .navigationViewStyle(StackNavigationViewStyle())
+        .navigationBarHidden(true)
+        .ignoresSafeArea()  // ✅ critical
     }
 }
-
 
 struct CameraController_Previews: PreviewProvider {
     static var previews: some View {

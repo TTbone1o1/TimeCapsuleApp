@@ -1,11 +1,11 @@
-import SwiftUI
+import AVKit
 import Firebase
 import FirebaseAuth
 import FirebaseFirestore
 import FirebaseStorage
-import AVKit
-import Pow
 import Photos
+import Pow
+import SwiftUI
 
 // Image extension to apply a tint color
 extension Image {
@@ -22,7 +22,7 @@ struct Home: View {
     @State private var username: String = ""
     @State private var imagesAppeared = false
     @State private var hasPostedPhoto = false
-    @State private var mediaUrls: [(String, String, Timestamp, String)] = [] // Store (URL, Caption, Timestamp, Type) tuples ("photo" or "video")
+    @State private var mediaUrls: [(String, String, Timestamp, String)] = []  // Store (URL, Caption, Timestamp, Type) tuples ("photo" or "video")
     @State private var photoCount: Int = 0
     @State private var isShowingMessage = false
     @State private var isCaptionVisible: Bool = false
@@ -42,19 +42,85 @@ struct Home: View {
     @State private var areButtonsVisible = true
     @State private var isSettingsOpen = false  // State for settings
     @State private var isShowingSetting = false
-    @State private var isFullCaptionVisible: Bool = false // State for showing full caption
-    @State private var preloadedProfileImage: UIImage? = nil // State to store the preloaded profile image
-    @State private var canTap: Bool = true // Add this to control tapping
+    @State private var isFullCaptionVisible: Bool = false  // State for showing full caption
+    @State private var preloadedProfileImage: UIImage? = nil  // State to store the preloaded profile image
+    @State private var canTap: Bool = true  // Add this to control tapping
     @State private var homeProfileScale: CGFloat = 1.0
     @State private var isLoadingMedia = true
-    @State private var savedImages: Set<String> = loadSavedImages() // Track saved image URLs
+    @State private var savedImages: Set<String> = loadSavedImages()  // Track saved image URLs
     @State private var captionDragOffset: CGSize = .zero
-    @State private var finalCaptionOffset: CGSize = .zero // To store the final drag offset
-    @State private var isVideoLoading: Bool = true // State for tracking video loading
+    @State private var finalCaptionOffset: CGSize = .zero  // To store the final drag offset
+    @State private var isVideoLoading: Bool = true  // State for tracking video loading
+    @State private var didAppear: Bool = false
 
     @Environment(\.colorScheme) var currentColorScheme
     @Namespace var namespace
-    
+
+    private func mediaOverlay(
+        caption: String,
+        timestamp: Timestamp,
+        mediaUrl: String
+    ) -> some View {
+        ZStack(alignment: .bottom) {
+            // Gradient
+            LinearGradient(
+                gradient: Gradient(stops: [
+                    .init(
+                        color: currentColorScheme == .dark
+                            ? Color.black.opacity(0.8)
+                            : Color.black.opacity(1.0),
+                        location: 0.0
+                    ),
+                    .init(color: Color.black.opacity(0.0), location: 0.4),
+                    .init(color: Color.clear, location: 1.0),
+                ]),
+                startPoint: .bottom,
+                endPoint: .top
+            )
+            .frame(
+                width: tappedMediaUrl == mediaUrl
+                    ? UIScreen.main.bounds.width
+                    : 313,
+                height: tappedMediaUrl == mediaUrl
+                    ? UIScreen.main.bounds.height
+                    : 421
+            )
+            .clipShape(
+                RoundedRectangle(
+                    cornerRadius: tappedMediaUrl == mediaUrl ? 0 : 33,
+                    style: .continuous
+                )
+            )
+            .allowsHitTesting(false)
+            .opacity(didAppear ? 1 : 0)
+            .animation(.easeIn(duration: 0.8), value: didAppear)
+
+            // Caption (timestamp + text)
+            Group {
+                if currentColorScheme == .dark {
+                    captionView(
+                        caption: caption,
+                        timestamp: timestamp,
+                        tappedMediaUrl: tappedMediaUrl,
+                        currentMediaUrl: mediaUrl
+                    )
+                    .transition(.movingParts.filmExposure)
+                } else {
+                    captionView(
+                        caption: caption,
+                        timestamp: timestamp,
+                        tappedMediaUrl: tappedMediaUrl,
+                        currentMediaUrl: mediaUrl
+                    )
+                }
+            }
+            .offset(y: tappedMediaUrl == mediaUrl ? 20 : 0)
+            .opacity(didAppear ? 1 : 0)
+            .animation(.easeIn(duration: 0.8), value: didAppear)
+        }
+
+    }
+
     // Custom Video Player View to hide the play button and the skip controls
     struct CustomVideoPlayerView: UIViewControllerRepresentable {
         var videoURL: URL
@@ -62,37 +128,39 @@ struct Home: View {
         func makeUIViewController(context: Context) -> AVPlayerViewController {
             let player = AVPlayer(url: videoURL)
             let controller = AVPlayerViewController()
-            
+
             // Hide all playback controls
             controller.showsPlaybackControls = false
-            
+
             // Set video gravity to fill the screen
             controller.videoGravity = .resizeAspectFill
-            
+
             controller.view.backgroundColor = .clear
-            
+
             // Ensure the video plays automatically
             player.play()
-            
+
             // Listen for when the video ends to loop it
             NotificationCenter.default.addObserver(
                 forName: .AVPlayerItemDidPlayToEndTime,
                 object: player.currentItem,
                 queue: .main
             ) { _ in
-                player.seek(to: .zero) // Restart video
-                player.play() // Play again
+                player.seek(to: .zero)  // Restart video
+                player.play()  // Play again
             }
-            
-            controller.player = player // Set the player
+
+            controller.player = player  // Set the player
             return controller
         }
-        
-        func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) {
+
+        func updateUIViewController(
+            _ uiViewController: AVPlayerViewController,
+            context: Context
+        ) {
             // Handle updates here if needed
         }
     }
-
 
     var body: some View {
         if isSignedOut {
@@ -101,49 +169,87 @@ struct Home: View {
             NavigationView {
                 GeometryReader { geometry in
                     ZStack {
-                        Profile(isImageExpanded: $isMediaExpanded,
-                                isShowingSetting: $isShowingSetting,
-                                selectedImage: $preloadedProfileImage,
-                                homeProfileScale: $homeProfileScale)
+                        Profile(
+                            isImageExpanded: $isMediaExpanded,
+                            isShowingSetting: $isShowingSetting,
+                            selectedImage: $preloadedProfileImage,
+                            homeProfileScale: $homeProfileScale
+                        )
                         .offset(x: UIScreen.main.bounds.width + dragOffset)
                         .zIndex(1)
-                        
+
                         mainContentView(geometry: geometry)
-                            .offset(x: min(0, max(-geometry.size.width, dragOffset + geometry.safeAreaInsets.leading)))
+                            .offset(
+                                x: min(
+                                    0,
+                                    max(
+                                        -geometry.size.width,
+                                        dragOffset
+                                            + geometry.safeAreaInsets.leading
+                                    )
+                                )
+                            )
                             .gesture(
-                                tappedMediaUrl == nil ?
-                                DragGesture()
-                                    .onChanged { value in
-                                        let translationWidth = value.translation.width
-                                        dragOffset = min(0, max(-UIScreen.main.bounds.width, translationWidth + (showProfileView ? -UIScreen.main.bounds.width : 0)))
-                                    }
-                                    .onEnded { value in
-                                        withAnimation {
-                                            if value.translation.width < -geometry.size.width / 3 {
-                                                dragOffset = -UIScreen.main.bounds.width
-                                                showProfileView = true
-                                            } else if value.translation.width > geometry.size.width / 3 {
-                                                dragOffset = 0
-                                                showProfileView = false
-                                            } else {
-                                                dragOffset = showProfileView ? -UIScreen.main.bounds.width : 0
-                                            }
-                                            updateIconColors()
+                                tappedMediaUrl == nil
+                                    ? DragGesture()
+                                        .onChanged { value in
+                                            let translationWidth = value
+                                                .translation.width
+                                            dragOffset = min(
+                                                0,
+                                                max(
+                                                    -UIScreen.main.bounds.width,
+                                                    translationWidth
+                                                        + (showProfileView
+                                                            ? -UIScreen.main
+                                                                .bounds.width
+                                                            : 0)
+                                                )
+                                            )
                                         }
-                                    }
-                                : nil
+                                        .onEnded { value in
+                                            withAnimation {
+                                                if value.translation.width
+                                                    < -geometry.size.width / 3
+                                                {
+                                                    dragOffset = -UIScreen.main
+                                                        .bounds.width
+                                                    showProfileView = true
+                                                } else if value.translation
+                                                    .width > geometry.size.width
+                                                    / 3
+                                                {
+                                                    dragOffset = 0
+                                                    showProfileView = false
+                                                } else {
+                                                    dragOffset =
+                                                        showProfileView
+                                                        ? -UIScreen.main.bounds
+                                                            .width : 0
+                                                }
+                                                updateIconColors()
+                                            }
+                                        }
+                                    : nil
                             )
                             .zIndex(2)
-                        
-                        if !isMediaExpanded && !isSettingsOpen && !isShowingSetting && !isSignedOut {
+
+                        if !isMediaExpanded && !isSettingsOpen
+                            && !isShowingSetting && !isSignedOut
+                        {
                             VStack {
-                                Spacer() // This pushes the content below to the bottom of the view
-                                
+                                Spacer()  // This pushes the content below to the bottom of the view
+
                                 GeometryReader { geo in
-                                    HStack(spacing: 30) { // Reduce the spacing to bring the buttons closer to the center
+                                    HStack(spacing: 30) {  // Reduce the spacing to bring the buttons closer to the center
                                         // Home button
                                         Image("Home")
-                                            .withTintColor(showProfileView ? Color.secondary.opacity(0.9) : Color.primary)
+                                            .withTintColor(
+                                                showProfileView
+                                                    ? Color.secondary.opacity(
+                                                        0.9
+                                                    ) : Color.primary
+                                            )
                                             .frame(width: 34, height: 34)
                                             .scaleEffect(homeProfileScale)
                                             .onTapGesture {
@@ -153,49 +259,79 @@ struct Home: View {
                                                     updateIconColors()
                                                 }
                                             }
-                                        
+
                                         Spacer()
-                                        
+
                                         // Camera button
                                         Button(action: {
-                                            let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                                            let impactFeedback =
+                                                UIImpactFeedbackGenerator(
+                                                    style: .medium
+                                                )
                                             impactFeedback.impactOccurred()
                                             showCameraController = true
                                         }) {
                                             ZStack {
                                                 Circle()
-                                                    .stroke(Color.secondary.opacity(0.9), lineWidth: 3)
-                                                    .frame(width: 52, height: 52)
+                                                    .stroke(
+                                                        Color.secondary.opacity(
+                                                            0.9
+                                                        ),
+                                                        lineWidth: 3
+                                                    )
+                                                    .frame(
+                                                        width: 52,
+                                                        height: 52
+                                                    )
 
                                                 Circle()
-                                                    .fill(Color.secondary.opacity(0.7))
-                                                    .frame(width: 37, height: 37)
+                                                    .fill(
+                                                        Color.secondary.opacity(
+                                                            0.7
+                                                        )
+                                                    )
+                                                    .frame(
+                                                        width: 37,
+                                                        height: 37
+                                                    )
                                             }
                                             .scaleEffect(homeProfileScale)
                                         }
-                                        
+
                                         Spacer()
-                                        
+
                                         // Profile button
                                         Image("Profile")
-                                            .withTintColor(showProfileView ? Color.primary : Color.secondary.opacity(0.9))
+                                            .withTintColor(
+                                                showProfileView
+                                                    ? Color.primary
+                                                    : Color.secondary.opacity(
+                                                        0.9
+                                                    )
+                                            )
                                             .frame(width: 34, height: 34)
                                             .scaleEffect(homeProfileScale)
                                             .onTapGesture {
                                                 withAnimation {
-                                                    dragOffset = -geometry.size.width
+                                                    dragOffset = -geometry.size
+                                                        .width
                                                     showProfileView = true
                                                     updateIconColors()
                                                 }
                                             }
                                     }
-                                    .padding(.horizontal, 40) // Adjust horizontal padding to move elements closer
-                                    .frame(maxWidth: geo.size.width, maxHeight: 80)
+                                    .padding(.horizontal, 40)  // Adjust horizontal padding to move elements closer
+                                    .frame(
+                                        maxWidth: geo.size.width,
+                                        maxHeight: 80
+                                    )
                                 }
                                 .frame(height: 80)
-                                .padding(.bottom, geometry.safeAreaInsets.bottom + 0) // Dynamically accounts for safe area insets
+                                .padding(
+                                    .bottom,
+                                    geometry.safeAreaInsets.bottom + 0
+                                )  // Dynamically accounts for safe area insets
                             }
-
 
                             .zIndex(3)
                             .onChange(of: tappedMediaUrl) { newValue in
@@ -209,9 +345,8 @@ struct Home: View {
                                     }
                                 }
                             }
-                            .disabled(tappedMediaUrl != nil) // Add this here to disable buttons
+                            .disabled(tappedMediaUrl != nil)  // Add this here to disable buttons
                         }
-
 
                         if showCameraController {
                             CameraController(isPresented: $showCameraController)
@@ -222,17 +357,21 @@ struct Home: View {
                     .edgesIgnoringSafeArea(.all)
                     .padding(.leading, geometry.safeAreaInsets.leading)
                     .onAppear {
-                        dragOffset = showProfileView ? -UIScreen.main.bounds.width : 0
+                        dragOffset =
+                            showProfileView ? -UIScreen.main.bounds.width : 0
                         onAppearLogic()
                         updateIconColors()
                         loadProfileImage()
+                        withAnimation(.easeIn(duration: 0.8)) {
+                            didAppear = true
+                        }
                     }
                 }
             }
             .navigationViewStyle(StackNavigationViewStyle())
         }
     }
-    
+
     private func mainContentView(geometry: GeometryProxy) -> some View {
         ZStack {
             mediaGalleryView()
@@ -244,10 +383,17 @@ struct Home: View {
                 if tappedMediaUrl == nil {
                     HStack {
                         Text(username.isEmpty ? "" : username)
-                            .font(.system(size: 18, weight: .bold, design: .rounded))
+                            .font(
+                                .system(
+                                    size: 18,
+                                    weight: .bold,
+                                    design: .rounded
+                                )
+                            )
                             .fontWeight(.bold)
                             .padding(.leading)
                             .foregroundColor(Color.primary)
+                            .animation(.easeIn(duration: 0.8), value: didAppear)
                         Spacer()
                     }
                     .padding(.top, geometry.safeAreaInsets.top)
@@ -258,7 +404,13 @@ struct Home: View {
                             Spacer()
 
                             Text("Take a photo or video to start")
-                                .font(.system(size: 18, weight: .bold, design: .rounded))
+                                .font(
+                                    .system(
+                                        size: 18,
+                                        weight: .bold,
+                                        design: .rounded
+                                    )
+                                )
                                 .fontWeight(.bold)
                                 .padding(.bottom, 30)
 
@@ -272,93 +424,141 @@ struct Home: View {
             .zIndex(2)
         }
     }
-    
+
     private func mediaGalleryView() -> some View {
         ScrollViewReader { scrollProxy in
             ScrollView {
                 VStack(spacing: 45) {
-                    ForEach(mediaUrls, id: \.0) { mediaUrl, caption, timestamp, mediaType in
+                    ForEach(mediaUrls, id: \.0) {
+                        mediaUrl,
+                        caption,
+                        timestamp,
+                        mediaType in
                         ZStack(alignment: .bottom) {
                             if mediaType == "photo" {
                                 AsyncImage(
                                     url: URL(string: mediaUrl),
-                                    transaction: .init(animation: .easeInOut(duration: 1.8))
+                                    transaction: .init(
+                                        animation: .easeInOut(duration: 1.8)
+                                    )
                                 ) { phase in
                                     ZStack {
                                         switch phase {
                                         case .empty:
                                             Color.clear
                                                 .frame(width: 313, height: 421)
-                                                .transition(.movingParts.filmExposure)
+                                                .transition(
+                                                    .movingParts.filmExposure
+                                                )
 
                                         case .success(let image):
                                             ZStack(alignment: .topTrailing) {
                                                 image
                                                     .resizable()
-                                                    .aspectRatio(contentMode: .fill)
-                                                    .matchedGeometryEffect(id: mediaUrl, in: namespace)
-                                                    .frame(width: tappedMediaUrl == mediaUrl ? UIScreen.main.bounds.width : 313,
-                                                           height: tappedMediaUrl == mediaUrl ? UIScreen.main.bounds.height : 421)
-                                                    .cornerRadius(tappedMediaUrl == mediaUrl ? 0 : 33)
-                                                    .shadow(radius: 20, x: 0, y: 24)
+                                                    .aspectRatio(
+                                                        contentMode: .fill
+                                                    )
+                                                    .matchedGeometryEffect(
+                                                        id: mediaUrl,
+                                                        in: namespace
+                                                    )
+                                                    .frame(
+                                                        width: tappedMediaUrl
+                                                            == mediaUrl
+                                                            ? UIScreen.main
+                                                                .bounds.width
+                                                            : 313,
+                                                        height: tappedMediaUrl
+                                                            == mediaUrl
+                                                            ? UIScreen.main
+                                                                .bounds.height
+                                                            : 421
+                                                    )
+                                                    .cornerRadius(
+                                                        tappedMediaUrl
+                                                            == mediaUrl ? 0 : 33
+                                                    )
+                                                    .shadow(
+                                                        radius: 20,
+                                                        x: 0,
+                                                        y: 24
+                                                    )
                                                     .onTapGesture {
-                                                        handleMediaTap(mediaUrl: mediaUrl, mediaType: mediaType, scrollProxy: scrollProxy)
+                                                        handleMediaTap(
+                                                            mediaUrl: mediaUrl,
+                                                            mediaType:
+                                                                mediaType,
+                                                            scrollProxy:
+                                                                scrollProxy
+                                                        )
                                                     }
                                             }
                                             .overlay(
-                                                LinearGradient(
-                                                    gradient: Gradient(stops: [
-                                                        .init(color: currentColorScheme == .dark ? Color.black.opacity(0.8) : Color.black.opacity(1.0), location: 0.0),
-                                                        .init(color: Color.black.opacity(0.0), location: 0.2),
-                                                        .init(color: Color.clear, location: 1.0)
-                                                    ]),
-                                                    startPoint: .bottom,
-                                                    endPoint: .top
+                                                mediaOverlay(
+                                                    caption: caption,
+                                                    timestamp: timestamp,
+                                                    mediaUrl: mediaUrl
                                                 )
-                                                .frame(width: tappedMediaUrl == mediaUrl ? UIScreen.main.bounds.width : 313,
-                                                       height: tappedMediaUrl == mediaUrl ? UIScreen.main.bounds.height : 421)
-                                                .clipShape(RoundedRectangle(cornerRadius: tappedMediaUrl == mediaUrl ? 0 : 33, style: .continuous))
-                                                .animation(.spring(response: 0.5, dampingFraction: 0.95), value: tappedMediaUrl)
-                                                .allowsHitTesting(false)
                                             )
-
-                                            // Call the caption view when the image loads successfully
-                                            if currentColorScheme == .dark {
-                                                captionView(caption: caption, timestamp: timestamp, tappedMediaUrl: tappedMediaUrl, currentMediaUrl: mediaUrl)
-                                                    .transition(.movingParts.filmExposure) // Apply transition only in dark mode
-                                                    .offset(y: tappedMediaUrl == mediaUrl ? 400 : 170)
-                                            } else {
-                                                captionView(caption: caption, timestamp: timestamp, tappedMediaUrl: tappedMediaUrl, currentMediaUrl: mediaUrl)
-                                                    .offset(y: tappedMediaUrl == mediaUrl ? 400 : 170) // No transition in light mode
-                                            }
 
                                         case .failure:
                                             Image(systemName: "xmark.circle")
                                                 .resizable()
                                                 .aspectRatio(contentMode: .fit)
                                                 .frame(width: 100, height: 100)
+
                                         @unknown default:
                                             EmptyView()
                                         }
                                     }
-                                    .frame(maxWidth: .infinity)
+                                    .frame(
+                                        maxWidth: .infinity
+                                    )
                                     .id(mediaUrl)
                                 }
                             } else if mediaType == "video" {
-                                ZStack {
-                                    CustomVideoPlayerView(videoURL: URL(string: mediaUrl)!)
-                                        .frame(width: tappedMediaUrl == mediaUrl ? UIScreen.main.bounds.width : 313,
-                                               height: tappedMediaUrl == mediaUrl ? UIScreen.main.bounds.height : 421)
-                                        .cornerRadius(tappedMediaUrl == mediaUrl ? 0 : 33)
-                                        .shadow(radius: 20, x: 0, y: 24)
-                                        .onTapGesture {
-                                            handleMediaTap(mediaUrl: mediaUrl, mediaType: mediaType, scrollProxy: scrollProxy)
-                                        }
+                                CustomVideoPlayerView(
+                                    videoURL: URL(string: mediaUrl)!
+                                )
+                                .frame(
+                                    width: tappedMediaUrl == mediaUrl
+                                        ? UIScreen.main.bounds.width : 313,
+                                    height: tappedMediaUrl == mediaUrl
+                                        ? UIScreen.main.bounds.height : 421
+                                )
+                                .cornerRadius(
+                                    tappedMediaUrl == mediaUrl ? 0 : 33
+                                )
+                                .shadow(radius: 20, x: 0, y: 24)
+                                .opacity(didAppear ? 1 : 0)  // ⬅️ add this
+                                .animation(
+                                    .easeIn(duration: 0.8),
+                                    value: didAppear
+                                )
+                                .onTapGesture {
+                                    handleMediaTap(
+                                        mediaUrl: mediaUrl,
+                                        mediaType: mediaType,
+                                        scrollProxy: scrollProxy
+                                    )
                                 }
+                                .overlay(
+                                    mediaOverlay(
+                                        caption: caption,
+                                        timestamp: timestamp,
+                                        mediaUrl: mediaUrl
+                                    )
+                                )
+                                .frame(maxWidth: .infinity)
+                                .id(mediaUrl)
                             }
                         }
-                        .offset(y: tappedMediaUrl == mediaUrl && mediaUrls.count == 1 ? -130 : 0)
+                        .offset(
+                            y: tappedMediaUrl == mediaUrl
+                                && mediaUrls.count == 1 ? -130 : 0
+                        )
                     }
+
                 }
                 .padding(.vertical, 130)
             }
@@ -368,8 +568,12 @@ struct Home: View {
         }
     }
 
-
-    private func captionView(caption: String, timestamp: Timestamp, tappedMediaUrl: String?, currentMediaUrl: String) -> some View {
+    private func captionView(
+        caption: String,
+        timestamp: Timestamp,
+        tappedMediaUrl: String?,
+        currentMediaUrl: String
+    ) -> some View {
         VStack(alignment: .center, spacing: 5) {
             Text(formatDate(timestamp.dateValue()))
                 .font(.system(size: 18, weight: .bold, design: .rounded))
@@ -385,25 +589,36 @@ struct Home: View {
                 .padding(.bottom, isFullCaptionVisible ? 50 : 26)
         }
         // Offset for when the media is expanded, only apply drag gesture for the tapped media
-        .offset(tappedMediaUrl == currentMediaUrl ? CGSize(width: finalCaptionOffset.width + captionDragOffset.width, height: finalCaptionOffset.height + captionDragOffset.height) : .zero)
+        .offset(
+            tappedMediaUrl == currentMediaUrl
+                ? CGSize(
+                    width: finalCaptionOffset.width + captionDragOffset.width,
+                    height: finalCaptionOffset.height + captionDragOffset.height
+                ) : .zero
+        )
         // Gesture for dragging the caption when expanded
         .gesture(
-            tappedMediaUrl == currentMediaUrl ? DragGesture()
-                .onChanged { value in
-                    captionDragOffset = value.translation // Track current drag position
-                }
-                .onEnded { value in
-                    finalCaptionOffset.height += value.translation.height // Accumulate the drag offset
-                    finalCaptionOffset.width += value.translation.width
-                    captionDragOffset = .zero // Reset the temporary drag state
-                }
-            : nil
+            tappedMediaUrl == currentMediaUrl
+                ? DragGesture()
+                    .onChanged { value in
+                        captionDragOffset = value.translation  // Track current drag position
+                    }
+                    .onEnded { value in
+                        finalCaptionOffset.height += value.translation.height  // Accumulate the drag offset
+                        finalCaptionOffset.width += value.translation.width
+                        captionDragOffset = .zero  // Reset the temporary drag state
+                    }
+                : nil
         )
         // Padding when not expanded
         .padding(.bottom, tappedMediaUrl == currentMediaUrl ? 10 : 0)  // Adjust padding when not expanded
     }
 
-    private func handleMediaTap(mediaUrl: String, mediaType: String, scrollProxy: ScrollViewProxy) {
+    private func handleMediaTap(
+        mediaUrl: String,
+        mediaType: String,
+        scrollProxy: ScrollViewProxy
+    ) {
         guard canTap else { return }
         canTap = false
         let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
@@ -455,7 +670,9 @@ struct Home: View {
     }
 
     static func loadSavedImages() -> Set<String> {
-        if let savedData = UserDefaults.standard.array(forKey: "savedImages") as? [String] {
+        if let savedData = UserDefaults.standard.array(forKey: "savedImages")
+            as? [String]
+        {
             return Set(savedData)
         }
         return []
@@ -467,7 +684,10 @@ struct Home: View {
         UserDefaults.standard.set(Array(savedImages), forKey: "savedImages")
     }
 
-    func downloadAndSaveMedia(from urlString: String, completion: @escaping () -> Void) {
+    func downloadAndSaveMedia(
+        from urlString: String,
+        completion: @escaping () -> Void
+    ) {
         guard let url = URL(string: urlString) else { return }
 
         DispatchQueue.main.async {
@@ -485,7 +705,9 @@ struct Home: View {
                         print("Media successfully saved to Photos.")
                     }
                 } else {
-                    print("Error downloading media: \(error?.localizedDescription ?? "Unknown error")")
+                    print(
+                        "Error downloading media: \(error?.localizedDescription ?? "Unknown error")"
+                    )
                 }
             }.resume()
         }
@@ -500,18 +722,19 @@ struct Home: View {
             profileIconColor = Color(.systemGray3)
         }
     }
-    
+
     private func onAppearLogic() {
         fetchUsername()
         fetchAllMedia()
         imagesAppeared = true
         triggerHaptic()
     }
-    
+
     private func fetchUsername() {
         guard let user = Auth.auth().currentUser else { return }
         let db = Firestore.firestore()
-        let usernameDocRef = db.collection("users").document(user.uid).collection("username").document("info")
+        let usernameDocRef = db.collection("users").document(user.uid)
+            .collection("username").document("info")
         usernameDocRef.getDocument { document, error in
             if let document = document, document.exists {
                 let username = document.data()?["username"] as? String
@@ -526,18 +749,21 @@ struct Home: View {
     private func fetchAllMedia() {
         guard let user = Auth.auth().currentUser else { return }
         let db = Firestore.firestore()
-        
+
         // Fetch both photos and videos, combine them
-        let photosCollectionRef = db.collection("users").document(user.uid).collection("photos")
-        let videosCollectionRef = db.collection("users").document(user.uid).collection("videos")
+        let photosCollectionRef = db.collection("users").document(user.uid)
+            .collection("photos")
+        let videosCollectionRef = db.collection("users").document(user.uid)
+            .collection("videos")
 
         photosCollectionRef.getDocuments { photoSnapshot, error in
             if let photoSnapshot = photoSnapshot {
                 let photoUrls = photoSnapshot.documents.compactMap { document in
                     let data = document.data()
                     if let url = data["photoURL"] as? String,
-                       let caption = data["caption"] as? String,
-                       let timestamp = data["timestamp"] as? Timestamp {
+                        let caption = data["caption"] as? String,
+                        let timestamp = data["timestamp"] as? Timestamp
+                    {
                         return (url, caption, timestamp, "photo")
                     }
                     return nil
@@ -545,18 +771,22 @@ struct Home: View {
 
                 videosCollectionRef.getDocuments { videoSnapshot, error in
                     if let videoSnapshot = videoSnapshot {
-                        let videoUrls = videoSnapshot.documents.compactMap { document in
+                        let videoUrls = videoSnapshot.documents.compactMap {
+                            document in
                             let data = document.data()
                             if let url = data["videoURL"] as? String,
-                               let caption = data["caption"] as? String,
-                               let timestamp = data["timestamp"] as? Timestamp {
+                                let caption = data["caption"] as? String,
+                                let timestamp = data["timestamp"] as? Timestamp
+                            {
                                 return (url, caption, timestamp, "video")
                             }
                             return nil
                         }
 
                         // Combine photo and video URLs
-                        self.mediaUrls = (photoUrls + videoUrls).sorted { $0.2.dateValue() > $1.2.dateValue() }
+                        self.mediaUrls = (photoUrls + videoUrls).sorted {
+                            $0.2.dateValue() > $1.2.dateValue()
+                        }
                         self.isLoadingMedia = false
                     }
                 }
@@ -574,7 +804,7 @@ struct Home: View {
             return shortCaption + (words.count > 3 ? "..." : "")
         }
     }
-    
+
     private func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMM d"
@@ -587,16 +817,20 @@ struct Home: View {
 
     private func loadProfileImage() {
         let db = Firestore.firestore()
-        let userRef = db.collection("users").document(Auth.auth().currentUser?.uid ?? "")
+        let userRef = db.collection("users").document(
+            Auth.auth().currentUser?.uid ?? ""
+        )
         userRef.getDocument { document, error in
             if let document = document, document.exists {
-                if let urlString = document.data()?["profileImageURL"] as? String, let url = URL(string: urlString) {
+                if let urlString = document.data()?["profileImageURL"]
+                    as? String, let url = URL(string: urlString)
+                {
                     downloadProfileImage(from: url)
                 }
             }
         }
     }
-    
+
     private func downloadProfileImage(from url: URL) {
         let storageRef = Storage.storage().reference(forURL: url.absoluteString)
         storageRef.getData(maxSize: Int64(1 * 1024 * 1024)) { data, error in
